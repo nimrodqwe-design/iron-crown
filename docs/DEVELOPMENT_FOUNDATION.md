@@ -4,13 +4,15 @@
 
 The playable prototype is intentionally lightweight and offline-first:
 
-- `index.html` — current interface, map rendering, input handling and game systems.
+- `index.html` — page structure and application entry point.
+- `styles/main.css` — extracted interface and map styling.
+- `js/game.js` — current game state, world data, simulation and interface behaviour (still one JavaScript file; further separation is planned).
 - `manifest.webmanifest` — install metadata.
 - `sw.js` — service-worker cache and offline entry point.
 - `icon.svg` — application icon.
 - `.github/workflows/pages.yml` — GitHub Pages deployment workflow.
 
-The game currently runs without a framework or external runtime dependency. Keep this baseline working while the codebase grows.
+The game currently runs without a framework or external runtime dependency. The first modularisation step is complete: HTML, CSS and JavaScript now live in separate files. Keep this baseline working while the codebase grows.
 
 ## Save-data contract
 
@@ -69,14 +71,15 @@ Before each update:
 - Review the complete change for accidental deletion or duplicated event handlers.
 - State clearly what has and has not been tested. A syntax check is not a browser or device test.
 
-## Planned extraction path
+## Next modularisation steps
 
 When the prototype becomes harder to maintain, extract code gradually rather than rewriting everything at once:
 
 1. `js/core/state.js` and `js/core/save.js`
 2. `js/world/places.js` and `js/world/map.js`
 3. `js/systems/travel.js`, `camping.js` and `exploration.js`
-4. `js/ui/hud.js`, `drawer.js` and `notifications.js`
+4. `js/systems/politics.js` and `reputation.js`
+5. `js/ui/hud.js`, `drawer.js` and `notifications.js`
 
 Only move a working system after its behaviour is understood and checked. Keep the single-file version usable until the modular version is confirmed.
 
