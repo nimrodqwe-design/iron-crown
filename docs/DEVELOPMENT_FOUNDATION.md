@@ -121,3 +121,8 @@ Travel still uses straight-line interpolation; terrain speed is a coarse prototy
 - The service-worker shell cache is versioned to v7 so updated clients can refresh cached assets.
 
 These are targeted reductions in unnecessary work, not a measured FPS claim. Browser profiling and real-device testing remain required before publishing performance figures.
+
+
+## First settlement economy slice
+
+The settlement visit action now opens an activity panel for the current location. The first playable services are buying five supplies for ten gold, selling five supplies for five gold, recruiting one soldier for ten gold at towns and castles, and paying five gold for a one-hour tavern rest that restores up to fifteen health. Gold, supplies, troops, health and campaign time use the existing campaign state and save system; troop counts are already included in save data. Prices are fixed prototype values, and the marketplace is not yet driven by settlement prosperity or stock.
