@@ -68,6 +68,14 @@
   <div class="row"><span>Political standing</span><b id="houseStanding">No audience held</b></div><button class="action" id="audience" style="width:100%;margin-top:7px;display:none">Request noble audience</button>
   <button class="action primary" id="travel" style="width:100%;margin-top:12px">Travel here</button><button class="action" id="visit" style="width:100%;margin-top:7px">Visit settlement</button>
  </section>
+ <section class="town-panel" id="townPanel" aria-labelledby="townTitle" aria-hidden="true">
+  <div class="town-head"><div><div class="eyebrow">Settlement activities</div><h2 id="townTitle">Greyhaven</h2><p id="townDescription"></p></div><button class="close" id="townClose" aria-label="Leave settlement">×</button></div>
+  <div class="town-balance"><span>Gold <b id="townGold">0</b></span><span>Supplies <b id="townSupplies">0</b></span><span>Troops <b id="townTroops">0</b></span></div>
+  <div class="town-section"><h3>Marketplace</h3><p>Buy provisions for the road or sell surplus supplies.</p><div class="town-actions"><button class="action primary" id="buySupplies">Buy 5 supplies · 10 gold</button><button class="action" id="sellSupplies">Sell 5 supplies · 5 gold</button></div></div>
+  <div class="town-section" id="recruitSection"><h3>Recruitment</h3><p>Hire one available soldier for 10 gold.</p><button class="action" id="recruitSoldier">Recruit 1 soldier · 10 gold</button></div>
+  <div class="town-section"><h3>Tavern</h3><p>Rest for an hour and recover some health. Costs 5 gold.</p><button class="action" id="tavernRest">Rest at the tavern · 5 gold</button></div>
+  <p class="town-note" id="townNote" aria-live="polite">Your business here will be recorded in your campaign.</p>
+ </section>
  <div class="toast" id="toast"></div>
 </main>
 <footer class="bottom"><div class="travel"><b id="travelTitle">Your party is at Greyhaven</b><small id="travelSub">Select a settlement to plot a route.</small></div><div class="actions"><button class="action" id="pause">Ⅱ Pause</button><button class="action" id="speed">▶▶ 1×</button><button class="action" id="camp">Camp</button><button class="action camp-rest" id="rest">Rest 2h</button><button class="action" id="cancel" disabled>Cancel</button></div></footer>
