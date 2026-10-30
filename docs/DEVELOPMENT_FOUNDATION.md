@@ -8,12 +8,13 @@ The playable prototype is intentionally lightweight and offline-first:
 - `styles/main.css` — extracted interface and map styling.
 - `js/game.js` — current game state, simulation and interface behaviour.
 - `js/data/world.js` — settlement definitions and exploration discoveries, loaded before the game logic.
+- `js/core/state.js` — creates the initial campaign state and exposes the current save schema version.
 - `manifest.webmanifest` — install metadata.
 - `sw.js` — service-worker cache and offline entry point.
 - `icon.svg` — application icon.
 - `.github/workflows/pages.yml` — GitHub Pages deployment workflow.
 
-The game currently runs without a framework or external runtime dependency. The first modularisation steps are complete: HTML, CSS, game logic and world data now live in separate files. Keep this baseline working while the codebase grows.
+The game currently runs without a framework or external runtime dependency. The first modularisation steps are complete: HTML, CSS, game logic, world data and initial campaign state now live in separate files. Keep this baseline working while the codebase grows.
 
 ## Save-data contract
 
@@ -76,7 +77,7 @@ Before each update:
 
 When the prototype becomes harder to maintain, extract code gradually rather than rewriting everything at once:
 
-1. `js/core/state.js` and `js/core/save.js`
+1. `js/core/save.js` — move persistence and migration out of `game.js`.
 2. `js/world/map.js` and terrain definitions
 3. `js/systems/travel.js`, `camping.js` and `exploration.js`
 4. `js/systems/politics.js` and `reputation.js`
