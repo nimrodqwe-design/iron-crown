@@ -33,7 +33,7 @@
 <div id="app">
 <header class="top">
  <div class="brand"><div class="sigil">♜</div><div><strong>IRON CROWN</strong><small>THE MARCHES · CAMPAIGN MAP</small></div></div>
- <div class="stats"><div class="stat">◈ <b id="gold">85</b> gold</div><div class="stat">⚑ <b id="troops">12</b> troops</div><div class="stat hide">♥ <b id="health">100</b> health</div><div class="stat"><b id="clock">DAY 1 · 08:00</b></div></div>
+ <div class="stats"><div class="stat">◈ <b id="gold">85</b> gold</div><div class="stat">⚑ <b id="troops">12</b> troops</div><div class="stat">♛ <b id="crownProgress">0/3</b> Crown claim</div><div class="stat hide">♥ <b id="health">100</b> health</div><div class="stat"><b id="clock">DAY 1 · 08:00</b></div></div>
 </header>
 <main class="main">
  <div class="map-wrap" id="mapWrap">
@@ -108,9 +108,9 @@ const places=[
 ];
 const byId=id=>places.find(p=>p.id===id);
 const discoveries=[
- {id:"watchtower",name:"Old Watchtower",x:335,y:455,description:"A weathered lookout overlooking an old trade track.",gold:12},
- {id:"shrine",name:"Pilgrim Shrine",x:850,y:835,description:"A quiet roadside shrine, still tended by passing travellers.",gold:8},
- {id:"cache",name:"Hidden Cache",x:1370,y:565,description:"A concealed merchant cache tucked beside the eastern trail.",gold:20}
+ {id:"watchtower",name:"The King's Watch",x:335,y:455,description:"An abandoned royal watchtower. Its sealed archive holds the first proof that the old Crown passed to no recognised heir.",gold:12,relic:"Royal Seal"},
+ {id:"shrine",name:"The Pilgrim's Oath",x:850,y:835,description:"A secluded shrine preserves the oath sworn by the founders of the Marches. Its inscription names the duties of whoever would wear the Crown.",gold:8,relic:"Founder's Oath"},
+ {id:"cache",name:"The Crown Ledger",x:1370,y:565,description:"A hidden royal courier cache contains the last ledger of loyal houses and their pledges to the Crown.",gold:20,relic:"Loyal Houses Ledger"}
 ];
 let state={current:'greyhaven',freePosition:null,gold:85,troops:12,health:100,supplies:5,discoveries:[],day:1,minutes:480,target:null,progress:0,from:null,to:null,paused:false,camped:false,speed:1,zoom:1,panX:0,panY:0,last:0};
 let selected=null,drag=null,playerGroup=null,roamMode=false;
@@ -151,7 +151,8 @@ function explore(){
  if(!site){notify('There is nothing nearby to investigate.');return}
  let d=site.site;state.discoveries.push(d.id);state.supplies+=3;state.gold+=d.gold;
  drawDiscoveries();updateExplorationControls();updateHud();save();
- notify('Discovered '+d.name+'! Found 3 supplies and '+d.gold+' gold.');
+ notify('Discovered '+d.name+'! Found '+d.relic+', 3 supplies and '+d.gold+' gold.');
+ if(state.discoveries.length===3)notify('The three proofs are united. Your claim to the Iron Crown can now be heard.');
 }
 function terrainFactor(x,y){if(x>980&&y<250)return .55;if((x<330&&y>390&&y<640)||(x>790&&y>760)||(x>1400&&y>520))return .72;return 1}
 function tick(now){if(!state.target)return;if(!state.paused){let dt=Math.min(80,now-state.last||16);let factor=state.target==='__free__'?terrainFactor(state.to.x,state.to.y):1;state.progress=Math.min(1,state.progress+dt/1000/(Math.max(8,Math.hypot(state.to.x-state.from.x,state.to.y-state.from.y)/28)/state.speed/factor));state.minutes+=dt/1000*1.7*state.speed;if(state.minutes>=1440){state.minutes-=1440;state.day++}if(state.progress>=1){if(state.target==='__free__'){state.freePosition={x:state.to.x,y:state.to.y}}else{state.current=state.target;state.freePosition=null}state.target=null;state.from=state.to=null;state.progress=0;drawDiscoveries();updateExplorationControls();$('travelTitle').textContent=state.freePosition?'Your party is exploring the wilderness':'Your party has arrived at '+byId(state.current).name;$('travelSub').textContent='Tap Roam, then choose another point on the map.';$('cancel').disabled=true;save();notify(state.freePosition?'Reached the wilderness.':'Arrived at '+byId(state.current).name);updateHud();drawPlayer();drawRoute();return}}state.last=now;drawPlayer();updateHud();requestAnimationFrame(tick)}
@@ -160,7 +161,7 @@ function cancel(){if(!state.target)return;state.target=null;state.from=state.to=
 function updateCampControls(){$('camp').textContent=state.camped?'Break camp':'Camp';$('camp').disabled=!!state.target;$('rest').classList.toggle('visible',state.camped);$('rest').disabled=!!state.target||!state.camped}
 function camp(){if(state.target){notify('You cannot make camp while travelling.');return}state.camped=!state.camped;updateCampControls();save();notify(state.camped?'Camp established. Your party can rest here.':'Camp broken. Ready to travel.')}
 function rest(){if(!state.camped||state.target)return;state.minutes+=120;if(state.minutes>=1440){state.day+=Math.floor(state.minutes/1440);state.minutes%=1440}state.health=Math.min(100,state.health+5);updateHud();save();notify('Two hours pass. Your party has rested.')}
-function updateHud(){let p=currentPoint();$('gold').textContent=state.gold;$('troops').textContent=state.troops;$('health').textContent=state.health;$('currentName').textContent=state.target?'On the move':state.freePosition?'The Wilderness':p.name;$('currentSub').textContent=(state.target?'Travelling party · '+(state.target==='__free__'?'open country':state.to.name):state.freePosition?'Unclaimed countryside':p.faction+' · '+(p.kind==='town'?'Market town':p.kind==='castle'?'Fortress':'Village'))+' · Supplies '+state.supplies;let h=Math.floor(state.minutes/60),m=Math.floor(state.minutes%60);$('clock').textContent='DAY '+state.day+' · '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')}
+function updateHud(){let p=currentPoint();$('crownProgress').textContent=state.discoveries.length+'/3';$('gold').textContent=state.gold;$('troops').textContent=state.troops;$('health').textContent=state.health;$('currentName').textContent=state.target?'On the move':state.freePosition?'The Wilderness':p.name;$('currentSub').textContent=(state.target?'Travelling party · '+(state.target==='__free__'?'open country':state.to.name):state.freePosition?'Unclaimed countryside':p.faction+' · '+(p.kind==='town'?'Market town':p.kind==='castle'?'Fortress':'Village'))+' · Supplies '+state.supplies;let h=Math.floor(state.minutes/60),m=Math.floor(state.minutes%60);$('clock').textContent='DAY '+state.day+' · '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')}
 function save(){try{localStorage.setItem('ironCrownSave',JSON.stringify({current:state.current,freePosition:state.freePosition,gold:state.gold,troops:state.troops,health:state.health,day:state.day,minutes:state.minutes,camped:state.camped,supplies:state.supplies,discoveries:state.discoveries}))}catch(e){}}
 function load(){try{let d=JSON.parse(localStorage.getItem('ironCrownSave')||'null');if(d&&byId(d.current)){state.current=d.current;state.freePosition=d.freePosition||null;state.gold=d.gold||85;state.troops=d.troops||12;state.health=d.health||100;state.day=d.day||1;state.minutes=d.minutes||480;state.camped=!!d.camped;state.supplies=Number.isFinite(d.supplies)?d.supplies:5;state.discoveries=Array.isArray(d.discoveries)?d.discoveries.filter(id=>discoveries.some(site=>site.id===id)):[]}}catch(e){}}
 function notify(s){let t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>t.classList.remove('show'),2100)}
