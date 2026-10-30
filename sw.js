@@ -1,4 +1,4 @@
-const CACHE_NAME = "iron-crown-shell-v5";
+const CACHE_NAME = "iron-crown-shell-v6";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,6 +6,10 @@ const APP_SHELL = [
   "./js/data/world.js",
   "./js/core/state.js",
   "./js/core/save.js",
+  "./js/engine/event-bus.js",
+  "./js/engine/registry.js",
+  "./js/engine/module-manager.js",
+  "./js/engine/engine.js",
   "./js/game.js",
   "./manifest.webmanifest",
   "./icon.svg"
