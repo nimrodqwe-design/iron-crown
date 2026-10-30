@@ -4,13 +4,14 @@ function create(options){
  const getState=options.getState;
  const getPlace=options.getPlace;
  const getDiscoveryIds=options.getDiscoveryIds;
+ const getItemIds=options.getItemIds;
  const notify=options.notify;
  const SAVE_VERSION=options.version;
  const STORAGE_KEY='ironCrownSave';
  function save(){
   try{
    const state=getState();
-   const payload={version:SAVE_VERSION,savedAt:new Date().toISOString(),state:{current:state.current,freePosition:state.freePosition,gold:state.gold,troops:state.troops,health:state.health,day:state.day,minutes:state.minutes,camped:state.camped,supplies:state.supplies,discoveries:state.discoveries,houseStanding:state.houseStanding,audiences:state.audiences}};
+   const payload={version:SAVE_VERSION,savedAt:new Date().toISOString(),state:{current:state.current,freePosition:state.freePosition,gold:state.gold,troops:state.troops,health:state.health,day:state.day,minutes:state.minutes,camped:state.camped,supplies:state.supplies,inventory:state.inventory,equipment:state.equipment,discoveries:state.discoveries,houseStanding:state.houseStanding,audiences:state.audiences}};
    localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));return true;
   }catch(e){notify('Save unavailable on this device.');return false;}
  }
@@ -28,6 +29,13 @@ function create(options){
    state.health=number(d.health,100,0,100);state.day=number(d.day,1,1,999999);
    state.minutes=number(d.minutes,480,0,1439);state.camped=!!d.camped;
    state.supplies=number(d.supplies,5,0,999999);
+   const validItems=getItemIds();
+   state.inventory=Array.isArray(d.inventory)?[...new Set(d.inventory.filter(id=>validItems.includes(id)))]:['worn-blade','travel-cloak'];
+   const slots={weapon:null,armour:null,offhand:null};
+   if(d.equipment&&typeof d.equipment==='object')Object.keys(slots).forEach(slot=>{const id=d.equipment[slot];if(typeof id==='string'&&state.inventory.includes(id)&&getItemIds(slot).includes(id))slots[slot]=id});
+   if(!slots.weapon&&state.inventory.includes('worn-blade'))slots.weapon='worn-blade';
+   if(!slots.armour&&state.inventory.includes('travel-cloak'))slots.armour='travel-cloak';
+   state.equipment=slots;
    const validDiscoveries=getDiscoveryIds();
    state.discoveries=Array.isArray(d.discoveries)?[...new Set(d.discoveries.filter(id=>validDiscoveries.includes(id)))]:[];
    state.houseStanding={alder:number(d.houseStanding?.alder,0,0,100),veyne:number(d.houseStanding?.veyne,0,0,100),rowan:number(d.houseStanding?.rowan,0,0,100)};
