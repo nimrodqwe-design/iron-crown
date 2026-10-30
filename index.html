@@ -151,8 +151,7 @@ function explore(){
  if(!site){notify('There is nothing nearby to investigate.');return}
  let d=site.site;state.discoveries.push(d.id);state.supplies+=3;state.gold+=d.gold;
  drawDiscoveries();updateExplorationControls();updateHud();save();
- notify('Discovered '+d.name+'! Found '+d.relic+', 3 supplies and '+d.gold+' gold.');
- if(state.discoveries.length===3)notify('The three proofs are united. Your claim to the Iron Crown can now be heard.');
+ notify(state.discoveries.length===3?'The three proofs are united. Your claim to the Iron Crown can now be heard!':'Discovered '+d.name+'! Found '+d.relic+', 3 supplies and '+d.gold+' gold.');
 }
 function terrainFactor(x,y){if(x>980&&y<250)return .55;if((x<330&&y>390&&y<640)||(x>790&&y>760)||(x>1400&&y>520))return .72;return 1}
 function tick(now){if(!state.target)return;if(!state.paused){let dt=Math.min(80,now-state.last||16);let factor=state.target==='__free__'?terrainFactor(state.to.x,state.to.y):1;state.progress=Math.min(1,state.progress+dt/1000/(Math.max(8,Math.hypot(state.to.x-state.from.x,state.to.y-state.from.y)/28)/state.speed/factor));state.minutes+=dt/1000*1.7*state.speed;if(state.minutes>=1440){state.minutes-=1440;state.day++}if(state.progress>=1){if(state.target==='__free__'){state.freePosition={x:state.to.x,y:state.to.y}}else{state.current=state.target;state.freePosition=null}state.target=null;state.from=state.to=null;state.progress=0;drawDiscoveries();updateExplorationControls();$('travelTitle').textContent=state.freePosition?'Your party is exploring the wilderness':'Your party has arrived at '+byId(state.current).name;$('travelSub').textContent='Tap Roam, then choose another point on the map.';$('cancel').disabled=true;save();notify(state.freePosition?'Reached the wilderness.':'Arrived at '+byId(state.current).name);updateHud();drawPlayer();drawRoute();return}}state.last=now;drawPlayer();updateHud();requestAnimationFrame(tick)}
@@ -162,8 +161,29 @@ function updateCampControls(){$('camp').textContent=state.camped?'Break camp':'C
 function camp(){if(state.target){notify('You cannot make camp while travelling.');return}state.camped=!state.camped;updateCampControls();save();notify(state.camped?'Camp established. Your party can rest here.':'Camp broken. Ready to travel.')}
 function rest(){if(!state.camped||state.target)return;state.minutes+=120;if(state.minutes>=1440){state.day+=Math.floor(state.minutes/1440);state.minutes%=1440}state.health=Math.min(100,state.health+5);updateHud();save();notify('Two hours pass. Your party has rested.')}
 function updateHud(){let p=currentPoint();$('crownProgress').textContent=state.discoveries.length+'/3';$('gold').textContent=state.gold;$('troops').textContent=state.troops;$('health').textContent=state.health;$('currentName').textContent=state.target?'On the move':state.freePosition?'The Wilderness':p.name;$('currentSub').textContent=(state.target?'Travelling party · '+(state.target==='__free__'?'open country':state.to.name):state.freePosition?'Unclaimed countryside':p.faction+' · '+(p.kind==='town'?'Market town':p.kind==='castle'?'Fortress':'Village'))+' · Supplies '+state.supplies;let h=Math.floor(state.minutes/60),m=Math.floor(state.minutes%60);$('clock').textContent='DAY '+state.day+' · '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')}
-function save(){try{localStorage.setItem('ironCrownSave',JSON.stringify({current:state.current,freePosition:state.freePosition,gold:state.gold,troops:state.troops,health:state.health,day:state.day,minutes:state.minutes,camped:state.camped,supplies:state.supplies,discoveries:state.discoveries}))}catch(e){}}
-function load(){try{let d=JSON.parse(localStorage.getItem('ironCrownSave')||'null');if(d&&byId(d.current)){state.current=d.current;state.freePosition=d.freePosition||null;state.gold=d.gold||85;state.troops=d.troops||12;state.health=d.health||100;state.day=d.day||1;state.minutes=d.minutes||480;state.camped=!!d.camped;state.supplies=Number.isFinite(d.supplies)?d.supplies:5;state.discoveries=Array.isArray(d.discoveries)?d.discoveries.filter(id=>discoveries.some(site=>site.id===id)):[]}}catch(e){}}
+const SAVE_VERSION=2;
+function save(){try{const payload={version:SAVE_VERSION,savedAt:new Date().toISOString(),state:{current:state.current,freePosition:state.freePosition,gold:state.gold,troops:state.troops,health:state.health,day:state.day,minutes:state.minutes,camped:state.camped,supplies:state.supplies,discoveries:state.discoveries}};localStorage.setItem('ironCrownSave',JSON.stringify(payload));return true}catch(e){notify('Save unavailable on this device.');return false}}
+function load(){
+ try{
+  const raw=localStorage.getItem('ironCrownSave');if(!raw)return;
+  const parsed=JSON.parse(raw);if(!parsed||typeof parsed!=='object')throw new Error('Invalid save');
+  // Older saves used a flat structure. Preserve their progress during migration.
+  const d=parsed.version===SAVE_VERSION?parsed.state:parsed.state||parsed;
+  if(!d||typeof d!=='object'||!byId(d.current))throw new Error('Unsupported save');
+  const number=(v,fallback,min,max)=>Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback;
+  state.current=d.current;
+  state.freePosition=d.freePosition&&Number.isFinite(d.freePosition.x)&&Number.isFinite(d.freePosition.y)?{x:Math.max(0,Math.min(1600,d.freePosition.x)),y:Math.max(0,Math.min(1000,d.freePosition.y))}:null;
+  state.gold=number(d.gold,85,0,999999);state.troops=number(d.troops,12,0,9999);
+  state.health=number(d.health,100,0,100);state.day=number(d.day,1,1,999999);
+  state.minutes=number(d.minutes,480,0,1439);state.camped=!!d.camped;
+  state.supplies=number(d.supplies,5,0,999999);
+  state.discoveries=Array.isArray(d.discoveries)?[...new Set(d.discoveries.filter(id=>discoveries.some(site=>site.id===id)))]:[];
+  if(parsed.version!==SAVE_VERSION)save();
+ }catch(e){
+  try{const raw=localStorage.getItem('ironCrownSave');if(raw)localStorage.setItem('ironCrownSave_corrupt_'+Date.now(),raw)}catch(_){}
+  notify('A damaged save was found. A fresh journey has started; the old save was kept as a recovery copy.');
+ }
+}
 function notify(s){let t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>t.classList.remove('show'),2100)}
 const wrap=$('mapWrap'),world=$('world');
 function applyView(){let minX=1600-1600*state.zoom,minY=1000-1000*state.zoom;state.panX=Math.max(minX,Math.min(0,state.panX));state.panY=Math.max(minY,Math.min(0,state.panY));world.setAttribute('transform','translate('+state.panX+' '+state.panY+') scale('+state.zoom+')')}
