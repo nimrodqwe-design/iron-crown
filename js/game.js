@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id);
 const places=window.IronCrownWorld.places;
 const discoveries=window.IronCrownWorld.discoveries;
 const byId=id=>places.find(p=>p.id===id);
-let state={current:'greyhaven',freePosition:null,gold:85,troops:12,health:100,supplies:5,discoveries:[],houseStanding:{alder:0,veyne:0,rowan:0},audiences:[],day:1,minutes:480,target:null,progress:0,from:null,to:null,paused:false,camped:false,speed:1,zoom:1,panX:0,panY:0,last:0};
+let state=window.IronCrownState.createInitialState();
 let selected=null,drag=null,playerGroup=null,roamMode=false;
 const currentPoint=()=>state.freePosition||byId(state.current);
 const svgNS='http://www.w3.org/2000/svg';
@@ -55,7 +55,7 @@ function updateCampControls(){$('camp').textContent=state.camped?'Break camp':'C
 function camp(){if(state.target){notify('You cannot make camp while travelling.');return}state.camped=!state.camped;updateCampControls();save();notify(state.camped?'Camp established. Your party can rest here.':'Camp broken. Ready to travel.')}
 function rest(){if(!state.camped||state.target)return;state.minutes+=120;if(state.minutes>=1440){state.day+=Math.floor(state.minutes/1440);state.minutes%=1440}state.health=Math.min(100,state.health+5);updateHud();save();notify('Two hours pass. Your party has rested.')}
 function updateHud(){let p=currentPoint();$('crownProgress').textContent=state.discoveries.length+'/3';$('gold').textContent=state.gold;$('troops').textContent=state.troops;$('health').textContent=state.health;$('currentName').textContent=state.target?'On the move':state.freePosition?'The Wilderness':p.name;$('currentSub').textContent=(state.target?'Travelling party · '+(state.target==='__free__'?'open country':state.to.name):state.freePosition?'Unclaimed countryside':p.faction+' · '+(p.kind==='town'?'Market town':p.kind==='castle'?'Fortress':'Village'))+' · Supplies '+state.supplies;let h=Math.floor(state.minutes/60),m=Math.floor(state.minutes%60);$('clock').textContent='DAY '+state.day+' · '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')}
-const SAVE_VERSION=3;
+const SAVE_VERSION=window.IronCrownState.saveVersion;
 function save(){try{const payload={version:SAVE_VERSION,savedAt:new Date().toISOString(),state:{current:state.current,freePosition:state.freePosition,gold:state.gold,troops:state.troops,health:state.health,day:state.day,minutes:state.minutes,camped:state.camped,supplies:state.supplies,discoveries:state.discoveries,houseStanding:state.houseStanding,audiences:state.audiences}};localStorage.setItem('ironCrownSave',JSON.stringify(payload));return true}catch(e){notify('Save unavailable on this device.');return false}}
 function load(){
  try{
