@@ -1,4 +1,7 @@
-(function(){
+window.IronCrownEngine.registerModule({
+ id:'campaign',
+ version:'1.0.0',
+ start:function(){
 'use strict';
 const $=id=>document.getElementById(id);
 const places=window.IronCrownWorld.places;
@@ -72,4 +75,6 @@ $('pause').onclick=()=>{state.paused=!state.paused;$('pause').textContent=state.
 $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?4:1;$('speed').textContent='▶▶ '+state.speed+'×'};
 load();drawSettlements();drawParties();drawPlayer();drawDiscoveries();updateExplorationControls();updateHud();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is in the wilderness':'Your party is at '+byId(state.current).name;applyView();center();window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});window.addEventListener('resize',applyView);
 if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
-})();
+ }
+});
+window.IronCrownEngine.start();
