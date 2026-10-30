@@ -1,90 +1,113 @@
 # IRON CROWN — Development Foundation
 
+## Architecture
+
+IRON CROWN uses a lightweight, browser-native engine layer. It is deliberately not tied to a large external game framework, keeping the current map prototype fast, installable and offline-capable.
+
+```text
+index.html
+styles/
+assets/
+js/
+  engine/       shared runtime and module infrastructure
+  core/         campaign state and persistence
+  data/         content definitions, separate from behaviour
+  systems/      gameplay domains, added as working features
+  ui/            reusable interface components
+  game.js        campaign composition / module entry point
+mods/            future community extensions
+docs/
+```
+
+### Engine services
+
+- **Module manager** — registers modules, checks dependencies, starts them in dependency order and stops them in reverse order. Duplicate IDs, missing dependencies and dependency cycles are rejected.
+- **Event bus** — systems publish and subscribe to named events rather than importing each other's implementation. A handler can unsubscribe using the function returned by `on`.
+- **Registry** — shared typed catalogues for content such as items, quests, NPC definitions and locations. Duplicate entries are rejected.
+- **Core state and save** — campaign state remains authoritative and save data is validated and migrated independently of presentation.
+- **Future services** — time, input, rendering, audio, pathfinding and UI are added when a real system needs them, not as empty placeholder files.
+
+### Module contract
+
+A gameplay module registers before engine startup:
+
+```js
+IronCrownEngine.registerModule({
+  id: "economy",
+  version: "1.0.0",
+  dependencies: ["inventory"],
+  start(services) {
+    services.events.on("shop:purchase", data => {
+      // Apply economy rules through the campaign state API.
+    });
+  },
+  stop() {
+    // Release listeners and other resources when applicable.
+  }
+});
+```
+
+Modules receive only shared services. They should expose intentional APIs and communicate through events or registries; avoid reaching into another module's private variables. Keep dependencies one-directional and small. Do not make every system depend on every other system.
+
+The current campaign runs as the first registered module. This establishes the boot path without rewriting the working campaign simulation.
+
+## Mods strategy
+
+A mod directory is reserved, but external mod execution is **not enabled**. The first mod format should be declarative data (JSON) for items, locations, dialogue, quests and balancing. Later, a versioned extension API can allow reviewed JavaScript modules. Do not execute arbitrary downloaded scripts, use `eval`, or let mods directly overwrite save data. Mods need IDs, version compatibility, dependency declarations, validation and a clear load order. Multiplayer or competitive play would need stricter server-side validation.
+
 ## Current structure
 
-The playable prototype is intentionally lightweight and offline-first:
-
-- `index.html` — page structure and application entry point.
-- `styles/main.css` — extracted interface and map styling.
-- `js/game.js` — current game state, simulation and interface behaviour.
-- `js/data/world.js` — settlement definitions and exploration discoveries, loaded before the game logic.
-- `js/core/state.js` — creates the initial campaign state and exposes the current save schema version.
-- `manifest.webmanifest` — install metadata.
+- `index.html` — application shell and script order.
+- `styles/main.css` — map and interface styling.
+- `js/engine/` — module manager, event bus, registry and engine facade.
+- `js/game.js` — current campaign module and existing prototype behaviour.
+- `js/data/world.js` — settlement and discovery definitions.
+- `js/core/state.js` — initial campaign state and save schema version.
+- `js/core/save.js` — local save/load, validation and recovery copy.
 - `sw.js` — service-worker cache and offline entry point.
+- `manifest.webmanifest` — install metadata.
 - `icon.svg` — application icon.
-- `.github/workflows/pages.yml` — GitHub Pages deployment workflow.
-
-The game currently runs without a framework or external runtime dependency. The first modularisation steps are complete: HTML, CSS, game logic, world data and initial campaign state now live in separate files. Keep this baseline working while the codebase grows.
 
 ## Save-data contract
 
-The browser save key is `ironCrownSave`.
+Browser save key: `ironCrownSave`. Current schema version: **3**.
 
-Current format:
+The saved state includes current settlement/free-roam position, gold, troops, health, day/time, camp status, supplies, discoveries, noble-house standing and completed audiences. New fields must receive safe defaults when loading older saves. Increment the schema version and add an explicit migration when a change cannot be safely defaulted.
 
-```js
-{
-  version: 2,
-  savedAt: "ISO-8601 timestamp",
-  state: {
-    current: "greyhaven",
-    freePosition: null,
-    gold: 85,
-    troops: 12,
-    health: 100,
-    day: 1,
-    minutes: 480,
-    camped: false,
-    supplies: 5,
-    discoveries: []
-  }
-}
-```
+Rules:
 
-Rules for future systems:
+1. Preserve the save key and existing settlement/discovery IDs.
+2. Validate loaded values and clamp numeric values to sensible bounds.
+3. Keep a damaged save as a recovery copy before starting a fresh state.
+4. Save after meaningful campaign changes and when the page is hidden or closed.
+5. Test old-save migration and save/load round trips whenever the schema changes.
 
-1. Increment `SAVE_VERSION` when the save structure changes.
-2. Add a migration path from the previous format; do not silently discard player progress.
-3. Validate loaded values and clamp numeric values to sensible bounds.
-4. Give new fields safe defaults so older saves remain playable.
-5. Preserve a damaged save as a recovery copy before starting a fresh state.
-6. Save after meaningful state changes and when the page is hidden or closed.
+## System boundaries
 
-## System boundaries to preserve
+Gameplay domains should be independent where they own distinct rules:
 
-As features are added, keep these responsibilities distinct even before files are split:
+- **World and settlements:** locations, travel, terrain, town visits and ownership.
+- **Economy and inventory:** item definitions, stock, prices, buying, selling and equipment.
+- **Characters:** NPCs, companions, dialogue and relationships.
+- **Quests:** objectives, progression, rewards and quest events.
+- **Politics:** factions, noble houses, reputation, diplomacy and wars.
+- **Warfare:** parties, recruitment, battles, sieges and garrisons.
+- **Progression:** skills, perks, titles and long-term legacy.
+- **UI:** panels and views; it displays state but does not own gameplay rules.
 
-- **State and saves:** authoritative player/world state, defaults, validation and migrations.
-- **World data:** settlements, factions, terrain, discoveries and later noble houses.
-- **Simulation:** time, travel, encounters, economy and faction activity.
-- **Presentation:** map drawing, HUD, drawers, notifications and controls.
-- **Input:** pointer, touch, keyboard and accessible button actions.
-
-Avoid putting game rules directly inside drawing functions. Keep content data separate from the code that displays it.
+These are target boundaries, not a demand to create empty files immediately. Implement each as a complete vertical slice, then extract it into its own module once its behaviour is stable.
 
 ## Compatibility and quality checks
 
 Before each update:
 
-- Fetch the latest `main` version before editing.
-- Keep existing settlement IDs and save keys stable unless a migration is included.
-- Check that every referenced UI element exists.
-- Run a JavaScript syntax check on the inline script.
-- Review the complete change for accidental deletion or duplicated event handlers.
-- State clearly what has and has not been tested. A syntax check is not a browser or device test.
-
-## Next modularisation steps
-
-When the prototype becomes harder to maintain, extract code gradually rather than rewriting everything at once:
-
-1. `js/core/save.js` — move persistence and migration out of `game.js`.
-2. `js/world/map.js` and terrain definitions
-3. `js/systems/travel.js`, `camping.js` and `exploration.js`
-4. `js/systems/politics.js` and `reputation.js`
-5. `js/ui/hud.js`, `drawer.js` and `notifications.js`
-
-Only move a working system after its behaviour is understood and checked. Keep the single-file version usable until the modular version is confirmed.
+- Fetch the latest default-branch source before editing.
+- Preserve existing IDs and save compatibility.
+- Check script load order and service-worker precache paths.
+- Run JavaScript syntax checks and focused logic tests.
+- Review the diff for accidental deletion and duplicate event handlers.
+- State clearly what was tested. Syntax checks are not browser or device tests.
 
 ## Current limitations
 
-The campaign map is still a prototype. Travel is straight-line interpolation, several party markers are illustrative rather than simulated, and settlement services are placeholders. These should be replaced by real systems incrementally, not represented as completed features.
+Travel still uses straight-line interpolation; terrain speed is a coarse prototype heuristic; party markers are illustrative rather than fully simulated; settlement services are not implemented yet. The engine infrastructure is now in place, but the campaign's gameplay systems will be migrated into separate modules incrementally rather than through a risky full rewrite.
