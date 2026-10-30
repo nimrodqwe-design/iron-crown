@@ -111,3 +111,13 @@ Before each update:
 ## Current limitations
 
 Travel still uses straight-line interpolation; terrain speed is a coarse prototype heuristic; party markers are illustrative rather than fully simulated; settlement services are not implemented yet. The engine infrastructure is now in place, but the campaign's gameplay systems will be migrated into separate modules incrementally rather than through a risky full rewrite.
+
+
+## Performance pass
+
+- HUD values are only written to the DOM when their displayed text changes, avoiding redundant updates during travel.
+- Travel animation stops scheduling frames while paused and restarts on resume.
+- Map dragging coalesces pointer movement into at most one SVG view transform per animation frame.
+- The service-worker shell cache is versioned to v7 so updated clients can refresh cached assets.
+
+These are targeted reductions in unnecessary work, not a measured FPS claim. Browser profiling and real-device testing remain required before publishing performance figures.
