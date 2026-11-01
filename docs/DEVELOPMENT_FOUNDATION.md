@@ -126,3 +126,8 @@ These are targeted reductions in unnecessary work, not a measured FPS claim. Bro
 ## First settlement economy slice
 
 The settlement visit action now opens an activity panel for the current location. The first playable services are buying five supplies for ten gold, selling five supplies for five gold, recruiting one soldier for ten gold at towns and castles, and paying five gold for a one-hour tavern rest that restores up to fifteen health. Gold, supplies, troops, health and campaign time use the existing campaign state and save system; troop counts are already included in save data. Prices are fixed prototype values, and the marketplace is not yet driven by settlement prosperity or stock.
+
+
+## Blacksmith integration repair
+
+The town interface now loads the item catalogue before the campaign module and includes the blacksmith purchase controls and inventory list expected by the campaign code. The catalogue uses the weapon, armour and offhand slots required by save schema v4. The service-worker shell cache is v10. Equipment bonuses are displayed, but remain informational until a battle-resolution system is implemented.
