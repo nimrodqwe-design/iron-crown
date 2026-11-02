@@ -37,7 +37,11 @@ function create(options){
    if(!slots.armour&&state.inventory.includes('travel-cloak'))slots.armour='travel-cloak';
    state.equipment=slots;
    const validDiscoveries=getDiscoveryIds();
-   state.discoveries=Array.isArray(d.discoveries)?[...new Set(d.discoveries.filter(id=>validDiscoveries.includes(id)))]:[];\n   const validParties=['red-bandits','ashen-patrol','marcher-patrol'];\n   const validCaravans=['west-caravan','river-caravan'];\n   state.defeatedParties=Array.isArray(d.defeatedParties)?[...new Set(d.defeatedParties.filter(id=>validParties.includes(id)))]:[];\n   state.metCaravans=Array.isArray(d.metCaravans)?[...new Set(d.metCaravans.filter(id=>validCaravans.includes(id)))]:[];
+   state.discoveries=Array.isArray(d.discoveries)?[...new Set(d.discoveries.filter(id=>validDiscoveries.includes(id)))]:[];
+   const validParties=['red-bandits','ashen-patrol','marcher-patrol'];
+   const validCaravans=['west-caravan','river-caravan'];
+   state.defeatedParties=Array.isArray(d.defeatedParties)?[...new Set(d.defeatedParties.filter(id=>validParties.includes(id)))]:[];
+   state.metCaravans=Array.isArray(d.metCaravans)?[...new Set(d.metCaravans.filter(id=>validCaravans.includes(id)))]:[];
    state.houseStanding={alder:number(d.houseStanding?.alder,0,0,100),veyne:number(d.houseStanding?.veyne,0,0,100),rowan:number(d.houseStanding?.rowan,0,0,100)};
    state.audiences=Array.isArray(d.audiences)?[...new Set(d.audiences.filter(id=>['alder','veyne','rowan'].includes(id)))]:[];
    if(parsed.version!==SAVE_VERSION)save();
