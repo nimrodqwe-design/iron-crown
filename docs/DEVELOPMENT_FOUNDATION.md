@@ -131,3 +131,10 @@ The settlement visit action now opens an activity panel for the current location
 ## Blacksmith integration repair
 
 The town interface now loads the item catalogue before the campaign module and includes the blacksmith purchase controls and inventory list expected by the campaign code. The catalogue uses the weapon, armour and offhand slots required by save schema v4. The service-worker shell cache is v10. Equipment bonuses are displayed, but remain informational until a battle-resolution system is implemented.
+
+## Roaming parties and encounters
+- The campaign map now shows distinct coloured roaming groups: red bandits, blue rival patrols, and green independent merchant caravans.
+- Hostile groups resolve a non-graphic encounter when the player reaches their map vicinity. Outcomes use troop count and equipped bonuses, changing troop count, health, and gold.
+- Neutral caravans never attack and provide a small supply bonus once encountered.
+- Cleared hostile groups and met caravans are persisted in save schema v5; older saves migrate with empty encounter histories.
+- Encounter checks currently occur at the end of a travel order, not continuously along the route. Party markers are fixed map encounters in this prototype, not autonomous moving AI.
