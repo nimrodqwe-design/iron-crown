@@ -155,3 +155,13 @@ The world data now exposes `IronCrownWorld.resourceSites`, a declarative list of
 - Resource markers now opt out of map dragging and off-road destination placement, preventing a marker tap from also triggering map navigation.
 - Keyboard focus has a visible treatment.
 - Automated browser/device regression testing remains outstanding; do not describe the feature as bug-free until that testing passes.
+
+
+## Resource-map usability and data-integrity pass (2026-11-03)
+
+- Added an accessible resource-type selector to the campaign map. Players can filter the 12 resource markers by category or show all sites; the visible/total count updates with the selection.
+- The selector is responsive and uses a native labelled control so it remains keyboard and touch operable.
+- World-data validation now rejects duplicate settlement IDs, duplicate resource IDs, missing names/descriptions, unknown resource types or availability labels, invalid nearest-settlement references, and non-finite or out-of-bounds coordinates.
+- Normalised all resource-site nearest-settlement references to stable lowercase settlement IDs. This is required by the validation contract and prevents startup failure from display-name/ID mismatches.
+- Service-worker shell cache advanced to v13 so clients can refresh the updated app shell.
+- Validation in this pass was source-level review only; no browser, mobile, offline-launch or automated test run was available. Do not treat this as release verification.
