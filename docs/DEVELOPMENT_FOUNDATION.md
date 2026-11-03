@@ -143,3 +143,15 @@ The town interface now loads the item catalogue before the campaign module and i
 ## Demo-world resource layer
 
 The world data now exposes `IronCrownWorld.resourceSites`, a declarative list of named resource locations. The map presentation renders each site as a keyboard-accessible marker with a type glyph, name label and inspectable description. Initial coverage includes grain, timber, fish, stone, salt, reeds, iron, ore, wool and trade goods. Resource markers are informational in this increment: gathering, production, stock changes and persistence remain future gameplay work and must be implemented by the gameplay/save owner through an agreed API.
+
+
+### Resource-map hardening pass
+
+- Resource site IDs are checked for duplicates at world-data initialization.
+- Every resource site's nearest-settlement reference is validated against the settlement catalogue.
+- Resource coordinates are checked against the 1600 × 1000 world bounds.
+- Resource-site records are frozen individually as well as through the exported array.
+- Nearest-settlement references use stable settlement IDs, and inspection resolves the display name from the catalogue.
+- Resource markers now opt out of map dragging and off-road destination placement, preventing a marker tap from also triggering map navigation.
+- Keyboard focus has a visible treatment.
+- Automated browser/device regression testing remains outstanding; do not describe the feature as bug-free until that testing passes.
