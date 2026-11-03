@@ -54,5 +54,10 @@ resourceSites.forEach(site=>{
  if(!placeIds.has(site.near))throw new Error('Unknown nearest settlement for resource site '+site.id+': '+site.near);
  if(!Number.isFinite(site.x)||!Number.isFinite(site.y)||site.x<0||site.x>1600||site.y<0||site.y>1000)throw new Error('Resource site is outside the world map: '+site.id);
 });
+const expectedNearestSettlement={'larkspur-wool':'larkspur','silverkeep-market':'silverkeep'};
+resourceSites.forEach(site=>{
+ const expected=expectedNearestSettlement[site.id];
+ if(expected&&site.near!==expected)throw new Error('Incorrect nearest settlement for resource site '+site.id+': expected '+expected+', received '+site.near);
+});
 window.IronCrownWorld=Object.freeze({places:Object.freeze(places),discoveries:Object.freeze(discoveries),resourceSites:Object.freeze(resourceSites.map(site=>Object.freeze(site)))});
 })();
