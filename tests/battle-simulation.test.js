@@ -33,8 +33,8 @@ for (let i = 0; i < 4000 && sim.active(); i++) {
 const result = sim.getResult();
 assert.ok(result, 'battle ends');
 assert.equal(ended.length, 1, 'battle-ended fires once');
-assert.equal(result.survivors.friendly.foot + result.survivors.friendly.archer, 24,
-  'all four unfielded archers and eight unfielded foot soldiers remain as reserves plus field survivors unless lost');
+assert.equal(result.survivors.friendly.foot + result.survivors.friendly.archer + result.casualties.friendly, 24,
+  'friendly survivors plus field casualties preserve the full campaign roster');
 assert.equal(result.reserves.friendly.foot, 8, 'friendly foot reserves preserved');
 assert.equal(result.reserves.friendly.archer, 4, 'unfielded troop types preserved');
 assert.equal(result.survivors.enemy.raider + result.casualties.enemy, 12,
