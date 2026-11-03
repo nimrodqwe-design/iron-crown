@@ -62,7 +62,7 @@ function create(options){
  function counts(units){return units.reduce((sum,u)=>sum+(u.hp>0?1:0),0)}
  function snapshot(){
   if(!battle)return null;
-  return {battleId:battle.battleId,elapsed:battle.elapsed,phase:battle.phase,terrain:battle.terrain,hero:battle.hero,friendly:battle.friendly,enemy:battle.enemy,morale:battle.morale,order:battle.order,remaining:{friendly:counts(battle.friendly),enemy:counts(battle.enemy)}};
+  return copy({battleId:battle.battleId,elapsed:battle.elapsed,phase:battle.phase,terrain:battle.terrain,hero:battle.hero,friendly:battle.friendly,enemy:battle.enemy,morale:battle.morale,order:battle.order,remaining:{friendly:counts(battle.friendly),enemy:counts(battle.enemy)}});
  }
  function finish(outcome,reason){
   if(!battle||battle.phase==='ended')return null;
