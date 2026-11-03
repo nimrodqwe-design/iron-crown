@@ -37,14 +37,20 @@ const resourceSites=[
  {id:'silverkeep-market',name:'Silverkeep Trade Yard',type:'trade',x:1110,y:520,near:'silverkeep',availability:'Busy',description:'Caravans exchange imported goods, tools and provisions.'}
 ];
 
-// Validate world-resource references at load time so bad map data cannot ship silently.
+// Validate location and resource catalogues at load time so invalid world data fails early.
 const placeIds=new Set(places.map(place=>place.id));
+if(placeIds.size!==places.length)throw new Error('Duplicate settlement id in world catalogue');
 const resourceIds=new Set();
-const expectedNearestSettlement={'larkspur-wool':'larkspur','silverkeep-market':'silverkeep'};
+const resourceTypes=new Set(['grain','timber','fish','stone','salt','reeds','iron','ore','wool','trade']);
+const resourceAvailability=new Set(['Abundant','Seasonal','Steady','Valuable','Limited','Busy']);
 resourceSites.forEach(site=>{
- if(expectedNearestSettlement[site.id]&&site.near!==expectedNearestSettlement[site.id])throw new Error('Incorrect nearest settlement for resource site '+site.id+': '+site.near);
+ if(!site||typeof site.id!=='string'||!site.id.trim())throw new Error('Resource site is missing a valid id');
  if(resourceIds.has(site.id))throw new Error('Duplicate resource site id: '+site.id);
  resourceIds.add(site.id);
+ if(typeof site.name!=='string'||!site.name.trim())throw new Error('Resource site is missing a name: '+site.id);
+ if(!resourceTypes.has(site.type))throw new Error('Unknown resource type for '+site.id+': '+site.type);
+ if(!resourceAvailability.has(site.availability))throw new Error('Unknown resource availability for '+site.id+': '+site.availability);
+ if(typeof site.description!=='string'||!site.description.trim())throw new Error('Resource site is missing a description: '+site.id);
  if(!placeIds.has(site.near))throw new Error('Unknown nearest settlement for resource site '+site.id+': '+site.near);
  if(!Number.isFinite(site.x)||!Number.isFinite(site.y)||site.x<0||site.x>1600||site.y<0||site.y>1000)throw new Error('Resource site is outside the world map: '+site.id);
 });
