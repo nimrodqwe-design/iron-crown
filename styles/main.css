@@ -18,3 +18,5 @@
 .inventory-list{display:grid;gap:7px}.inventory-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px solid #3d4b3e;font:12px Arial;color:#e7ddc1}.inventory-row .action{padding:6px 9px}.inventory-row .action:disabled{opacity:.55}
 
 .roaming-party{cursor:pointer}.roaming-party:focus{outline:none;filter:drop-shadow(0 0 5px #f0dfb4)}.roaming-party text{font-size:13px;pointer-events:none}
+
+.resource-site{cursor:pointer}.resource-site:focus{outline:none;filter:drop-shadow(0 0 5px #f0dfb4)}.resource-site text{pointer-events:none}
