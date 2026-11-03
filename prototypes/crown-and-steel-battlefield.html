@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Crown &amp; Steel — Battlefield</title>
+<style>
+:root{--gold:#e5c779;--panel:#17251c;--line:#9d8149}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#314b34,#111b16 75%);color:#f4ead0;font-family:Georgia,serif;text-align:center;min-height:100vh}
+header{padding:12px 10px 5px}
+h1{margin:4px 0;color:var(--gold);font-size:clamp(24px,5vw,36px);letter-spacing:3px;text-shadow:0 3px #392c17}
+header p{margin:4px 0 10px;color:#d7d0b7;font:13px Arial,sans-serif}
+#hud{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;padding:8px 10px;max-width:1000px;margin:auto}
+.stat{background:#17251cdd;border:1px solid #8e7846;border-radius:8px;padding:7px 11px;font:bold 13px Arial,sans-serif;min-width:105px}
+.stat b{color:var(--gold)}
+#stage{position:relative;width:min(96vw,1000px);margin:0 auto;border:3px solid #b99958;border-radius:10px;overflow:hidden;box-shadow:0 12px 35px #0009;background:#486b43}
+canvas{display:block;width:100%;height:auto;touch-action:none}
+#controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px}
+button{border:1px solid #f1d58d;border-radius:7px;background:linear-gradient(#e7c879,#a77d37);color:#211b10;padding:11px 16px;font-weight:bold;font-size:14px;cursor:pointer;box-shadow:0 3px #5b421d;touch-action:manipulation}
+button:active{transform:translateY(2px);box-shadow:0 1px #5b421d}
+button.secondary{background:linear-gradient(#d8dfd0,#87977b);border-color:#dce7cf}
+#message{min-height:22px;margin:4px auto 10px;padding:0 12px;color:#f5dfa0;font:14px Arial,sans-serif}
+#help{color:#c6cbbd;font:12px Arial,sans-serif;margin:0 10px 16px}
+#touchUI{position:absolute;inset:auto 12px 12px;display:none;justify-content:space-between;align-items:end;pointer-events:none}
+#stickBase{width:112px;height:112px;border-radius:50%;background:#17251c99;border:2px solid #e5c77999;position:relative;pointer-events:auto;touch-action:none}
+#stick{position:absolute;width:42px;height:42px;left:33px;top:33px;border-radius:50%;background:#e5c779cc;border:2px solid #fff1}
+#touchActions{display:flex;gap:8px;align-items:end;pointer-events:auto}
+.touchBtn{width:72px;height:72px;border-radius:50%;padding:5px;font-size:12px}
+#overlay{position:absolute;inset:0;background:#101a13d9;display:none;align-items:center;justify-content:center;flex-direction:column;padding:20px}
+#overlay h2{font-size:clamp(30px,7vw,54px);color:var(--gold);margin:0 0 8px;text-shadow:0 4px #000}
+#overlay p{font:15px Arial,sans-serif;max-width:400px;line-height:1.5}
+@media (pointer:coarse),(max-width:700px){#touchUI{display:flex}#help{max-width:700px}#controls button{padding:10px 12px}}
+@media (hover:none) and (pointer:coarse){#help .desktop{display:none}}
+</style>
+</head>
+<body>
+<header><h1>⚔ CROWN &amp; STEEL ⚔</h1><p>Lead your warband. Break the enemy line. Claim the field.</p></header>
+<div id="hud">
+ <div class="stat">❤️ Health: <b id="health">100</b></div>
+ <div class="stat">🪙 Gold: <b id="gold">40</b></div>
+ <div class="stat">🔴 Enemy: <b id="enemyCount">12</b></div>
+ <div class="stat">🔵 Allies: <b id="allyCount">5</b></div>
+ <div class="stat">⚔ Kills: <b id="kills">0</b></div>
+</div>
+<div id="stage">
+ <canvas id="game" width="1000" height="620" aria-label="Crown and Steel battlefield"></canvas>
+ <div id="touchUI">
+  <div id="stickBase"><div id="stick"></div></div>
+  <div id="touchActions"><button class="touchBtn" id="touchAttack">⚔<br>ATTACK</button><button class="touchBtn" id="touchOrder">🏹<br>RALLY</button></div>
+ </div>
+ <div id="overlay"><h2 id="resultTitle">VICTORY!</h2><p id="resultText">The enemy has broken.</p><button onclick="resetGame()">Fight again</button></div>
+</div>
+<div id="controls">
+ <button onclick="attack()">⚔ Attack</button>
+ <button onclick="recruit()">＋ Recruit (20 gold)</button>
+ <button class="secondary" onclick="rally()">🏹 Rally army</button>
+ <button class="secondary" onclick="resetGame()">↻ Restart</button>
+</div>
+<p id="message">Your warband awaits your command.</p>
+<p id="help"><span class="desktop">Move: WASD / arrow keys · Attack: Space</span> · Mobile: use the joystick and attack button · Rally sends allies toward the nearest enemy</p>
+<script>
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const W=canvas.width,H=canvas.height;
+const $=id=>document.getElementById(id);
+let player,enemies,allies,gold,kills,over,keys={},last=0,particles=[],shake=0,rallyMode=false;
+const rand=(a,b)=>a+Math.random()*(b-a);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const alive=a=>a.filter(x=>x.hp>0);
+function soldier(x,y,team,hp=55,kind='foot'){return{x,y,hp,maxHp:hp,team,kind,attackCd:rand(0,.6),swing:0,hitFlash:0,phase:rand(0,6),target:null};}
+function resetGame(){
+ player={...soldier(500,430,'hero',120,'hero'),speed:205,attackCd:0,dir:0};
+ allies=[];enemies=[];particles=[];gold=40;kills=0;over=false;shake=0;rallyMode=false;
+ for(let i=0;i<5;i++)allies.push(soldier(420+(i%3)*55,485+Math.floor(i/3)*34,'blue',62));
+ for(let i=0;i<12;i++)enemies.push(soldier(330+(i%4)*112,105+Math.floor(i/4)*45,'red',58));
+ $('overlay').style.display='none';$('message').textContent='The enemy advances! Hold the line.';updateHud();
+}
+function updateHud(){
+ $('health').textContent=Math.max(0,Math.ceil(player.hp));$('gold').textContent=gold;
+ $('enemyCount').textContent=alive(enemies).length;$('allyCount').textContent=alive(allies).length;$('kills').textContent=kills;
+}
+function moveToward(a,b,speed,dt){const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);if(d>0.1){a.x+=dx/d*speed*dt;a.y+=dy/d*speed*dt;}return d;}
+function nearest(from,list){let best=null,dist=Infinity;for(const x of list){if(x.hp<=0)continue;const d=Math.hypot(x.x-from.x,x.y-from.y);if(d<dist){dist=d;best=x;}}return best;}
+function burst(x,y,color,n=7){for(let i=0;i<n;i++)particles.push({x,y,vx:rand(-85,85),vy:rand(-100,35),life:rand(.2,.55),max:.55,color,size:rand(2,4)});}
+function damage(target,amount){
+ if(target.hp<=0)return;target.hp-=amount;target.hitFlash=.13;shake=Math.max(shake,2.5);burst(target.x,target.y-8,'#f5d59b',4);
+ if(target.hp<=0){burst(target.x,target.y,'#e8c16c',12);if(target.team==='red'){gold+=8;kills++;$('message').textContent='Enemy soldier defeated! +8 gold.';}}
+}
+function attack(){
+ if(over||player.attackCd>0)return;player.attackCd=.48;player.swing=.24;
+ const target=nearest(player,alive(enemies));
+ if(target&&Math.hypot(target.x-player.x,target.y-player.y)<78){damage(target,37);$('message').textContent='Your hero strikes with the sword!';}
+ else $('message').textContent='Move closer to an enemy before striking.';
+}
+function recruit(){
+ if(over)return;if(gold<20){$('message').textContent='Not enough gold to recruit.';return;}
+ if(alive(allies).length>=18){$('message').textContent='Your warband is at its limit.';return;}
+ gold-=20;allies.push(soldier(player.x+rand(-35,35),player.y+rand(35,60),'blue',62));$('message').textContent='A fresh soldier joins your warband.';updateHud();
+}
+function rally(){if(over)return;rallyMode=!rallyMode;$('message').textContent=rallyMode?'Rally order active: allies aggressively pursue enemies.':'Allies return to normal formation behaviour.';}
+function engage(unit,target,dt,damageAmount,range,speed){
+ if(!target)return;const d=moveToward(unit,target,speed,dt);unit.attackCd=Math.max(0,unit.attackCd-dt);
+ if(d<range&&unit.attackCd<=0){unit.attackCd=rand(.78,1.15);unit.swing=.2;damage(target,damageAmount);}
+}
+function update(dt){
+ if(over)return;
+ let dx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);
+ let dy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);dx+=joy.x;dy+=joy.y;
+ const mag=Math.hypot(dx,dy);
+ if(mag>.08){player.x+=dx/mag*player.speed*dt;player.y+=dy/mag*player.speed*dt;player.dir=Math.atan2(dy,dx);}
+ player.x=clamp(player.x,24,W-24);player.y=clamp(player.y,95,H-28);
+ player.attackCd=Math.max(0,player.attackCd-dt);player.swing=Math.max(0,player.swing-dt);
+ for(const a of allies){if(a.hp<=0)continue;const e=nearest(a,enemies);if(e)engage(a,e,dt,13,27,rallyMode?112:86);a.swing=Math.max(0,a.swing-dt);}
+ for(const e of enemies){if(e.hp<=0)continue;const t=nearest(e,[player,...alive(allies)]);if(t)engage(e,t,dt,t===player?9:8,27,64);e.swing=Math.max(0,e.swing-dt);}
+ for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=180*dt;p.life-=dt;}particles=particles.filter(p=>p.life>0);
+ shake=Math.max(0,shake-dt*12);
+ if(player.hp<=0)finish(false);else if(alive(enemies).length===0)finish(true);
+ else if(alive(allies).length===0&&player.hp<35)$('message').textContent='Your warband is nearly broken. Fall back or keep fighting!';
+ updateHud();
+}
+function finish(win){
+ over=true;$('overlay').style.display='flex';$('resultTitle').textContent=win?'VICTORY!':'DEFEAT';
+ $('resultText').textContent=win?'The enemy line has collapsed. The field belongs to your banner. You earned '+gold+' gold.':'Your hero has fallen. Regroup your warband and try again.';
+ $('message').textContent=win?'You conquered the battlefield!':'Your army has been defeated.';
+}
+function ellipse(x,y,rx,ry,color){ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill();}
+function drawTerrain(){
+ const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#668a51');g.addColorStop(1,'#385b3c');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ ctx.strokeStyle='#a3bd7650';ctx.lineWidth=1;
+ for(let y=35;y<H;y+=48)for(let x=-40;x<W+60;x+=70){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+35,y+18);ctx.lineTo(x+70,y);ctx.stroke();}
+ ctx.fillStyle='#9a895c28';ctx.beginPath();ctx.moveTo(90,180);ctx.lineTo(910,180);ctx.lineTo(980,560);ctx.lineTo(20,560);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#697263';ctx.fillRect(425,28,150,64);ctx.fillRect(410,18,35,76);ctx.fillRect(555,18,35,76);
+ ctx.fillStyle='#4a5548';ctx.fillRect(478,57,44,35);ctx.fillStyle='#9a9d83';
+ for(let x=410;x<590;x+=30)ctx.fillRect(x,12,17,13);
+ for(let i=0;i<18;i++){const x=(i*173+47)%W,y=120+(i*97)%470;ellipse(x,y,5,4,'#263f2b66');}
+ ctx.strokeStyle='#392f20';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(70,135);ctx.lineTo(70,70);ctx.stroke();
+ ctx.fillStyle='#b94e43';ctx.beginPath();ctx.moveTo(72,72);ctx.lineTo(108,82);ctx.lineTo(72,94);ctx.fill();
+ ctx.strokeStyle='#392f20';ctx.beginPath();ctx.moveTo(930,500);ctx.lineTo(930,435);ctx.stroke();
+ ctx.fillStyle='#4b83bc';ctx.beginPath();ctx.moveTo(932,437);ctx.lineTo(968,447);ctx.lineTo(932,459);ctx.fill();
+}
+function drawUnit(u){
+ if(u.hp<=0)return;const bob=Math.sin(performanceNow/170+u.phase)*1.5;
+ const hero=u.team==='hero',blue=u.team==='blue',x=u.x,y=u.y+bob;
+ ellipse(x,y+11,hero?18:14,7,'#14251c88');
+ ctx.fillStyle=blue?'#315f91':hero?'#b78a36':'#87372f';ctx.beginPath();ctx.moveTo(x-9,y-5);ctx.lineTo(x+9,y-5);ctx.lineTo(x+12,y+12);ctx.lineTo(x-12,y+12);ctx.closePath();ctx.fill();
+ ctx.fillStyle=blue?'#6396c2':hero?'#e4bd61':'#c36a58';ctx.beginPath();ctx.moveTo(x-7,y-5);ctx.lineTo(x,y-9);ctx.lineTo(x+7,y-5);ctx.lineTo(x+5,y+8);ctx.lineTo(x-5,y+8);ctx.closePath();ctx.fill();
+ ellipse(x,y-12,7,7,'#d8b18a');ctx.fillStyle=hero?'#e5c779':blue?'#9fb5c8':'#b6b4a2';
+ ctx.beginPath();ctx.arc(x,y-14,7,Math.PI,Math.PI*2);ctx.lineTo(x+7,y-11);ctx.lineTo(x-7,y-11);ctx.fill();
+ ctx.fillStyle='#33352d';ctx.fillRect(x-7,y-9,14,2);
+ ctx.strokeStyle='#302d27';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x-5,y+9);ctx.lineTo(x-7,y+16);ctx.moveTo(x+5,y+9);ctx.lineTo(x+7,y+16);ctx.stroke();
+ const swing=u.swing>0?Math.sin((u.swing/.24)*Math.PI)*.8:0;
+ ctx.strokeStyle='#d8b18a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+7,y-2);ctx.lineTo(x+12+swing*8,y+1-swing*11);ctx.stroke();
+ ctx.strokeStyle='#d8dce0';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+12+swing*8,y+1-swing*11);ctx.lineTo(x+19+swing*14,y-12-swing*13);ctx.stroke();
+ if(u.hitFlash>0){u.hitFlash-=.016;ellipse(x,y-4,16,23,'#fff8');}
+ if(hero||u.hp<u.maxHp){ctx.fillStyle='#25251f';ctx.fillRect(x-14,y-29,28,4);ctx.fillStyle=hero?'#e7c65e':blue?'#6ca9dc':'#d56b58';ctx.fillRect(x-14,y-29,28*clamp(u.hp/u.maxHp,0,1),4);}
+}
+let performanceNow=0;
+function draw(){
+ performanceNow=performance.now();ctx.save();if(shake>0)ctx.translate(rand(-shake,shake),rand(-shake,shake));
+ drawTerrain();const units=[...allies,...enemies,player].sort((a,b)=>a.y-b.y);for(const u of units)drawUnit(u);
+ for(const p of particles){ctx.globalAlpha=clamp(p.life/p.max,0,1);ellipse(p.x,p.y,p.size,p.size,p.color);ctx.globalAlpha=1;}
+ ctx.restore();ctx.font='bold 14px Arial';ctx.fillStyle='#fff2d0';ctx.textAlign='center';ctx.fillText('YOUR BANNER',500,594);
+ ctx.fillStyle='#f0c4ad';ctx.fillText('ENEMY HOST',500,24);
+}
+let performanceNow=0;
+let joy={x:0,y:0};
+const base=$('stickBase'),knob=$('stick');let stickPointer=null;
+function setStick(e){
+ const r=base.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+ let x=(e.clientX-cx)/(r.width*.34),y=(e.clientY-cy)/(r.height*.34),m=Math.hypot(x,y);
+ if(m>1){x/=m;y/=m;}joy={x,y};knob.style.transform=`translate(${x*34}px,${y*34}px)`;
+}
+base.addEventListener('pointerdown',e=>{stickPointer=e.pointerId;base.setPointerCapture(e.pointerId);setStick(e);});
+base.addEventListener('pointermove',e=>{if(e.pointerId===stickPointer)setStick(e);});
+function releaseStick(e){if(e.pointerId!==stickPointer)return;stickPointer=null;joy={x:0,y:0};knob.style.transform='translate(0,0)';}
+base.addEventListener('pointerup',releaseStick);base.addEventListener('pointercancel',releaseStick);
+$('touchAttack').addEventListener('pointerdown',e=>{e.preventDefault();attack();});
+$('touchOrder').addEventListener('pointerdown',e=>{e.preventDefault();rally();});
+document.addEventListener('keydown',e=>{
+ const k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();
+ keys[k]=true;if(k===' '&&!e.repeat)attack();
+});
+document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+function loop(t){const dt=Math.min((t-last)/1000||0,.04);last=t;update(dt);draw();requestAnimationFrame(loop);}
+resetGame();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
