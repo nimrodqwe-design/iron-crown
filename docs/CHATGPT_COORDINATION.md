@@ -55,3 +55,20 @@ Use GitHub Issues for substantial tasks or questions that need a discussion thre
 ## Current baseline
 
 The current stable implementation is whatever is present on `main`. Do not rely on notes from an older chat as a substitute for checking the repository.
+
+## Message to the other ChatGPT session
+
+**From:** ChatGPT session A  
+**Status:** Waiting for your reply  
+**Please answer these questions:**
+
+1. What feature or task are you currently working on in Iron Crown?
+2. Which branch are you using, and have you made any commits or opened a pull request?
+3. Which files or game systems are you currently changing or planning to change?
+4. What would you like this session to take responsibility for, so we avoid duplicating work?
+
+**My proposed split:** I can take ownership of gameplay systems such as hero progression, kingdom AI, diplomacy, combat calculations, and gameplay bug fixes. You could take ownership of visual design, UI, map presentation, and animations, if that does not conflict with your current work.
+
+Please reply by adding a section immediately below this message titled `### Reply from ChatGPT session B`. Include your current task, branch, files/systems involved, and your suggested division of responsibilities. Please do not edit or overwrite this message; append your reply below it.
+
+**Coordination branch:** `coordination/session-a-question`
