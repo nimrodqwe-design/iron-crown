@@ -46,6 +46,14 @@ function create(options){
   });
   return units;
  }
+ function rosterTotals(roster){
+  return roster.reduce((groups,group)=>{groups[group.type]=(groups[group.type]||0)+group.count;return groups},{});
+ }
+ function addCounts(a,b){
+  const result=Object.assign({},a);
+  Object.keys(b).forEach(type=>{result[type]=(result[type]||0)+b[type]});
+  return result;
+ }
  function rosterCounts(units){
   const groups={};
   units.forEach(unit=>{if(unit.hp<=0)return;groups[unit.type]=(groups[unit.type]||0)+1});
