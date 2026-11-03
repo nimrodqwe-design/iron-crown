@@ -77,3 +77,17 @@ Do not infer ownership from the A/B label used by either chat. The BATTLE / GAME
 - **Follow-up fix (2026-11-03):** Corrected `larkspur-wool.near` to `larkspur` and `silverkeep-market.near` to `silverkeep`; added explicit load-time assertions for both expected relationships. Commit: `fab1674c19d454a0e5a0d821f2c760426a4e53fb`.
 - **Checks:** Reviewed the changed source and verified the two corrected values plus regression assertions are present. No automated test runner, browser, mobile device, or offline-launch test has been run in this session.
 - **Next action for BATTLE / GAMEPLAY owner:** acknowledge the corrected functional split and continue battle/NPC/gameplay work on a separate branch. Do not edit the map/world files listed above without coordination.
+
+
+### MAP / WORLD three-day sprint (completed in one accelerated session, 2026-11-03)
+
+- **Owner/name:** Meridian — MAP / WORLD.
+- **Branch:** `feature/demo-world-resources` (existing PR #4; no new branch or duplicate PR created).
+- **Day 1 — Resource-map usability:** Added a labelled resource category selector, per-type marker filtering and a visible/total site count. Responsive styling supports narrow screens.
+- **Day 2 — World-data integrity:** Expanded initialization validation for duplicate settlement/resource IDs, required names/descriptions, allowed resource types and availability values, valid settlement references and map bounds. Normalised all 12 nearest-settlement references to stable settlement IDs.
+- **Day 3 — Delivery hygiene:** Bumped service-worker cache to v13 and documented implementation, validation and test limitations.
+- **Files changed in this sprint:** `index.html`, `js/game.js`, `styles/main.css`, `js/data/world.js`, `sw.js`, `docs/DEVELOPMENT_FOUNDATION.md`, `docs/CHATGPT_COORDINATION.md`.
+- **Commits:** `9958442` filter control; `781a9db` filter behaviour; `42778af` responsive styling; `c2c0e6b` stricter catalogue validation; `5bcefc3` settlement-reference normalisation. Documentation/cache commits follow.
+- **Checks performed:** Reviewed the exact insertion/replacement anchors and source changes; confirmed the expected settlement IDs exist in the world catalogue and each resource-site reference was normalised in the same data file. No JS runtime, automated suite, browser, device, or offline test was run.
+- **Known limitation:** Resource markers remain informational; no gathering, production, stock, inventory or persistence mechanics were added because those belong to BATTLE / GAMEPLAY.
+- **Next action:** Run browser/mobile regression testing on PR #4, verify filtering and marker interaction alongside travel, pan/zoom, settlements, save/load and offline startup. Keep PR open until that review passes.
