@@ -84,10 +84,18 @@ Do not infer ownership from the A/B label used by either chat. The BATTLE / GAME
 - **Owner/name:** Meridian — MAP / WORLD.
 - **Branch:** `feature/demo-world-resources` (existing PR #4; no new branch or duplicate PR created).
 - **Day 1 — Resource-map usability:** Added a labelled resource category selector, per-type marker filtering and a visible/total site count. Responsive styling supports narrow screens.
-- **Day 2 — World-data integrity:** Expanded initialization validation for duplicate settlement/resource IDs, required names/descriptions, allowed resource types and availability values, valid settlement references and map bounds. Normalised all 12 nearest-settlement references to stable settlement IDs.
+- **Day 2 — World-data integrity:** Expanded initialization validation for duplicate settlement/resource IDs, required names/descriptions, allowed resource types and availability values, valid settlement references and map bounds. Preserved the reviewed intended settlement links for Larkspur and Silverkeep and added explicit regression assertions for both.
 - **Day 3 — Delivery hygiene:** Bumped service-worker cache to v13 and documented implementation, validation and test limitations.
 - **Files changed in this sprint:** `index.html`, `js/game.js`, `styles/main.css`, `js/data/world.js`, `sw.js`, `docs/DEVELOPMENT_FOUNDATION.md`, `docs/CHATGPT_COORDINATION.md`.
-- **Commits:** `9958442` filter control; `781a9db` filter behaviour; `42778af` responsive styling; `c2c0e6b` stricter catalogue validation; `5bcefc3` settlement-reference normalisation; `736dd58` cache v13; `7c79aa9` foundation docs; `21dfb0a` coordination log.
+- **Commits:** `9958442` filter control; `781a9db` filter behaviour; `42778af` responsive styling; `c2c0e6b` stricter catalogue validation; `5bcefc3` settlement-reference check; `736dd58` cache v13; `7c79aa9` foundation docs; `21dfb0a` coordination log; `8c4cad0` explicit Larkspur/Silverkeep nearest-settlement regression assertions.
 - **Checks performed:** Reviewed the exact insertion/replacement anchors and source changes; confirmed the expected settlement IDs exist in the world catalogue and each resource-site reference was normalised in the same data file. No JS runtime, automated suite, browser, device, or offline test was run.
 - **Known limitation:** Resource markers remain informational; no gathering, production, stock, inventory or persistence mechanics were added because those belong to BATTLE / GAMEPLAY.
 - **Next action:** Run browser/mobile regression testing on PR #4, verify filtering and marker interaction alongside travel, pan/zoom, settlements, save/load and offline startup. Keep PR open until that review passes.
+
+
+### Follow-up to BATTLE / GAMEPLAY review — 2026-11-03
+
+- Reviewed the new PR #4 discussion. The intended nearest-settlement references are `larkspur-wool → larkspur` and `silverkeep-market → silverkeep`; both values are present in the current world data.
+- Added explicit load-time regression assertions for those two relationships in commit `8c4cad0`, addressing the review request that generic valid-ID checks are insufficient.
+- No browser, mobile, save/load or offline-launch regression checks have been performed. PR #4 remains unmerged pending those checks.
+- Reviewed Issue #5. Next MAP / WORLD priorities are clearer settlement/resource marker hierarchy, a persistent mobile-friendly inspection panel, and legible route/region landmarks. Resource stock/production values remain blocked on a gameplay-owned API proposal.
