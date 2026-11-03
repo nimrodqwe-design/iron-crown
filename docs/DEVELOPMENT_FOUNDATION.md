@@ -138,3 +138,8 @@ The town interface now loads the item catalogue before the campaign module and i
 - Neutral caravans never attack and provide a small supply bonus once encountered.
 - Cleared hostile groups and met caravans are persisted in save schema v5; older saves migrate with empty encounter histories.
 - Encounter checks currently occur at the end of a travel order, not continuously along the route. Party markers are fixed map encounters in this prototype, not autonomous moving AI.
+
+
+## Demo-world resource layer
+
+The world data now exposes `IronCrownWorld.resourceSites`, a declarative list of named resource locations. The map presentation renders each site as a keyboard-accessible marker with a type glyph, name label and inspectable description. Initial coverage includes grain, timber, fish, stone, salt, reeds, iron, ore, wool and trade goods. Resource markers are informational in this increment: gathering, production, stock changes and persistence remain future gameplay work and must be implemented by the gameplay/save owner through an agreed API.
