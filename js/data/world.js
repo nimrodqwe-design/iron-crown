@@ -33,8 +33,18 @@ const resourceSites=[
  {id:'dunmar-iron',name:'Dunmar Iron Vein',type:'iron',x:1450,y:360,near:'Dunmar',availability:'Valuable',description:'A worked iron deposit feeds smithies across the eastern roads.'},
  {id:'ironholt-stone',name:'Ironholt Stoneworks',type:'stone',x:1360,y:900,near:'Ironholt',availability:'Steady',description:'Hard grey stone is cut for walls, roads and keeps.'},
  {id:'northpass-ore',name:'Northpass Oreworks',type:'ore',x:1325,y:210,near:'Northpass',availability:'Limited',description:'High mountain workings yield small quantities of metal ore.'},
- {id:'larkspur-wool',name:'Larkspur Sheep Runs',type:'wool',x:1510,y:720,near:'Larkspur',availability:'Abundant',description:'Upland pasture supports hardy sheep and a wool trade.'},
- {id:'silverkeep-market',name:'Silverkeep Trade Yard',type:'trade',x:1110,y:520,near:'Silverkeep',availability:'Busy',description:'Caravans exchange imported goods, tools and provisions.'}
+ {id:'larkspur-wool',name:'Larkspur Sheep Runs',type:'wool',x:1510,y:720,near:'ironholt',availability:'Abundant',description:'Upland pasture supports hardy sheep and a wool trade.'},
+ {id:'silverkeep-market',name:'Silverkeep Trade Yard',type:'trade',x:1110,y:520,near:'merewatch',availability:'Busy',description:'Caravans exchange imported goods, tools and provisions.'}
 ];
-window.IronCrownWorld=Object.freeze({places:Object.freeze(places),discoveries:Object.freeze(discoveries),resourceSites:Object.freeze(resourceSites)});
+
+// Validate world-resource references at load time so bad map data cannot ship silently.
+const placeIds=new Set(places.map(place=>place.id));
+const resourceIds=new Set();
+resourceSites.forEach(site=>{
+ if(resourceIds.has(site.id))throw new Error('Duplicate resource site id: '+site.id);
+ resourceIds.add(site.id);
+ if(!placeIds.has(site.near))throw new Error('Unknown nearest settlement for resource site '+site.id+': '+site.near);
+ if(!Number.isFinite(site.x)||!Number.isFinite(site.y)||site.x<0||site.x>1600||site.y<0||site.y>1000)throw new Error('Resource site is outside the world map: '+site.id);
+});
+window.IronCrownWorld=Object.freeze({places:Object.freeze(places),discoveries:Object.freeze(discoveries),resourceSites:Object.freeze(resourceSites.map(site=>Object.freeze(site)))});
 })();
