@@ -1,0 +1,20 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const source = fs.readFileSync('js/battle/battle-simulation.js', 'utf8');
+const context = { window: {} };
+vm.runInNewContext(source, context);
+const api = context.window.IronCrownBattleSimulation;
+assert.equal(api.MAX_FIELD_TROOPS, 12);
+const sim = api.create();
+const events = [];
+sim.events.on('battle:ended', result => events.push(result));
+const start = sim.start({ battleId: 'test', hero: { attack: 80 }, friendly: [{ type: 'foot', count: 30 }], enemy: [{ type: 'raider', count: 30, hp: 12, attack: 1 }] });
+assert.equal(start.friendly.length, 12);
+assert.equal(start.enemy.length, 12);
+assert.equal(sim.issueOrder({ battleId: 'test', order: 'charge' }), false);
+assert.equal(sim.issueOrder({ battleId: 'test', order: 'hold' }), true);
+for (let i = 0; i < 4000 && sim.active(); i++) { sim.setPlayerInput({ battleId: 'test', moveY: -1, facingX: 1, facingY: -1, attack: true }); sim.step(0.05); }
+assert.ok(sim.getResult());
+assert.equal(events.length, 1);
+console.log('Battle simulation contract tests passed.');
