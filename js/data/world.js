@@ -23,16 +23,16 @@ const discoveries=[
  {id:"cache",name:"The Crown Ledger",x:1370,y:565,description:"A hidden royal courier cache contains the last ledger of loyal houses and their pledges to the Crown.",gold:20,relic:"Loyal Houses Ledger"}
 ];;
 const resourceSites=[
- {id:'greyhaven-grain',name:'Greyhaven Barley Fields',type:'grain',x:270,y:285,near:'Greyhaven',availability:'Abundant',description:'Open fields supplying barley and other staple crops.'},
- {id:'oakrest-timber',name:'Oakrest Timberline',type:'timber',x:505,y:245,near:'Oakrest',availability:'Abundant',description:'Managed woodland with mature oak and pine.'},
- {id:'kingsbridge-fish',name:'Kingsbridge Fishery',type:'fish',x:700,y:300,near:'Kingsbridge',availability:'Seasonal',description:'River nets and smokehouses support the bridge market.'},
- {id:'stonewatch-stone',name:'Stonewatch Quarry',type:'stone',x:965,y:385,near:'Stonewatch',availability:'Steady',description:'A hillside quarry supplying dressed stone for fortifications.'},
- {id:'westmere-salt',name:'Westmere Salt Marsh',type:'salt',x:205,y:825,near:'Westmere',availability:'Steady',description:'Coastal pans produce coarse salt for preservation and trade.'},
- {id:'thornfield-grain',name:'Thornfield Crofts',type:'grain',x:565,y:605,near:'Thornfield',availability:'Abundant',description:'Small farms and grazing plots feed nearby travellers.'},
- {id:'brackenford-reeds',name:'Brackenford Reedbeds',type:'reeds',x:950,y:790,near:'Brackenford',availability:'Abundant',description:'Marsh reeds and peat are gathered along the waterways.'},
- {id:'dunmar-iron',name:'Dunmar Iron Vein',type:'iron',x:1450,y:360,near:'Dunmar',availability:'Valuable',description:'A worked iron deposit feeds smithies across the eastern roads.'},
- {id:'ironholt-stone',name:'Ironholt Stoneworks',type:'stone',x:1360,y:900,near:'Ironholt',availability:'Steady',description:'Hard grey stone is cut for walls, roads and keeps.'},
- {id:'northpass-ore',name:'Northpass Oreworks',type:'ore',x:1325,y:210,near:'Northpass',availability:'Limited',description:'High mountain workings yield small quantities of metal ore.'},
+ {id:'greyhaven-grain',name:'Greyhaven Barley Fields',type:'grain',x:270,y:285,near:'greyhaven',availability:'Abundant',description:'Open fields supplying barley and other staple crops.'},
+ {id:'oakrest-timber',name:'Oakrest Timberline',type:'timber',x:505,y:245,near:'oakrest',availability:'Abundant',description:'Managed woodland with mature oak and pine.'},
+ {id:'kingsbridge-fish',name:'Kingsbridge Fishery',type:'fish',x:700,y:300,near:'kingsbridge',availability:'Seasonal',description:'River nets and smokehouses support the bridge market.'},
+ {id:'stonewatch-stone',name:'Stonewatch Quarry',type:'stone',x:965,y:385,near:'stonewatch',availability:'Steady',description:'A hillside quarry supplying dressed stone for fortifications.'},
+ {id:'westmere-salt',name:'Westmere Salt Marsh',type:'salt',x:205,y:825,near:'westmere',availability:'Steady',description:'Coastal pans produce coarse salt for preservation and trade.'},
+ {id:'thornfield-grain',name:'Thornfield Crofts',type:'grain',x:565,y:605,near:'thornfield',availability:'Abundant',description:'Small farms and grazing plots feed nearby travellers.'},
+ {id:'brackenford-reeds',name:'Brackenford Reedbeds',type:'reeds',x:950,y:790,near:'brackenford',availability:'Abundant',description:'Marsh reeds and peat are gathered along the waterways.'},
+ {id:'dunmar-iron',name:'Dunmar Iron Vein',type:'iron',x:1450,y:360,near:'dunmar',availability:'Valuable',description:'A worked iron deposit feeds smithies across the eastern roads.'},
+ {id:'ironholt-stone',name:'Ironholt Stoneworks',type:'stone',x:1360,y:900,near:'ironholt',availability:'Steady',description:'Hard grey stone is cut for walls, roads and keeps.'},
+ {id:'northpass-ore',name:'Northpass Oreworks',type:'ore',x:1325,y:210,near:'northpass',availability:'Limited',description:'High mountain workings yield small quantities of metal ore.'},
  {id:'larkspur-wool',name:'Larkspur Sheep Runs',type:'wool',x:1510,y:720,near:'larkspur',availability:'Abundant',description:'Upland pasture supports hardy sheep and a wool trade.'},
  {id:'silverkeep-market',name:'Silverkeep Trade Yard',type:'trade',x:1110,y:520,near:'silverkeep',availability:'Busy',description:'Caravans exchange imported goods, tools and provisions.'}
 ];
