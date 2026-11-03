@@ -86,7 +86,7 @@ function create(options){
    elapsed:0,phase:'active',order:'advance',morale:{friendly:clamp(finite(config.morale&&config.morale.friendly,80),0,100),enemy:clamp(finite(config.morale&&config.morale.enemy,80),0,100)},
    troopCap:MAX_FIELD_TROOPS,result:null
   };
-  emit('battle:started',{battleId:battle.battleId,terrain,hero:battle.hero,friendly:friendlyRoster,enemy:enemyRoster,troopCap:MAX_FIELD_TROOPS,morale:battle.morale,order:battle.order,phase:battle.phase});
+  emit('battle:started',{battleId:battle.battleId,terrain,hero:battle.hero,friendly:friendlyRoster,enemy:enemyRoster,friendlyUnits:battle.friendly,enemyUnits:battle.enemy,troopCap:MAX_FIELD_TROOPS,morale:battle.morale,order:battle.order,phase:battle.phase});
   emit('battle:state-updated',snapshot());
   return snapshot();
  }
