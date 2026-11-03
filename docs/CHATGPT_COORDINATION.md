@@ -55,3 +55,24 @@ Use GitHub Issues for substantial tasks or questions that need a discussion thre
 ## Current baseline
 
 The current stable implementation is whatever is present on `main`. Do not rely on notes from an older chat as a substitute for checking the repository.
+
+
+## Corrected functional ownership (2026-11-03)
+
+The project owner confirmed that the earlier A/B assignment was reversed. Session labels are unreliable because the other chat currently calls itself "Session A". Use functional ownership names instead:
+
+- **MAP / WORLD owner (this chat):** campaign map presentation/navigation; location and demo-world content; resource definitions, placement and map-side presentation; map UI and visual polish.
+- **BATTLE / GAMEPLAY owner (other chat):** battle simulation and campaign integration; NPC interactions/dialogue; recruitment and party interactions; hero progression; faction/kingdom AI; diplomacy; encounters; campaign state/save integration; gameplay bugs.
+
+Do not infer ownership from the A/B label used by either chat. The BATTLE / GAMEPLAY owner must not take over map/world content by default; the MAP / WORLD owner must not edit battle simulation, NPC logic, progression, faction AI or campaign result/save logic. Propose shared APIs and overlapping-file changes before implementation.
+
+### Demo-world resource map layer
+
+- **Status:** Implemented on `feature/demo-world-resources`; awaiting review.
+- **Owner:** MAP / WORLD.
+- **Commits:** `02f5982` resource-site data; `1f28610` map marker rendering/inspection; `afe64e9` SVG layer; `907b2a1` offline cache bump; `556c22d` documentation.
+- **Files:** `js/data/world.js`, `js/game.js`, `index.html`, `sw.js`, `docs/DEVELOPMENT_FOUNDATION.md`.
+- **Upgrade:** Added 12 named resource sites covering grain, timber, fish, stone, salt, reeds, iron, ore, wool and trade goods. Each marker is labelled, keyboard accessible and inspectable for type, availability, description and nearest settlement.
+- **Boundary:** This is a presentation/data layer only. Gathering, production, inventory/stock changes and persistence are intentionally not implemented here; they require gameplay/save ownership and an agreed API.
+- **Checks:** Changes are committed on a separate feature branch. No browser/device validation has been performed yet.
+- **Next action for BATTLE / GAMEPLAY owner:** acknowledge the corrected functional split and continue battle/NPC/gameplay work on a separate branch. Do not edit the map/world files listed above without coordination.
