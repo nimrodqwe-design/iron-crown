@@ -21,11 +21,12 @@ function create(options){
   const h=source||{};
   return {id:String(h.id||'campaign-hero'),name:String(h.name||'Commander'),hp:clamp(finite(h.hp,100),0,10000),maxHp:Math.max(1,finite(h.maxHp,100)),attack:clamp(finite(h.attack,12),1,1000),defence:clamp(finite(h.defence,2),0,1000),speed:clamp(finite(h.speed,170),50,400),x:500,y:440,attackCooldown:0,moveX:0,moveY:0,facingX:0,facingY:-1};
  }
- function normalizeRoster(entries,team){
-  const result=[];let remaining=MAX_FIELD_TROOPS;
+ function normalizeRoster(entries,team,limit){
+  const result=[];let remaining=Number.isFinite(limit)?Math.max(0,limit):Infinity;
   (Array.isArray(entries)?entries:[]).forEach((entry,index)=>{
    if(remaining<=0)return;
-   const count=Math.min(remaining,Math.max(0,Math.floor(finite(entry&&entry.count,0))));
+   const requested=Math.max(0,Math.floor(finite(entry&&entry.count,0)));
+   const count=Math.min(remaining,requested);
    if(!count)return;
    const type=String(entry.type||'foot');
    const stats={id:String(entry.id||team+'-'+type+'-'+index),type,count,hp:clamp(finite(entry.hp,58),1,1000),attack:clamp(finite(entry.attack,9),1,100),defence:clamp(finite(entry.defence,1),0,100),speed:clamp(finite(entry.speed,65),20,180),morale:clamp(finite(entry.morale,75),0,100)};
@@ -58,13 +59,17 @@ function create(options){
  function finish(outcome,reason){
   if(!battle||battle.phase==='ended')return null;
   battle.phase='ended';
-  const friendlySurvivors=rosterCounts(battle.friendly),enemySurvivors=rosterCounts(battle.enemy);
+  const friendlyFieldSurvivors=rosterCounts(battle.friendly),enemyFieldSurvivors=rosterCounts(battle.enemy);
+  const friendlySurvivors=addCounts(friendlyFieldSurvivors,battle.friendlyReserves);
+  const enemySurvivors=addCounts(enemyFieldSurvivors,battle.enemyReserves);
   const result={
    battleId:battle.battleId,outcome,reason,
    casualties:{
     friendly:Object.values(battle.friendlyRoster).reduce((sum,n)=>sum+n,0)-counts(battle.friendly),
     enemy:Object.values(battle.enemyRoster).reduce((sum,n)=>sum+n,0)-counts(battle.enemy)
    },
+   fieldedSurvivors:{friendly:friendlyFieldSurvivors,enemy:enemyFieldSurvivors},
+   reserves:{friendly:copy(battle.friendlyReserves),enemy:copy(battle.enemyReserves)},
    survivors:{friendly:friendlySurvivors,enemy:enemySurvivors},
    hero:{id:battle.hero.id,hp:Math.max(0,Math.round(battle.hero.hp)),maxHp:battle.hero.maxHp},
    rewards:outcome==='victory'?{gold:Math.max(5,Math.round(counts(battle.enemyInitial)*1.5)),renown:Math.max(1,Math.round(counts(battle.enemyInitial)/3))}:{gold:0,renown:0}
@@ -74,15 +79,17 @@ function create(options){
  function start(config){
   if(battle&&battle.phase!=='ended')throw new Error('A battle is already active');
   config=config||{};
-  const friendlyRoster=normalizeRoster(config.friendly,'friendly'),enemyRoster=normalizeRoster(config.enemy,'enemy');
+  const allFriendlyRoster=normalizeRoster(config.friendly,'friendly'),allEnemyRoster=normalizeRoster(config.enemy,'enemy');
+  const friendlyRoster=normalizeRoster(config.friendly,'friendly',MAX_FIELD_TROOPS),enemyRoster=normalizeRoster(config.enemy,'enemy',MAX_FIELD_TROOPS);
   const friendly=expand(friendlyRoster,'friendly'),enemy=expand(enemyRoster,'enemy');
   if(!enemy.length)throw new Error('A battle requires at least one enemy soldier');
   const terrain=String(config.terrain||'plains');
   battle={
    battleId:String(config.battleId||'battle-'+nextBattle++),terrain,hero:normalizeHero(config.hero),
    friendly,enemy,friendlyInitial:copy(friendly),enemyInitial:copy(enemy),
-   friendlyRoster:friendlyRoster.reduce((a,g)=>{a[g.type]=(a[g.type]||0)+g.count;return a},{}),
-   enemyRoster:enemyRoster.reduce((a,g)=>{a[g.type]=(a[g.type]||0)+g.count;return a},{}),
+   friendlyRoster:rosterTotals(friendlyRoster),enemyRoster:rosterTotals(enemyRoster),
+   friendlyReserves:Object.keys(rosterTotals(allFriendlyRoster)).reduce((a,type)=>{a[type]=Math.max(0,rosterTotals(allFriendlyRoster)[type]-(rosterTotals(friendlyRoster)[type]||0));return a},{}),
+   enemyReserves:Object.keys(rosterTotals(allEnemyRoster)).reduce((a,type)=>{a[type]=Math.max(0,rosterTotals(allEnemyRoster)[type]-(rosterTotals(enemyRoster)[type]||0));return a},{}),
    elapsed:0,phase:'active',order:'advance',morale:{friendly:clamp(finite(config.morale&&config.morale.friendly,80),0,100),enemy:clamp(finite(config.morale&&config.morale.enemy,80),0,100)},
    troopCap:MAX_FIELD_TROOPS,result:null
   };
@@ -122,11 +129,12 @@ function create(options){
  }
  function heroAttack(){
   if(!battle||battle.phase!=='active'||battle.hero.attackCooldown>0)return false;
-  const h=battle.hero;h.attackCooldown=.48;
+  const h=battle.hero;
   const target=nearest(h,battle.enemy.filter(u=>u.hp>0));
   if(!target||Math.hypot(target.x-h.x,target.y-h.y)>76)return false;
   const dx=target.x-h.x,dy=target.y-h.y,d=Math.hypot(dx,dy)||1;
   if((dx/d)*h.facingX+(dy/d)*h.facingY<-.25)return false;
+  h.attackCooldown=.48;
   return strike({team:'friendly'},target,h.attack);
  }
  function move(unit,target,speed,dt){
