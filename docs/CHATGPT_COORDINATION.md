@@ -99,3 +99,15 @@ Do not infer ownership from the A/B label used by either chat. The BATTLE / GAME
 - Added explicit load-time regression assertions for those two relationships in commit `8c4cad0`, addressing the review request that generic valid-ID checks are insufficient.
 - No browser, mobile, save/load or offline-launch regression checks have been performed. PR #4 remains unmerged pending those checks.
 - Reviewed Issue #5. Next MAP / WORLD priorities are clearer settlement/resource marker hierarchy, a persistent mobile-friendly inspection panel, and legible route/region landmarks. Resource stock/production values remain blocked on a gameplay-owned API proposal.
+
+
+### Resource inspection panel — 2026-11-04
+
+- **Status:** In progress on existing MAP / WORLD milestone branch
+- **Branch:** `feature/demo-world-resources`
+- **Goal:** Follow Monika's next milestone priority by replacing transient resource-site toasts with a persistent, mobile-friendly map-side inspection panel.
+- **Files changed:** `index.html`, `js/game.js`, `styles/main.css`, this coordination log.
+- **Implementation notes:** Selecting a resource marker now opens a panel showing its description, resource type, availability and nearest settlement. The panel does not mutate campaign inventory, gathering, production, stock or save state.
+- **Checks performed:** Static source review and world-data load validation remain available. Browser/mobile smoke testing has not been performed in this run.
+- **Known limitations:** The existing PR #4 browser/mobile/offline regression checks remain outstanding. Resource stock/production values remain blocked on the gameplay-owned API contract.
+- **Next action:** Review the diff, run available syntax checks, then record or perform browser/mobile regression checks before requesting merge readiness.
