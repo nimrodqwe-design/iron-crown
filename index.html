@@ -56,9 +56,10 @@
    <path d="M820 830l48 -86 48 86h-29l29 46h-96l29 -46z"/><path d="M930 880l44 -80 44 80h-27l27 43h-88l27 -43z"/><path d="M1450 620l45 -82 45 82h-27l27 44h-90l27 -44z"/>
   </g>
   <g fill="#e2d5b1" opacity=".5" font-family="Georgia" font-size="29" letter-spacing="5"><text x="140" y="90">THE CROWNLANDS</text><text x="830" y="570">THE MARCHES</text><text x="1160" y="390">THE NORTH</text></g>
-  <g id="roadParties"></g><g id="settlements"></g><g id="route"></g><g id="discoveries"></g><g id="player"></g>
+  <g id="roadParties"></g><g id="resourceSites"></g><g id="settlements"></g><g id="route"></g><g id="discoveries"></g><g id="player"></g>
  </g></svg>
  </div>
+ <div class="resource-filter" aria-label="Map resource filters"><label for="resourceFilter">Resource sites</label><select id="resourceFilter"><option value="all">All resources</option><option value="grain">Grain</option><option value="timber">Timber</option><option value="fish">Fish</option><option value="stone">Stone</option><option value="salt">Salt</option><option value="reeds">Reeds</option><option value="iron">Iron</option><option value="ore">Ore</option><option value="wool">Wool</option><option value="trade">Trade</option></select><span id="resourceCount" aria-live="polite">12 sites</span></div>
  <div class="hud"><div class="eyebrow">Current location</div><strong id="currentName">Greyhaven</strong><span id="currentSub">Crownlands · Village</span></div>
  <div class="tools"><button class="tool" id="zoomIn" aria-label="Zoom in">＋</button><button class="tool" id="zoomOut" aria-label="Zoom out">−</button><button class="tool" id="center" aria-label="Center map">⌖</button><button class="tool" id="roamMode" aria-label="Toggle off-road destination">◎</button><button class="tool explore-tool" id="explore" aria-label="Explore nearby location" title="Explore nearby location">⚑</button></div>
  <div class="legend"><span>● Your party</span><span>🔴 Hostile bandits</span><span>🔵 Hostile patrols</span><span>🟢 Neutral traders</span></div>
@@ -67,6 +68,13 @@
   <p id="description"></p><div class="row"><span>Kingdom</span><b id="faction"></b></div><div class="row"><span>Prosperity</span><b id="prosperity"></b></div><div class="row"><span>Garrison</span><b id="garrison"></b></div><div class="row"><span>Distance</span><b id="distance"></b></div>
   <div class="row"><span>Political standing</span><b id="houseStanding">No audience held</b></div><button class="action" id="audience" style="width:100%;margin-top:7px;display:none">Request noble audience</button>
   <button class="action primary" id="travel" style="width:100%;margin-top:12px">Travel here</button><button class="action" id="visit" style="width:100%;margin-top:7px">Visit settlement</button>
+ </section>
+ <section class="resource-panel" id="resourcePanel" aria-labelledby="resourcePanelName" aria-hidden="true">
+  <div class="drawer-head"><div><div class="eyebrow">Resource site</div><h2 id="resourcePanelName">Resource site</h2><span class="tag" id="resourcePanelType">Type</span></div><button class="close" id="resourcePanelClose" aria-label="Close resource information">×</button></div>
+  <p id="resourcePanelDescription"></p>
+  <div class="row"><span>Availability</span><b id="resourcePanelAvailability"></b></div>
+  <div class="row"><span>Nearest settlement</span><b id="resourcePanelNear"></b></div>
+  <p class="resource-note">Map information only. Gathering, production and stock remain campaign systems.</p>
  </section>
  <section class="town-panel" id="townPanel" aria-labelledby="townTitle" aria-hidden="true">
   <div class="town-head"><div><div class="eyebrow">Settlement activities</div><h2 id="townTitle">Greyhaven</h2><p id="townDescription"></p></div><button class="close" id="townClose" aria-label="Leave settlement">×</button></div>

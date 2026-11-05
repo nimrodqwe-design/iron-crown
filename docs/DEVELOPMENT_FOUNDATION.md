@@ -138,3 +138,30 @@ The town interface now loads the item catalogue before the campaign module and i
 - Neutral caravans never attack and provide a small supply bonus once encountered.
 - Cleared hostile groups and met caravans are persisted in save schema v5; older saves migrate with empty encounter histories.
 - Encounter checks currently occur at the end of a travel order, not continuously along the route. Party markers are fixed map encounters in this prototype, not autonomous moving AI.
+
+
+## Demo-world resource layer
+
+The world data now exposes `IronCrownWorld.resourceSites`, a declarative list of named resource locations. The map presentation renders each site as a keyboard-accessible marker with a type glyph, name label and inspectable description. Initial coverage includes grain, timber, fish, stone, salt, reeds, iron, ore, wool and trade goods. Resource markers are informational in this increment: gathering, production, stock changes and persistence remain future gameplay work and must be implemented by the gameplay/save owner through an agreed API.
+
+
+### Resource-map hardening pass
+
+- Resource site IDs are checked for duplicates at world-data initialization.
+- Every resource site's nearest-settlement reference is validated against the settlement catalogue.
+- Resource coordinates are checked against the 1600 × 1000 world bounds.
+- Resource-site records are frozen individually as well as through the exported array.
+- Nearest-settlement references use stable settlement IDs, and inspection resolves the display name from the catalogue.
+- Resource markers now opt out of map dragging and off-road destination placement, preventing a marker tap from also triggering map navigation.
+- Keyboard focus has a visible treatment.
+- Automated browser/device regression testing remains outstanding; do not describe the feature as bug-free until that testing passes.
+
+
+## Resource-map usability and data-integrity pass (2026-11-03)
+
+- Added an accessible resource-type selector to the campaign map. Players can filter the 12 resource markers by category or show all sites; the visible/total count updates with the selection.
+- The selector is responsive and uses a native labelled control so it remains keyboard and touch operable.
+- World-data validation now rejects duplicate settlement IDs, duplicate resource IDs, missing names/descriptions, unknown resource types or availability labels, invalid nearest-settlement references, and non-finite or out-of-bounds coordinates.
+- Normalised all resource-site nearest-settlement references to stable lowercase settlement IDs. This is required by the validation contract and prevents startup failure from display-name/ID mismatches.
+- Service-worker shell cache advanced to v13 so clients can refresh the updated app shell.
+- Validation in this pass was source-level review only; no browser, mobile, offline-launch or automated test run was available. Do not treat this as release verification.
