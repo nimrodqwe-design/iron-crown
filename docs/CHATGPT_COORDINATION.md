@@ -111,3 +111,15 @@ Do not infer ownership from the A/B label used by either chat. The BATTLE / GAME
 - **Checks performed:** Static source review and world-data load validation remain available. Browser/mobile smoke testing has not been performed in this run.
 - **Known limitations:** The existing PR #4 browser/mobile/offline regression checks remain outstanding. Resource stock/production values remain blocked on the gameplay-owned API contract.
 - **Next action:** Review the diff, run available syntax checks, then record or perform browser/mobile regression checks before requesting merge readiness.
+
+
+### Resource panel keyboard accessibility — 2026-11-05
+
+- **Status:** In progress on existing MAP / WORLD milestone branch.
+- **Director priority followed:** Keep the current resource-map increment focused, reversible and within map-side ownership while preserving existing campaign systems.
+- **Branch:** `feature/demo-world-resources`
+- **Change:** Resource inspection now moves keyboard focus to its close control when opened; Escape closes the panel and returns focus to the map wrapper. No campaign, inventory, gathering, production, stock or save state is changed.
+- **Files changed:** `js/game.js`, this coordination log.
+- **Checks performed:** Static source review of the changed handlers and existing DOM IDs. No browser, mobile, save/load or offline-launch test was performed.
+- **Known limitation:** PR #4 still lacks runtime/browser/mobile/offline regression evidence and remains unmerged. The branch must not be described as fully tested.
+- **Next action:** Obtain available runtime regression evidence for resource filtering/panel interaction alongside map travel, pan/zoom, settlement selection, save/load and offline startup before expanding map scope.
