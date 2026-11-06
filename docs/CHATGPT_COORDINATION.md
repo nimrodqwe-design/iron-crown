@@ -123,3 +123,17 @@ Do not infer ownership from the A/B label used by either chat. The BATTLE / GAME
 - **Checks performed:** Static source review of the changed handlers and existing DOM IDs. No browser, mobile, save/load or offline-launch test was performed.
 - **Known limitation:** PR #4 still lacks runtime/browser/mobile/offline regression evidence and remains unmerged. The branch must not be described as fully tested.
 - **Next action:** Obtain available runtime regression evidence for resource filtering/panel interaction alongside map travel, pan/zoom, settlement selection, save/load and offline startup before expanding map scope.
+
+
+### MAP / WORLD — region landmark readability pass (2026-11-06)
+- **Status:** In progress; existing resource-map PR remains unmerged.
+- **Project Director priority followed:** continue the existing explorable demo-region milestone with small, reversible map-side improvements; preserve campaign systems and avoid gameplay-owned resource state.
+- **Branch:** `feature/demo-world-resources`
+- **Goal:** make broad regions easier to identify while panning and exploring.
+- **Changed files:** `index.html`.
+- **Implementation:** added three non-interactive SVG region landmarks (Westmere Coast, The Central Marches, Northpass Highlands). Labels are pointer-events disabled and aria-hidden so they cannot intercept existing settlement/resource/travel input or create duplicate keyboard stops.
+- **Commit:** `c2b5322156ff1d39869d37478abf97505c0cfce3`.
+- **Checks performed:** source inspection of the inserted SVG structure and existing map group order only.
+- **Not performed:** JavaScript syntax suite, browser smoke test, mobile/device test, save/load test or offline-launch test. No claim of merge readiness.
+- **Known boundary:** no inventory, gathering, production, stock or save-state data was added or changed.
+- **Next action:** obtain runtime regression evidence for map travel, settlement selection, resource filter/panel, keyboard interaction, save/load and offline startup before expanding the milestone further.
