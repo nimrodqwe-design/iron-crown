@@ -6,6 +6,7 @@ window.IronCrownEngine.registerModule({
 const $=id=>document.getElementById(id);
 const places=window.IronCrownWorld.places;
 const discoveries=window.IronCrownWorld.discoveries;
+const resourceSites=window.IronCrownWorld.resourceSites||[];
 const items=window.IronCrownItems;
 const byId=id=>places.find(p=>p.id===id);
 let state=window.IronCrownState.createInitialState();
@@ -21,6 +22,25 @@ function settlementIcon(p,g){node('circle',{cx:p.x,cy:p.y,r:24,fill:'transparent
  label(p.x+20,p.y+5,p.name,g);
 }
 function drawSettlements(){let g=$('settlements');places.forEach(p=>{let group=node('g',{class:'settlement',tabindex:0,role:'button','aria-label':p.name},g);settlementIcon(p,group);group.addEventListener('click',e=>{e.stopPropagation();selectPlace(p)});group.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectPlace(p)}})})}
+function filterResourceSites(){const filter=$('resourceFilter').value;let visible=0;document.querySelectorAll('.resource-site').forEach(group=>{const show=filter==='all'||group.getAttribute('data-resource-type')===filter;group.style.display=show?'':'none';if(show)visible++});$('resourceCount').textContent=visible+' of '+resourceSites.length+' sites';}
+function showResourcePanel(site){const near=byId(site.near);$('resourcePanelName').textContent=site.name;$('resourcePanelType').textContent=site.type.charAt(0).toUpperCase()+site.type.slice(1);$('resourcePanelAvailability').textContent=site.availability;$('resourcePanelNear').textContent=near?near.name:'Unknown';$('resourcePanelDescription').textContent=site.description;$('resourcePanel').classList.add('open');$('resourcePanel').setAttribute('aria-hidden','false');$('drawer').classList.remove('open');$('resourcePanelClose').focus()}
+function closeResourcePanel(){const panel=$('resourcePanel');panel.classList.remove('open');panel.setAttribute('aria-hidden','true');$('mapWrap').focus()}
+function drawResourceSites(){
+ const g=$('resourceSites');if(!g)return;g.innerHTML='';
+ const styles={grain:{color:'#d8bd69',mark:'✦'},timber:{color:'#83a66b',mark:'♣'},fish:{color:'#80b9c5',mark:'≈'},stone:{color:'#b8b8a7',mark:'◆'},salt:{color:'#d7d5c7',mark:'✧'},reeds:{color:'#a9b86e',mark:'♧'},iron:{color:'#c58b72',mark:'⬟'},ore:{color:'#c2a0b6',mark:'◇'},wool:{color:'#d8d0ad',mark:'❖'},trade:{color:'#d6a85f',mark:'⚖'}};
+ resourceSites.forEach(site=>{
+  const style=styles[site.type]||styles.trade;
+  const group=node('g',{class:'resource-site',transform:'translate('+site.x+' '+site.y+')',tabindex:0,role:'button','aria-label':site.name+' resource site'},g);
+  group.setAttribute('data-resource-type',site.type);
+  node('circle',{r:17,fill:'#17231f',stroke:style.color,'stroke-width':2.5,'stroke-dasharray':'4 3'},group);
+  const mark=node('text',{x:0,y:6,'text-anchor':'middle',fill:style.color,'font-family':'Arial','font-size':17,'font-weight':'bold'},group);mark.textContent=style.mark;
+  const title=node('title',{},group);title.textContent=site.name+' · '+site.type+' · '+site.availability;
+  label(21,5,site.name,group);
+  const inspect=()=>showResourcePanel(site);
+  group.addEventListener('click',e=>{e.stopPropagation();inspect()});
+  group.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspect()}});
+ });
+}
 const roamingParties=[
 {id:'red-bandits',name:'Redvale Raiders',kind:'hostile',faction:'Bandits',x:980,y:650,power:8,color:'#d45c50'},
 {id:'ashen-patrol',name:'Ashen Patrol',kind:'hostile',faction:'Ashen League',x:1110,y:350,power:13,color:'#668fd0'},
@@ -85,14 +105,14 @@ const wrap=$('mapWrap'),world=$('world');
 function applyView(){let minX=1600-1600*state.zoom,minY=1000-1000*state.zoom;state.panX=Math.max(minX,Math.min(0,state.panX));state.panY=Math.max(minY,Math.min(0,state.panY));world.setAttribute('transform','translate('+state.panX+' '+state.panY+') scale('+state.zoom+')')}
 function zoom(f){let old=state.zoom;state.zoom=Math.max(.7,Math.min(1.8,state.zoom*f));let cx=800,cy=500;state.panX=cx-(cx-state.panX)*state.zoom/old;state.panY=cy-(cy-state.panY)*state.zoom/old;applyView()}
 function center(){let p=currentPoint();state.panX=800-p.x*state.zoom;state.panY=500-p.y*state.zoom;applyView()}
-wrap.addEventListener('pointerdown',e=>{if(e.target.closest('.settlement'))return;let r=wrap.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,px:state.panX,py:state.panY,sx:1600/r.width,sy:1000/r.height,moved:false};wrap.classList.add('drag');wrap.setPointerCapture(e.pointerId)});
+wrap.addEventListener('pointerdown',e=>{if(e.target.closest('.settlement,.resource-site'))return;let r=wrap.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,px:state.panX,py:state.panY,sx:1600/r.width,sy:1000/r.height,moved:false};wrap.classList.add('drag');wrap.setPointerCapture(e.pointerId)});
 let panFrame=0,pendingPointer=null;wrap.addEventListener('pointermove',e=>{if(!drag)return;if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>7)drag.moved=true;pendingPointer={x:e.clientX,y:e.clientY};if(panFrame)return;panFrame=requestAnimationFrame(()=>{panFrame=0;if(!drag||!pendingPointer)return;state.panX=drag.px+(pendingPointer.x-drag.x)*drag.sx;state.panY=drag.py+(pendingPointer.y-drag.y)*drag.sy;pendingPointer=null;applyView()})});
-wrap.addEventListener('pointerup',e=>{if(drag&&!drag.moved&&roamMode&&!e.target.closest('.settlement')){let pt=$('map').createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;let q=pt.matrixTransform($('map').getScreenCTM().inverse());let x=(q.x-state.panX)/state.zoom,y=(q.y-state.panY)/state.zoom;if(x>20&&x<1580&&y>20&&y<980)startFreeRoam(x,y)}drag=null;wrap.classList.remove('drag')});['pointercancel','lostpointercapture'].forEach(k=>wrap.addEventListener(k,()=>{drag=null;wrap.classList.remove('drag')}));
+wrap.addEventListener('pointerup',e=>{if(drag&&!drag.moved&&roamMode&&!e.target.closest('.settlement,.resource-site')){let pt=$('map').createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;let q=pt.matrixTransform($('map').getScreenCTM().inverse());let x=(q.x-state.panX)/state.zoom,y=(q.y-state.panY)/state.zoom;if(x>20&&x<1580&&y>20&&y<980)startFreeRoam(x,y)}drag=null;wrap.classList.remove('drag')});['pointercancel','lostpointercapture'].forEach(k=>wrap.addEventListener(k,()=>{drag=null;wrap.classList.remove('drag')}));
 wrap.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY<0?1.08:.92)},{passive:false});
-$('townClose').onclick=closeTown;$('buy-worn-sword').onclick=()=>buyEquipment('worn-sword');$('buy-iron-sword').onclick=()=>buyEquipment('iron-sword');$('buy-padded-armour').onclick=()=>buyEquipment('padded-armour');$('buy-round-shield').onclick=()=>buyEquipment('round-shield');$('buySupplies').onclick=buySupplies;$('sellSupplies').onclick=sellSupplies;$('recruitSoldier').onclick=recruitSoldier;$('tavernRest').onclick=tavernRest;$('audience').onclick=requestAudience;$('explore').onclick=explore;$('roamMode').onclick=()=>{roamMode=!roamMode;$('roamMode').style.borderColor=roamMode?'#e0c37e':'#697253';notify(roamMode?'Roam mode: tap open ground to set a destination.':'Roam mode off.')};$('zoomIn').onclick=()=>zoom(1.18);$('zoomOut').onclick=()=>zoom(.85);$('center').onclick=center;$('travel').onclick=travel;$('camp').onclick=camp;$('rest').onclick=rest;$('visit').onclick=visit;$('close').onclick=()=>$('drawer').classList.remove('open');$('cancel').onclick=cancel;
+$('resourcePanelClose').onclick=closeResourcePanel;document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('resourcePanel').classList.contains('open')){e.preventDefault();closeResourcePanel()}});$('townClose').onclick=closeTown;$('buy-worn-sword').onclick=()=>buyEquipment('worn-sword');$('buy-iron-sword').onclick=()=>buyEquipment('iron-sword');$('buy-padded-armour').onclick=()=>buyEquipment('padded-armour');$('buy-round-shield').onclick=()=>buyEquipment('round-shield');$('buySupplies').onclick=buySupplies;$('sellSupplies').onclick=sellSupplies;$('recruitSoldier').onclick=recruitSoldier;$('tavernRest').onclick=tavernRest;$('audience').onclick=requestAudience;$('explore').onclick=explore;$('roamMode').onclick=()=>{roamMode=!roamMode;$('roamMode').style.borderColor=roamMode?'#e0c37e':'#697253';notify(roamMode?'Roam mode: tap open ground to set a destination.':'Roam mode off.')};$('zoomIn').onclick=()=>zoom(1.18);$('zoomOut').onclick=()=>zoom(.85);$('center').onclick=center;$('travel').onclick=travel;$('camp').onclick=camp;$('rest').onclick=rest;$('visit').onclick=visit;$('close').onclick=()=>$('drawer').classList.remove('open');$('cancel').onclick=cancel;
 $('pause').onclick=()=>{state.paused=!state.paused;$('pause').textContent=state.paused?'▶ Resume':'Ⅱ Pause';if(state.target){state.last=performance.now();if(!state.paused)requestAnimationFrame(tick)}};
 $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?4:1;$('speed').textContent='▶▶ '+state.speed+'×'};
-load();drawSettlements();drawParties();drawPlayer();drawDiscoveries();updateExplorationControls();updateHud();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is in the wilderness':'Your party is at '+byId(state.current).name;applyView();center();window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});window.addEventListener('resize',applyView);
+load();drawSettlements();drawResourceSites();$('resourceFilter').addEventListener('change',filterResourceSites);filterResourceSites();drawParties();drawPlayer();drawDiscoveries();updateExplorationControls();updateHud();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is in the wilderness':'Your party is at '+byId(state.current).name;applyView();center();window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});window.addEventListener('resize',applyView);
 if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
  }
 });
