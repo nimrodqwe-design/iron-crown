@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lantern Run</title>
+<style>
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111b16;color:#f3ead5;font:16px system-ui,sans-serif}
+main{width:min(92vw,430px);padding:20px;border:1px solid #59654e;border-radius:14px;background:#17231d}
+h1{margin:0 0 6px;font-size:1.5rem}p{color:#c8c2ae}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:18px 0}.cell{aspect-ratio:1;display:grid;place-items:center;border-radius:7px;background:#243127;font-size:1.4rem}.player{outline:3px solid #e8c76b}.goal{background:#30452f}.trap{background:#40252a}.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:230px;margin:auto}.controls button,button{padding:12px;border:1px solid #71805e;border-radius:8px;background:#29382d;color:inherit;font:inherit}.controls button:focus-visible,button:focus-visible{outline:3px solid #e8c76b}#status{min-height:2.5em;font-weight:600}
+</style>
+</head>
+<body><main>
+<h1>Lantern Run</h1>
+<p>Find the exit before your lantern burns out. Avoid the ruins marked with ✕.</p>
+<div id="grid" class="grid" aria-label="Lantern Run board"></div>
+<div id="status" aria-live="polite"></div>
+<div class="controls" aria-label="Movement controls">
+<span></span><button data-move="up" aria-label="Move up">▲</button><span></span>
+<button data-move="left" aria-label="Move left">◀</button><button data-move="down" aria-label="Move down">▼</button><button data-move="right" aria-label="Move right">▶</button>
+</div>
+<p><button id="restart">New run</button></p>
+<script>
+(()=>{
+'use strict';
+const size=5, start={x:0,y:4}, goal={x:4,y:0};
+const traps=[{x:1,y:3},{x:3,y:3},{x:2,y:1},{x:4,y:2}];
+let state;
+const grid=document.getElementById('grid'),status=document.getElementById('status');
+const key=p=>p.x+','+p.y, trapSet=new Set(traps.map(key));
+function reset(){state={x:start.x,y:start.y,light:12,ended:false};render();status.textContent='Lantern light: 12. Find the exit.'}
+function render(){grid.replaceChildren();for(let y=0;y<size;y++)for(let x=0;x<size;x++){const cell=document.createElement('div');cell.className='cell';const p={x,y};if(x===goal.x&&y===goal.y){cell.classList.add('goal');cell.textContent='⌂'}if(trapSet.has(key(p))) {cell.classList.add('trap');cell.textContent='✕'}if(x===state.x&&y===state.y){cell.classList.add('player');cell.textContent='🕯'}grid.append(cell)}}
+function move(dir){if(state.ended)return;const d={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[dir];if(!d)return;const nx=state.x+d[0],ny=state.y+d[1];if(nx<0||ny<0||nx>=size||ny>=size){status.textContent='The darkness blocks that way.';return}state.x=nx;state.y=ny;state.light--;if(state.x===goal.x&&state.y===goal.y){state.ended=true;status.textContent='You escaped the ruins with '+Math.max(0,state.light)+' light remaining.'}else if(trapSet.has(key(state))){state.ended=true;status.textContent='The ruins collapse beneath you. Run ended.'}else if(state.light<=0){state.ended=true;status.textContent='Your lantern goes dark. Run ended.'}else status.textContent='Lantern light: '+state.light+'.';render()}
+document.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('click',()=>move(b.dataset.move)));
+document.addEventListener('keydown',e=>{const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[e.key];if(m){e.preventDefault();move(m)}});document.getElementById('restart').addEventListener('click',reset);reset();
+})();
+</script></main></body></html>
