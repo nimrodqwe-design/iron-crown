@@ -120,5 +120,20 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Implementation:** Maps explicit troop events (payment, protection, abandonment, promises, training, discovery, reckless orders, safe retreat and avenging) to loyalty actions. Provides a separate battle-result method for victory/defeat and requires the caller to supply stable participant recruit IDs. Requires unique event IDs, relies on the loyalty service's duplicate protection, returns per-recruit results, and emits a Chronicle-ready record only when a recruit's standing tier changes.
 - **Checks:** Test cases authored for event mapping, unsupported events, missing IDs, duplicate event protection, battle outcome mapping and Chronicle transition records. After correcting the test expectations and formatting, 11 direct isolated V8 smoke checks passed, including exactly-once event handling and a standing-tier Chronicle transition. The committed Node test file has not been run under Node; no browser, campaign integration or device test has been run.
 - **Known limitations:** This is an adapter contract, not automatic wiring. The repository's battle simulation currently reports battle outcomes and troop-group data but does not provide stable individual campaign recruit IDs for all participants. The gameplay owner must pass the actual participant IDs and call the adapter at the correct campaign event point. No existing campaign event bus or Chronicle API was assumed or modified.
-- **Pull request:** Not opened; first review the isolated branch and run the committed test file in the project environment.
-- **Next action:** Coordinate the participant-ID/event-call contract with the campaign/gameplay owner. Then integrate through that agreed boundary, add adapter loading and persistence only with explicit ownership approval, and test save/load plus real campaign event flows.
+- **Pull request:** Draft PR #6: https://github.com/nimrodqwe-design/iron-crown/pull/6 (open, not merged; review and Node tests pending).
+- **Next action:** Issue #7 tracks the stable character-ID and campaign event ownership decisions. See `docs/CAMPAIGN_CHARACTER_CONTRACT.md` on the documentation branch for the proposed schema, event envelope, save migration and battle participant mapping. Do not wire shared files until owners agree.
+
+
+### Campaign character integration boundary — Day 39
+
+- **Status:** Verified current campaign constraints and documented a proposed integration contract on a documentation-only branch; waiting for workstream ownership decisions.
+- **Session:** Gameplay / character systems.
+- **Branch:** `docs/campaign-character-contract` (created from latest `main`).
+- **Files changed:** `docs/CAMPAIGN_CHARACTER_CONTRACT.md`.
+- **Goal:** Define stable campaign-scoped character IDs, event IDs, battle participation mapping, save migration and ownership boundaries before connecting the standalone recruitment/loyalty services to shared campaign files.
+- **Verified baseline:** `state.troops` is an aggregate number; save version is 5; the event bus module exists but is not wired by `js/game.js`; settlement recruitment only increments the aggregate count; battle unit IDs are battle-local; no Chronicle module is present in the main file tree.
+- **Implementation:** Documentation only. Proposed a persistent named-character roster, monotonic campaign-scoped ID sequences, no fabricated individual identities for existing generic troops, explicit event envelopes, named battle participant mapping, save version 5 migration strategy, and clear file ownership boundaries.
+- **Coordination:** Opened Issue #7 to collect decisions from campaign/gameplay and battle owners. PR #6 remains a draft and is not merged.
+- **Checks:** Read current `main` implementations of state, save, event bus, game, shell and battle simulation; inspected open PRs and branches. No gameplay code changed; no browser/device test applies to this documentation-only milestone.
+- **Known limitations:** Proposed schema is not implemented. Stable IDs, save migration, event producers, battle participant mapping and Chronicle persistence remain future work.
+- **Next action:** Obtain owner agreement on Issue #7, then implement the roster/ID layer in an isolated branch with tests before touching campaign save or UI integration.
