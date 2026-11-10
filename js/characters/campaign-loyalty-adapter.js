@@ -11,7 +11,9 @@ const ACTIONS=Object.freeze({
  'troops:discovery':'discovery',
  'troops:reckless-order':'reckless_order',
  'troops:safe-retreat':'retreated_safely',
- 'troops:avenged':'avenged'
+ 'troops:avenged':'avenged',
+ 'battle:victory':'victory',
+ 'battle:defeat':'defeat'
 });
 function create(options){
  options=options||{};
@@ -52,9 +54,6 @@ function create(options){
    recruitIds:input.participantIds
   });
  }
- // Battle result types are deliberately explicit and cannot be confused with ordinary campaign events.
- ACTIONS['battle:victory']='victory';
- ACTIONS['battle:defeat']='defeat';
  return Object.freeze({apply,applyBattleResult});
 }
 root.IronCrownCampaignLoyaltyAdapter=Object.freeze({create,EVENT_ACTIONS:ACTIONS});
