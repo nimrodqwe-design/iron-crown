@@ -82,3 +82,16 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Compatibility:** Existing event names and primary payload structure are retained; `battle:ended` gains `fieldedSurvivors` and `reserves` breakdowns. Campaign integration must apply casualties only to fielded troops and carry reserves through unchanged.
 - **Checks:** Latest simulation source passed an isolated V8 execution check: 12-per-side cap, valid/invalid orders, reserve preservation (8 foot + 4 archer reserves), survivor/casualty totals, stale battle input rejection, victory outcome, and exactly-once end event. The committed Node test file has not been run under Node. No browser/device test has been run.
 - **Next action for Session B:** Continue the renderer against the existing event contract. Use `battle:started.friendlyUnits` / `enemyUnits` for formation placement and `battle:state-updated` for live snapshots. Do not infer campaign losses from total party size; wait for the new `battle:ended` reserve/fielded breakdown.
+
+
+### Recruitment, trust and motivations — Day 36
+
+- **Status:** Core recruitment service and focused tests committed on a feature branch; integration with campaign UI/state is not yet done.
+- **Session:** Gameplay / recruitment.
+- **Branch:** `feature/recruitment-motivations`.
+- **Goal:** Establish a testable recruitment rule set where individual trust, commander reputation, background, motivation and explicit requirements affect willingness and price.
+- **Files changed:** `js/characters/recruitment.js`; `tests/recruitment.test.js`.
+- **Implementation:** Candidate records have stable IDs, names, roles, backgrounds, motivations, base costs, trust and optional minimum-trust/reputation requirements. Quote/recruit operations distinguish unavailable candidates, insufficient requirements and insufficient funds. Trust and reputation lower prices; selected high-trust/high-reputation recruits can volunteer for free. Recruited IDs cannot be recruited twice. Candidate data is not capped at a tiny fixed roster size.
+- **Checks:** Test cases were authored for poor-reputation/high-cost recruitment, volunteer recruitment, duplicate recruitment, requirements, insufficient funds without mutation, and a 150-candidate roster. Tests have not yet been executed in this session; no browser/device test has been run.
+- **Known limitations:** This is an isolated service, not yet connected to the live settlement recruitment UI, campaign save/load, chronicle, companion/officer assignments or army roster. Reputation is currently an input to the service; the campaign still needs a principled reputation/history system. Motivation currently adjusts recruitment price and volunteer eligibility; richer personal dialogue and changing goals remain future work.
+- **Next action:** Execute the test file in a Node-compatible environment; then coordinate an integration contract with the gameplay owner before touching shared campaign state, save code or `js/game.js`.
