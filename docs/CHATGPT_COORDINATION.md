@@ -95,3 +95,16 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Checks:** Test cases were authored for poor-reputation/high-cost recruitment, volunteer recruitment, duplicate recruitment, requirements, insufficient funds without mutation, and a 150-candidate roster. Tests have not yet been executed in this session; no browser/device test has been run.
 - **Known limitations:** This is an isolated service, not yet connected to the live settlement recruitment UI, campaign save/load, chronicle, companion/officer assignments or army roster. Reputation is currently an input to the service; the campaign still needs a principled reputation/history system. Motivation currently adjusts recruitment price and volunteer eligibility; richer personal dialogue and changing goals remain future work.
 - **Next action:** Execute the test file in a Node-compatible environment; then coordinate an integration contract with the gameplay owner before touching shared campaign state, save code or `js/game.js`.
+
+
+### Recruit loyalty and motivation responses — Day 37
+
+- **Status:** Standalone loyalty service and focused tests committed on `feature/recruit-loyalty`; not yet integrated into campaign interactions or recruitment UI.
+- **Session:** Gameplay / character systems.
+- **Branch:** `feature/recruit-loyalty` (based on `feature/recruitment-motivations`).
+- **Goal:** Make a recruit's motivation matter after joining, so the player's treatment of troops shapes trust and morale over time.
+- **Files changed:** `js/characters/loyalty.js`; `tests/loyalty.test.js`.
+- **Implementation:** Adds stable-ID recruit records, trust and morale (0–100), motivation-specific responses to pay, neglect, protection, abandonment, victories, defeats, promises, training, discoveries, reckless orders, safe retreats and vengeance. Calculates a readable standing (loyal / steady / wavering / discontented) and an attention flag. Event IDs prevent the same campaign event from changing a recruit twice. Snapshot/restore retains trust, morale and recent event IDs; history is bounded to 200 IDs per recruit.
+- **Checks:** Focused test cases were authored for motivation effects, duplicate-event protection, invalid actions/IDs, stable identity and snapshot/restore. They have not been run under Node or in a browser in this session. No device/performance test has been run.
+- **Known limitations:** This service does not yet receive actual campaign events; it does not automatically make anyone leave, die, or change party. The campaign needs to decide which events are emitted and when. No dialogue, UI, save adapter, or chronicle integration yet. The service is deliberately advisory: poor standing flags a recruit for attention rather than silently removing them.
+- **Next action:** Run both recruitment and loyalty tests together, agree an event contract with the campaign/gameplay owner, then integrate through a dedicated adapter rather than directly modifying shared state or save files.
