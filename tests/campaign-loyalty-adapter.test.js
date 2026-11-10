@@ -7,7 +7,7 @@ vm.runInNewContext(fs.readFileSync('js/characters/loyalty.js','utf8'),context);
 vm.runInNewContext(fs.readFileSync('js/characters/campaign-loyalty-adapter.js','utf8'),context);
 const loyalty=context.window.IronCrownLoyalty.create({recruits:[
  {id:'r1',name:'Mira',motivation:'loyalty',trust:50,morale:50},
- {id:'r2',name:'Tomas',motivation:'coin',trust:50,morale:50}
+ {id:'r2',name:'Tomas',motivation:'coin',trust:50,morale:50},\n {id:'r3',name:'Aren',motivation:'loyalty',trust:20,morale:20}
 ]});
 const chronicle=[];
 const adapter=context.window.IronCrownCampaignLoyaltyAdapter.create({loyalty,onChronicle:e=>chronicle.push(e)});
@@ -18,9 +18,9 @@ assert.equal(adapter.apply({type:'unknown',eventId:'x',recruitIds:['r1']}).ok,fa
 assert.equal(adapter.apply({type:'troops:paid',eventId:'pay-1',recruitIds:['r2']}).ok,true);
 const battle=adapter.applyBattleResult({battleId:'b-17',outcome:'victory',participantIds:['r1','r2']});
 assert.equal(battle.ok,true);
-assert.equal(loyalty.getStanding('r1').morale,65);
+assert.equal(loyalty.getStanding('r1').morale,63);
 assert.equal(adapter.applyBattleResult({battleId:'b-17',outcome:'victory',participantIds:['r1','r2']}).results[0].duplicate,true);
 assert.equal(adapter.applyBattleResult({battleId:'b-18',outcome:'draw',participantIds:['r1']}).ok,false);
 assert.equal(adapter.apply({type:'troops:paid',eventId:'bad',recruitIds:[]}).ok,false);
-assert.equal(chronicle.every(e=>e.type==='recruit:standing-changed'),true);
+assert.equal(adapter.apply({type:'troops:promise-kept',eventId:'promise-2',recruitIds:['r3']}).ok,true);\nassert.equal(adapter.apply({type:'troops:promise-kept',eventId:'promise-3',recruitIds:['r3']}).ok,true);\nassert.equal(chronicle.length,1);\nassert.equal(chronicle[0].recruitId,'r3');\nassert.equal(chronicle[0].from,'discontented');\nassert.equal(chronicle[0].to,'wavering');
 console.log('campaign loyalty adapter tests passed');
