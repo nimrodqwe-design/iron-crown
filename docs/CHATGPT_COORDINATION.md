@@ -108,3 +108,17 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Checks:** Focused test cases were authored for motivation effects, duplicate-event protection, invalid actions/IDs, stable identity and snapshot/restore. They have not been run under Node or in a browser in this session. No device/performance test has been run.
 - **Known limitations:** This service does not yet receive actual campaign events; it does not automatically make anyone leave, die, or change party. The campaign needs to decide which events are emitted and when. No dialogue, UI, save adapter, or chronicle integration yet. The service is deliberately advisory: poor standing flags a recruit for attention rather than silently removing them.
 - **Next action:** Run both recruitment and loyalty tests together, agree an event contract with the campaign/gameplay owner, then integrate through a dedicated adapter rather than directly modifying shared state or save files.
+
+
+### Campaign loyalty event adapter — Day 38
+
+- **Status:** Adapter and focused test file committed on a feature branch; ready for isolated review, not live campaign integration.
+- **Session:** Gameplay / character systems.
+- **Branch:** `feature/campaign-loyalty-adapter` (branched from `feature/recruit-loyalty` to preserve Day 36–37 work; that branch was six commits ahead of `main` and zero behind at session start).
+- **Goal:** Define a narrow, explicit bridge from gameplay-owned campaign events into the existing recruit loyalty service without editing shared campaign state, battle simulation, save code or the main UI.
+- **Files changed:** `js/characters/campaign-loyalty-adapter.js`; `tests/campaign-loyalty-adapter.test.js`.
+- **Implementation:** Maps explicit troop events (payment, protection, abandonment, promises, training, discovery, reckless orders, safe retreat and avenging) to loyalty actions. Provides a separate battle-result method for victory/defeat and requires the caller to supply stable participant recruit IDs. Requires unique event IDs, relies on the loyalty service's duplicate protection, returns per-recruit results, and emits a Chronicle-ready record only when a recruit's standing tier changes.
+- **Checks:** Test cases authored for event mapping, unsupported events, missing IDs, duplicate event protection, battle outcome mapping and Chronicle transition records. Source was reviewed and an immutable event-map initialization issue was corrected before hand-off. No Node test runner, browser, campaign integration or device test has been run yet.
+- **Known limitations:** This is an adapter contract, not automatic wiring. The repository's battle simulation currently reports battle outcomes and troop-group data but does not provide stable individual campaign recruit IDs for all participants. The gameplay owner must pass the actual participant IDs and call the adapter at the correct campaign event point. No existing campaign event bus or Chronicle API was assumed or modified.
+- **Pull request:** Not opened; first review the isolated branch and run the committed test file in the project environment.
+- **Next action:** Coordinate the participant-ID/event-call contract with the campaign/gameplay owner. Then integrate through that agreed boundary, add adapter loading and persistence only with explicit ownership approval, and test save/load plus real campaign event flows.
