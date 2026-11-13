@@ -1,0 +1,12 @@
+'use strict';
+const assert=require('assert');
+const game=require('./game-state.js');
+let s=game.initial();
+assert.deepStrictEqual({x:s.x,y:s.y,light:s.light,ended:s.ended},{x:0,y:4,light:12,ended:false});
+assert.strictEqual(game.move(s,'left').light,12,'blocked movement must not consume light');
+s=game.move(s,'right'); s=game.move(s,'up');
+assert.strictEqual(s.light,10); assert.strictEqual(s.ended,true); assert.strictEqual(s.outcome,'trapped');
+s=game.initial(); ['up','up','right','right','right','up','up','right'].forEach(d=>s=game.move(s,d));
+assert.strictEqual(s.ended,true); assert.strictEqual(s.outcome,'escaped');
+const frozen=game.move(s,'left'); assert.deepStrictEqual(frozen,s,'ended games must be stable');
+console.log('Lantern Run state checks passed');
