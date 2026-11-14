@@ -137,3 +137,15 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Checks:** Read current `main` implementations of state, save, event bus, game, shell and battle simulation; inspected open PRs and branches. No gameplay code changed; no browser/device test applies to this documentation-only milestone.
 - **Known limitations:** Proposed schema is not implemented. Stable IDs, save migration, event producers, battle participant mapping and Chronicle persistence remain future work.
 - **Next action:** Obtain owner agreement on Issue #7, then implement the roster/ID layer in an isolated branch with tests before touching campaign save or UI integration.
+
+
+### Campaign character roster foundation — lead integration
+
+- **Status:** Ready for review; isolated foundation, not yet wired into live campaign state.
+- **Branch:** `feature/campaign-character-roster`.
+- **Goal:** Provide one stable identity layer for named companions/officers/specialists while preserving aggregate `troops`.
+- **Files changed:** `js/characters/campaign-roster.js`; `tests/campaign-roster.test.js`.
+- **Implementation:** Generates immutable campaign-scoped `char-N` IDs, never derives identity from names or array positions, snapshots `nextId` and characters, and restores without ID reuse. Existing saves are untouched because save version migration has not yet been integrated.
+- **Checks performed:** Focused Node test file added but not executed in this session; no browser/device test.
+- **Known limitations:** Not yet included by `index.html`, `js/core/state.js`, or `js/core/save.js`; recruitment and loyalty services are not yet wired to it.
+- **Next action:** Execute the focused test, then add save v5→v6 migration and a single authoritative state entry point before connecting recruitment UI.
