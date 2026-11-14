@@ -1,0 +1,15 @@
+'use strict';
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const context={window:{}};vm.createContext(context);
+vm.runInContext(fs.readFileSync('js/characters/campaign-roster.js','utf8'),context);
+const roster=context.window.IronCrownCharacters.create();
+const a=roster.add({name:'Mara',role:'companion',motivation:'glory'});
+const b=roster.add({name:'Iven',role:'officer'});
+assert.equal(a.id,'char-1');assert.equal(b.id,'char-2');
+assert.equal(roster.get(a.id).name,'Mara');
+const saved=roster.snapshot();
+const restored=context.window.IronCrownCharacters.restore(saved);
+assert.deepEqual(JSON.parse(JSON.stringify(restored.snapshot())),JSON.parse(JSON.stringify(saved)));
+assert.equal(restored.add({name:'Sera'}).id,'char-3');
+assert.throws(()=>context.window.IronCrownCharacters.create({characters:[{id:'char-1',name:'A'},{id:'char-1',name:'B'}]}));
+console.log('campaign roster checks passed');
