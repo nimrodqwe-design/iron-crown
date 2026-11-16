@@ -10,17 +10,28 @@
   const TRAPS=new Set(['1,3','3,3','2,1','4,2']);
   const key=(x,y)=>x+','+y;
   function initial(){return {x:START.x,y:START.y,light:12,ended:false,outcome:null};}
+  function cellKind(x,y){
+    if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||y<0||x>=SIZE||y>=SIZE)return null;
+    if(x===GOAL.x&&y===GOAL.y)return 'goal';
+    if(TRAPS.has(key(x,y)))return 'trap';
+    return 'floor';
+  }
+  function cellLabel(x,y){
+    const kind=cellKind(x,y);
+    return kind==='goal'?'Exit':kind==='trap'?'Ruin hazard':kind==='floor'?'Stone floor':null;
+  }
   function move(state,dir){
-    if(!state||state.ended) return state;
+    if(!state||typeof state!=='object'||state.ended)return state;
+    if(!Number.isInteger(state.x)||!Number.isInteger(state.y)||!Number.isFinite(state.light))return state;
     const delta={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[dir];
-    if(!delta) return state;
-    const x=state.x+delta[0], y=state.y+delta[1];
-    if(x<0||y<0||x>=SIZE||y>=SIZE) return {...state};
+    if(!delta)return state;
+    const x=state.x+delta[0],y=state.y+delta[1];
+    if(x<0||y<0||x>=SIZE||y>=SIZE)return state;
     const next={...state,x,y,light:state.light-1};
-    if(x===GOAL.x&&y===GOAL.y) return {...next,ended:true,outcome:'escaped'};
-    if(TRAPS.has(key(x,y))) return {...next,ended:true,outcome:'trapped'};
-    if(next.light<=0) return {...next,ended:true,outcome:'darkness'};
+    if(x===GOAL.x&&y===GOAL.y)return {...next,ended:true,outcome:'escaped'};
+    if(TRAPS.has(key(x,y)))return {...next,ended:true,outcome:'trapped'};
+    if(next.light<=0)return {...next,ended:true,outcome:'darkness'};
     return next;
   }
-  return Object.freeze({SIZE,START,GOAL,initial,move});
+  return Object.freeze({SIZE,START,GOAL,initial,move,cellKind,cellLabel});
 });
