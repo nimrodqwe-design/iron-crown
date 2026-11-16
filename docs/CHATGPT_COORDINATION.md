@@ -158,3 +158,27 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Side game:** PR #10 was re-inspected as clean and mergeable and merged into `sidegame/lantern-run`. Merge commit: `d2f1b0835d228952eb82e3b5369fec85d4f99942`. The browser UI now delegates movement/outcomes to the deterministic state module.
 - **Checks actually run:** `node tests/campaign-roster.test.js` passed in an isolated copy of the committed PR #11 source. No Iron Crown browser/mobile/save runtime test was run this session. Lantern Run's existing deterministic state checks had previously been run; no new browser runtime test was run today.
 - **Blockers:** PR #4 world resources remains a separate conflict/reconciliation task and was not force-merged. Browser/device validation remains outstanding for both projects.
+
+
+### Campaign roster and save v6 integration — lead gameplay (16 Nov 2026)
+
+- **Status:** Implemented on a focused branch; awaiting automated checks and review.
+- **Branch:** feature/campaign-save-v6-roster.
+- **Goal:** Make the named-character roster part of the single authoritative campaign state and persist it without changing aggregate troop counts.
+- **Files changed:** js/characters/campaign-roster.js, js/core/state.js, js/core/save.js, js/game.js, index.html, sw.js, tests/campaign-roster.test.js, tests/campaign-save.test.js, .github/workflows/javascript-checks.yml, docs/CAMPAIGN_CHARACTER_CONTRACT.md.
+- **Implementation:** Roster snapshots are v2 and carry a campaign token, monotonic campaign-scoped character IDs and monotonic event IDs. The roster manager is owned by the campaign state object. Save version 6 persists the roster; v5 migration preserves the aggregate troop count and creates an empty roster rather than inventing historical characters. Newer-version saves are not overwritten. The roster script is loaded before state and included in the service-worker shell cache v12.
+- **Compatibility:** Existing generic soldier recruitment remains aggregate and unchanged. The new roster does not yet affect army headcount, settlement recruitment, loyalty, or battle results.
+- **Checks:** Focused roster and save migration tests added. JavaScript syntax and the complete existing Node test set are delegated to the new GitHub Actions workflow; run status is pending. No browser, mobile, local-storage browser runtime or offline test has been performed.
+- **Known limitations:** Named recruit UI/action, recruitment-service adapter, campaign event producers, persistent battle participant IDs and campaign battle result application remain future work.
+- **Next action:** Verify the workflow results. If green, review and merge this foundation; then add one transactional named-companion recruitment action using the same roster and existing gold state.
+
+### Repository status corrections — 16 Nov 2026
+
+- PR #6 (recruitment, loyalty and campaign adapter services) is merged into main at 81e0a99e05d0ed59e77a3eec837cab638b703329; older entries above that call it a draft are historical.
+- PR #11 (stable roster module) is merged into main at aa75882e6a3db6a54c809d35a5ac0f2c389ada8c.
+- PR #12 (15 Nov hand-off) is merged into main at 8f8db9f30d4b5fc6a9d8e884de8a617e634526c4.
+- PR #10 (Lantern Run UI/state connection) is merged into the isolated sidegame/lantern-run branch at d2f1b0835d228952eb82e3b5369fec85d4f99942; it is not an Iron Crown campaign change.
+- PR #4 (world resource sites) remains a draft and not mergeable. It is 31 commits ahead and 5 behind main, and overlaps index.html and js/game.js among other map files. Preserve it; reconcile its map-only changes after the current save integration, without overwriting campaign changes.
+- PR #2 remains an isolated battlefield presentation reference, not a campaign-integrated feature. Preserve it until a coordinated renderer integration review.
+- PR #1's initial coordination questions are superseded by the ownership decision recorded on Issue #7; the issue remains open until the save/roster and live recruitment acceptance criteria are complete.
+- The feature/battle-core branch's battle simulation and test file are byte-identical to the corresponding files on main; its ahead/behind count reflects branch history and documentation, not an additional simulation patch to merge.
