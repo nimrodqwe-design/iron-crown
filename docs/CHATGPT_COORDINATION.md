@@ -149,3 +149,12 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Checks performed:** Focused Node test file added but not executed in this session; no browser/device test.
 - **Known limitations:** Not yet included by `index.html`, `js/core/state.js`, or `js/core/save.js`; recruitment and loyalty services are not yet wired to it.
 - **Next action:** Execute the focused test, then add save v5→v6 migration and a single authoritative state entry point before connecting recruitment UI.
+
+
+### Daily lead hand-off — 15 Nov 2026
+
+- **Iron Crown:** PR #11 (stable campaign character roster foundation) was reviewed and merged after its focused Node test passed in an isolated execution environment. Merge commit: `aa75882e6a3db6a54c809d35a5ac0f2c389ada8c`.
+- **Iron Crown integration status:** The roster is now available on `main`, but it is deliberately not yet wired into live campaign state or save data. Next critical slice is a backward-compatible save migration and one authoritative campaign-state entry point; recruitment must then use that entry point rather than duplicating character state.
+- **Side game:** PR #10 was re-inspected as clean and mergeable and merged into `sidegame/lantern-run`. Merge commit: `d2f1b0835d228952eb82e3b5369fec85d4f99942`. The browser UI now delegates movement/outcomes to the deterministic state module.
+- **Checks actually run:** `node tests/campaign-roster.test.js` passed in an isolated copy of the committed PR #11 source. No Iron Crown browser/mobile/save runtime test was run this session. Lantern Run's existing deterministic state checks had previously been run; no new browser runtime test was run today.
+- **Blockers:** PR #4 world resources remains a separate conflict/reconciliation task and was not force-merged. Browser/device validation remains outstanding for both projects.
