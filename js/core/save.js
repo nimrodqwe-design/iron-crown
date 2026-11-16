@@ -5,21 +5,40 @@ function create(options){
  const getPlace=options.getPlace;
  const getDiscoveryIds=options.getDiscoveryIds;
  const getItemIds=options.getItemIds;
- const notify=options.notify;
- const SAVE_VERSION=options.version;
+ const getCharacterRoster=options.getCharacterRoster;
+ const setCharacterRoster=options.setCharacterRoster;
+ const createCharacterRoster=options.createCharacterRoster;
+ const notify=typeof options.notify==='function'?options.notify:()=>{};
+ const SAVE_VERSION=options.version||6;
  const STORAGE_KEY='ironCrownSave';
  function save(){
   try{
    const state=getState();
-   const payload={version:SAVE_VERSION,savedAt:new Date().toISOString(),state:{current:state.current,freePosition:state.freePosition,gold:state.gold,troops:state.troops,health:state.health,day:state.day,minutes:state.minutes,camped:state.camped,supplies:state.supplies,inventory:state.inventory,equipment:state.equipment,discoveries:state.discoveries,defeatedParties:state.defeatedParties,metCaravans:state.metCaravans,houseStanding:state.houseStanding,audiences:state.audiences}};
-   localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));return true;
+   const savedState={
+    current:state.current,freePosition:state.freePosition,gold:state.gold,troops:state.troops,
+    health:state.health,day:state.day,minutes:state.minutes,camped:state.camped,supplies:state.supplies,
+    inventory:state.inventory,equipment:state.equipment,discoveries:state.discoveries,
+    defeatedParties:state.defeatedParties,metCaravans:state.metCaravans,
+    houseStanding:state.houseStanding,audiences:state.audiences
+   };
+   if(typeof getCharacterRoster==='function')savedState.characterRoster=getCharacterRoster();
+   const payload={version:SAVE_VERSION,savedAt:new Date().toISOString(),state:savedState};
+   localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));
+   return true;
   }catch(e){notify('Save unavailable on this device.');return false;}
  }
  function load(){
+  let raw=null;
   try{
-   const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return;
-   const parsed=JSON.parse(raw);if(!parsed||typeof parsed!=='object')throw new Error('Invalid save');
-   const d=parsed.version===SAVE_VERSION?parsed.state:parsed.state||parsed;
+   raw=localStorage.getItem(STORAGE_KEY);
+   if(!raw)return false;
+   const parsed=JSON.parse(raw);
+   if(!parsed||typeof parsed!=='object')throw new Error('Invalid save');
+   if(Number.isInteger(parsed.version)&&parsed.version>SAVE_VERSION){
+    notify('This save was created by a newer version. The existing save was left untouched.');
+    return false;
+   }
+   const d=parsed.state&&typeof parsed.state==='object'?parsed.state:parsed;
    if(!d||typeof d!=='object'||!getPlace(d.current))throw new Error('Unsupported save');
    const state=getState();
    const number=(v,fallback,min,max)=>Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback;
@@ -44,10 +63,20 @@ function create(options){
    state.metCaravans=Array.isArray(d.metCaravans)?[...new Set(d.metCaravans.filter(id=>validCaravans.includes(id)))]:[];
    state.houseStanding={alder:number(d.houseStanding?.alder,0,0,100),veyne:number(d.houseStanding?.veyne,0,0,100),rowan:number(d.houseStanding?.rowan,0,0,100)};
    state.audiences=Array.isArray(d.audiences)?[...new Set(d.audiences.filter(id=>['alder','veyne','rowan'].includes(id)))]:[];
+   if(typeof setCharacterRoster==='function'){
+    if(parsed.version===SAVE_VERSION&&d.characterRoster&&typeof d.characterRoster==='object'){
+     setCharacterRoster(d.characterRoster);
+    }else if(typeof createCharacterRoster==='function'){
+     setCharacterRoster(createCharacterRoster().snapshot());
+     if(parsed.version===SAVE_VERSION)notify('The save had no character roster; a fresh empty roster was created.');
+    }
+   }
    if(parsed.version!==SAVE_VERSION)save();
+   return true;
   }catch(e){
-   try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)localStorage.setItem(STORAGE_KEY+'_corrupt_'+Date.now(),raw);}catch(_){}
+   try{if(raw)localStorage.setItem(STORAGE_KEY+'_corrupt_'+Date.now(),raw);}catch(_){}
    notify('A damaged save was found. A fresh journey has started; the old save was kept as a recovery copy.');
+   return false;
   }
  }
  return Object.freeze({save,load});
