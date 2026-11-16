@@ -22,7 +22,7 @@
  <div class="stats"><div class="stat">◈ <b id="gold">85</b> gold</div><div class="stat">⚑ <b id="troops">12</b> troops</div><div class="stat">♛ <b id="crownProgress">0/3</b> Crown claim</div><div class="stat hide">♥ <b id="health">100</b> health</div><div class="stat"><b id="clock">DAY 1 · 08:00</b></div></div>
 </header>
 <main class="main">
- <div class="map-wrap" id="mapWrap">
+ <div class="map-wrap" id="mapWrap" tabindex="0" aria-label="Campaign map">
  <svg id="map" viewBox="0 0 1600 1000" aria-label="Interactive map of the Marches">
  <defs>
   <pattern id="grain" width="90" height="90" patternUnits="userSpaceOnUse"><circle cx="12" cy="16" r="1.4" fill="#e4d5a9" opacity=".12"/><circle cx="60" cy="48" r="1" fill="#19251c" opacity=".12"/><path d="M4 70l15 -3M48 8l12 2M75 78l9 -2" stroke="#e4d5a9" opacity=".07"/></pattern>
@@ -37,6 +37,11 @@
   <path d="M250 0Q320 130 410 220T510 420Q550 550 720 610T990 770Q1120 850 1300 1000" fill="none" stroke="#78999a" stroke-width="25" opacity=".8"/>
   <path d="M250 0Q320 130 410 220T510 420Q550 550 720 610T990 770Q1120 850 1300 1000" fill="none" stroke="#b1c8b6" stroke-width="3" opacity=".4"/>
   <g id="terrain"></g>
+  <g id="regionLandmarks" aria-hidden="true" pointer-events="none">
+   <text x="335" y="690" class="region-landmark">WESTMERE COAST</text>
+   <text x="735" y="475" class="region-landmark">THE CENTRAL MARCHES</text>
+   <text x="1285" y="185" class="region-landmark">NORTHPASS HIGHLANDS</text>
+  </g>
   <g id="roads">
    <path d="M210 220L430 300L650 220L900 330L1190 270L1390 430" stroke="#263128" stroke-width="12" fill="none" opacity=".5"/>
    <path d="M210 220L430 300L650 220L900 330L1190 270L1390 430" stroke="#c2ad7b" stroke-width="5" fill="none" stroke-dasharray="3 3"/>
@@ -56,9 +61,10 @@
    <path d="M820 830l48 -86 48 86h-29l29 46h-96l29 -46z"/><path d="M930 880l44 -80 44 80h-27l27 43h-88l27 -43z"/><path d="M1450 620l45 -82 45 82h-27l27 44h-90l27 -44z"/>
   </g>
   <g fill="#e2d5b1" opacity=".5" font-family="Georgia" font-size="29" letter-spacing="5"><text x="140" y="90">THE CROWNLANDS</text><text x="830" y="570">THE MARCHES</text><text x="1160" y="390">THE NORTH</text></g>
-  <g id="roadParties"></g><g id="settlements"></g><g id="route"></g><g id="discoveries"></g><g id="player"></g>
+  <g id="roadParties"></g><g id="resourceSites"></g><g id="settlements"></g><g id="route"></g><g id="discoveries"></g><g id="player"></g>
  </g></svg>
  </div>
+ <div class="resource-filter" aria-label="Map resource filters"><label for="resourceFilter">Resource sites</label><select id="resourceFilter"><option value="all">All resources</option><option value="grain">Grain</option><option value="timber">Timber</option><option value="fish">Fish</option><option value="stone">Stone</option><option value="salt">Salt</option><option value="reeds">Reeds</option><option value="iron">Iron</option><option value="ore">Ore</option><option value="wool">Wool</option><option value="trade">Trade</option></select><span id="resourceCount" aria-live="polite">12 of 12 sites</span></div>
  <div class="hud"><div class="eyebrow">Current location</div><strong id="currentName">Greyhaven</strong><span id="currentSub">Crownlands · Village</span></div>
  <div class="tools"><button class="tool" id="zoomIn" aria-label="Zoom in">＋</button><button class="tool" id="zoomOut" aria-label="Zoom out">−</button><button class="tool" id="center" aria-label="Center map">⌖</button><button class="tool" id="roamMode" aria-label="Toggle off-road destination">◎</button><button class="tool explore-tool" id="explore" aria-label="Explore nearby location" title="Explore nearby location">⚑</button></div>
  <div class="legend"><span>● Your party</span><span>🔴 Hostile bandits</span><span>🔵 Hostile patrols</span><span>🟢 Neutral traders</span></div>
@@ -67,6 +73,13 @@
   <p id="description"></p><div class="row"><span>Kingdom</span><b id="faction"></b></div><div class="row"><span>Prosperity</span><b id="prosperity"></b></div><div class="row"><span>Garrison</span><b id="garrison"></b></div><div class="row"><span>Distance</span><b id="distance"></b></div>
   <div class="row"><span>Political standing</span><b id="houseStanding">No audience held</b></div><button class="action" id="audience" style="width:100%;margin-top:7px;display:none">Request noble audience</button>
   <button class="action primary" id="travel" style="width:100%;margin-top:12px">Travel here</button><button class="action" id="visit" style="width:100%;margin-top:7px">Visit settlement</button>
+ </section>
+ <section class="resource-panel" id="resourcePanel" role="region" aria-labelledby="resourcePanelName" aria-hidden="true">
+  <div class="drawer-head"><div><div class="eyebrow">Resource site</div><h2 id="resourcePanelName">Resource site</h2><span class="tag" id="resourcePanelType">Type</span></div><button class="close" id="resourcePanelClose" aria-label="Close resource information">×</button></div>
+  <p id="resourcePanelDescription"></p>
+  <div class="row"><span>Availability</span><b id="resourcePanelAvailability"></b></div>
+  <div class="row"><span>Nearest settlement</span><b id="resourcePanelNear"></b></div>
+  <p class="resource-note">Map information only. Gathering, production and stock remain campaign systems.</p>
  </section>
  <section class="town-panel" id="townPanel" aria-labelledby="townTitle" aria-hidden="true">
   <div class="town-head"><div><div class="eyebrow">Settlement activities</div><h2 id="townTitle">Greyhaven</h2><p id="townDescription"></p></div><button class="close" id="townClose" aria-label="Leave settlement">×</button></div>

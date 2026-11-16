@@ -138,3 +138,26 @@ The town interface now loads the item catalogue before the campaign module and i
 - Neutral caravans never attack and provide a small supply bonus once encountered.
 - Cleared hostile groups and met caravans are persisted in save schema v5; older saves migrate with empty encounter histories.
 - Encounter checks currently occur at the end of a travel order, not continuously along the route. Party markers are fixed map encounters in this prototype, not autonomous moving AI.
+
+
+## Demo-world resource map layer — reconciled 16 Nov 2026
+
+The existing campaign map now has a declarative resource-site catalogue and informational map presentation. The catalogue contains 12 named sites across grain, timber, fish, stone, salt, reeds, iron, ore, wool and trade categories. Each record includes a stable ID, map coordinate, nearest settlement ID, availability label and description.
+
+### Data integrity
+- Settlement IDs and resource-site IDs are checked for duplicates.
+- Resource types and availability labels are checked against explicit allowlists.
+- Every nearest-settlement reference must resolve to an existing settlement.
+- Coordinates must be finite and remain within the 1600 × 1000 map bounds.
+- Larkspur Sheep Runs must resolve to larkspur; Silverkeep Trade Yard must resolve to silverkeep.
+- Resource records are frozen individually and as an exported catalogue.
+
+### Map interaction
+- Resource markers are labelled, keyboard-focusable SVG buttons with Enter/Space activation.
+- The category selector filters markers and announces the visible/total count.
+- The inspection panel shows description, type, availability and nearest settlement; Escape closes it and focus returns to the map wrapper.
+- Resource markers do not start map dragging or off-road destination selection.
+- Region landmarks are non-interactive and do not intercept map input.
+- Service-worker shell cache is v13 and retains the campaign roster module from save v6.
+
+This increment is intentionally informational. Gathering, production, inventory stock and resource persistence are not added here; those require a separate authoritative campaign economy design. Automated catalogue and UI-contract checks are included. Browser, Android-sized viewport, save/load and offline runtime checks have not yet been performed.
