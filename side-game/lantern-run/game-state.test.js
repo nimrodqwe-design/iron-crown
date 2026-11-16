@@ -15,5 +15,6 @@ assert.strictEqual(s.light,10);assert.strictEqual(s.ended,true);assert.strictEqu
 s=game.initial();['up','up','right','right','right','up','up','right'].forEach(direction=>s=game.move(s,direction));
 assert.strictEqual(s.ended,true);assert.strictEqual(s.outcome,'escaped');
 const frozen=game.move(s,'left');assert.deepStrictEqual(frozen,s,'ended games must be stable');
-assert.strictEqual(game.move(game.initial(),'invalid'),game.initial()===s?null:game.move(game.initial(),'invalid'));
+const invalidState=game.initial();
+assert.strictEqual(game.move(invalidState,'invalid'),invalidState,'invalid directions must preserve state');
 console.log('Lantern Run state checks passed');
