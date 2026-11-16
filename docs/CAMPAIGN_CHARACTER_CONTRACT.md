@@ -1,6 +1,6 @@
 # Campaign Character and Event Integration Contract
 
-**Status:** Proposed interface for review — not yet implemented in the live campaign.  
+**Status:** Partially implemented on feature/campaign-save-v6-roster; pending automated checks and review before merge. Live recruitment, loyalty-event and battle-participant wiring remain incomplete.  
 **Related work:** PR #6 (recruitment and loyalty services), Issue #7 (ownership and integration decisions).
 
 ## 1. Verified current baseline
@@ -154,3 +154,23 @@ Do not modify shared campaign, save, shell, or battle files until Issue #7 confi
 - [ ] Chronicle storage is implemented and tested before claiming Chronicle persistence.
 - [ ] Browser and Android-sized viewport smoke tests pass.
 
+
+
+## Implementation update — campaign save v6 (16 Nov 2026)
+
+- The roster module now uses version 2 snapshots with a persisted campaign token, monotonic campaign-scoped character IDs (ic:<campaignId>:character:<sequence>) and event IDs (ic:<campaignId>:event:<sequence>).
+- js/core/state.js now owns the roster manager as part of the single campaign state object. It does not manufacture individual records for aggregate troops.
+- js/core/save.js writes save version 6 and migrates version 5 saves by preserving their existing campaign fields and creating an empty named-character roster. Saves from a newer version are left untouched.
+- The roster module is loaded before campaign state and added to the service-worker shell cache (v12).
+- Legacy in-memory v1 char-N roster snapshots are accepted by the roster restore function and mapped into a campaign-scoped sequence. This is a module compatibility path; no v1 roster was present in live saves.
+- Focused tests now cover campaign-scoped IDs, event-sequence persistence, legacy roster restoration, v5 save migration, no fabricated recruits, save/restore and future-version protection. Test execution is pending CI.
+
+### Remaining integration boundaries
+
+- The existing settlement button still recruits an aggregate generic soldier; it must remain that way until a distinct named-recruit action is added.
+- The recruitment and loyalty services are not yet wired to the live campaign roster.
+- Battle participant mapping and exactly-once campaign outcome application are not implemented.
+- No Chronicle dependency is planned.
+- Browser, Android-sized viewport, local-storage runtime and offline service-worker checks remain outstanding.
+
+The implementation is on feature/campaign-save-v6-roster; do not treat it as part of stable main until its automated checks and review pass.
