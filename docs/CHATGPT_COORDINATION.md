@@ -182,3 +182,15 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - PR #2 remains an isolated battlefield presentation reference, not a campaign-integrated feature. Preserve it until a coordinated renderer integration review.
 - PR #1's initial coordination questions are superseded by the ownership decision recorded on Issue #7; the issue remains open until the save/roster and live recruitment acceptance criteria are complete.
 - The feature/battle-core branch's battle simulation and test file are byte-identical to the corresponding files on main; its ahead/behind count reflects branch history and documentation, not an additional simulation patch to merge.
+
+
+### Demo-world resource reconciliation — lead integration (16 Nov 2026)
+
+- **Status:** Reapplied on a clean branch from current main; awaiting automated checks and review.
+- **Branch:** feature/demo-world-resource-reconciliation.
+- **Source preserved:** PR #4 and feature/demo-world-resources remain open and unchanged while the resource-map work is reconciled against the newer campaign/save baseline.
+- **Changes:** 12 validated resource-site records; SVG markers; category filter and visible count; persistent inspection panel; keyboard activation and Escape close; focus return to the map; markers excluded from drag/free-roam input; non-interactive region landmarks.
+- **Integration protection:** The current save v6 and campaign roster callbacks in js/game.js are retained. sw.js advances from shell v12 to v13 while preserving the campaign-roster.js cache entry. No gathering, production, inventory stock or save-state mutation was introduced.
+- **Validation:** Added world catalogue and map UI contract tests. GitHub Actions will run syntax checks and all Node tests. No browser, mobile, save/load runtime or offline-launch test has been performed.
+- **Ownership update:** The current 16 Nov user directive supersedes older two-conversation ownership notes: this lead manages the entire Iron Crown repository. Existing map work remains preserved and is being integrated in place, not discarded or overwritten.
+- **Next action:** Verify CI, inspect the combined PR against current main, merge if green, then close PR #4 as superseded while retaining its branch and history.
