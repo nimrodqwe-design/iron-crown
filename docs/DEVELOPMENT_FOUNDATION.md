@@ -136,7 +136,7 @@ The town interface now loads the item catalogue before the campaign module and i
 - The campaign map now shows distinct coloured roaming groups: red bandits, blue rival patrols, and green independent merchant caravans.
 - Hostile groups resolve a non-graphic encounter when the player reaches their map vicinity. Outcomes use troop count and equipped bonuses, changing troop count, health, and gold.
 - Neutral caravans never attack and provide a small supply bonus once encountered.
-- Cleared hostile groups and met caravans are persisted in save schema v5; older saves migrate with empty encounter histories.
+- Cleared hostile groups and met caravans are persisted in save schema v6; v5 saves migrate with empty encounter histories and an empty named-character roster while preserving existing campaign fields.
 - Encounter checks currently occur at the end of a travel order, not continuously along the route. Party markers are fixed map encounters in this prototype, not autonomous moving AI.
 
 
@@ -161,3 +161,12 @@ The existing campaign map now has a declarative resource-site catalogue and info
 - Service-worker shell cache is v13 and retains the campaign roster module from save v6.
 
 This increment is intentionally informational. Gathering, production, inventory stock and resource persistence are not added here; those require a separate authoritative campaign economy design. Automated catalogue and UI-contract checks are included. Browser, Android-sized viewport, save/load and offline runtime checks have not yet been performed.
+
+
+## Campaign roster and save schema v6
+
+The campaign state now owns a persistent named-character roster manager. Generic soldiers remain an aggregate troop count; existing troop totals are not converted into fictional individual records. Roster snapshots carry a campaign token, monotonic character IDs and monotonic event IDs.
+
+Save version 6 persists the roster snapshot. Version 5 saves migrate to an empty roster while preserving existing campaign values, including location, gold, troops, inventory, discoveries and encounter history. Saves from a newer version are left untouched. The roster module is loaded before campaign state and included in service-worker shell v13.
+
+Automated Node tests cover campaign-scoped IDs, event-sequence continuity, legacy roster snapshot restoration, v5 migration, save/restore and newer-version protection. The named recruit action, live loyalty events, party membership and battle participant integration remain future work. Browser, mobile, local-storage browser runtime and offline-launch checks have not yet been performed.
