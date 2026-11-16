@@ -1,20 +1,20 @@
 # Campaign Character and Event Integration Contract
 
-**Status:** Partially implemented on feature/campaign-save-v6-roster; pending automated checks and review before merge. Live recruitment, loyalty-event and battle-participant wiring remain incomplete.  
+**Status:** Roster and save-version-6 foundation merged into main through PR #13. Live named recruitment, loyalty-event producers and persistent battle-participant mapping remain incomplete.  
 **Related work:** PR #6 (recruitment and loyalty services), Issue #7 (ownership and integration decisions).
 
 ## 1. Verified current baseline
 
 The current `main` branch has these constraints:
 
-- `js/core/state.js` stores `troops` as one aggregate number (initially 12). There is no persistent individual recruit roster.
-- `js/core/save.js` writes save version 5 and does not persist recruit records or loyalty data.
+- `js/core/state.js` stores aggregate `troops` and owns the authoritative named-character roster manager. Generic soldiers remain aggregate.
+- `js/core/save.js` writes save version 6 and persists a version-2 roster snapshot with the campaign token and both monotonic sequences.
 - `js/engine/event-bus.js` provides a reusable event bus, but `js/game.js` does not currently instantiate and wire it into campaign actions.
 - The settlement recruitment action in `js/game.js` spends 10 gold and increments `state.troops`; it does not create a named character.
 - `js/battle/battle-simulation.js` emits battle lifecycle events and generates field-unit IDs from troop-group IDs and array positions. Those IDs are battle-local, not persistent campaign character identities.
 - No Chronicle module/API appears in the current `main` file tree.
 
-Therefore, the loyalty adapter cannot yet be connected safely to real campaign characters. The existing troop count must not be converted into invented named people.
+The roster foundation is now persistent, but the recruitment and loyalty services are not yet wired to it. The existing troop count must not be converted into invented named people.
 
 ## 2. Character identity rules
 
@@ -24,11 +24,11 @@ Therefore, the loyalty adapter cannot yet be connected safely to real campaign c
 4. Generic soldiers remain aggregate troop groups until an actual individual-roster feature is agreed. No fabricated identities for the current `state.troops` value.
 5. A battle-local unit ID may refer to a persistent character ID, but must never replace it.
 
-### Proposed roster shape
+### Implemented roster snapshot v2
 
 ```js
 characterRoster: {
-  version: 1,
+  version: 2,
   campaignId: "persistent-campaign-token",
   nextCharacterSequence: 1,
   nextEventSequence: 1,
@@ -36,21 +36,19 @@ characterRoster: {
     {
       id: "ic:<campaignId>:character:1",
       name: "Mira",
-      role: "companion", // companion | officer | soldier
+      role: "companion", // companion | officer | specialist | soldier
       background: "Former caravan guard",
       motivation: "loyalty",
+      status: "available",
+      recruited: true,
       trust: 50,
-      morale: 60,
-      status: "available", // available | travelling | assigned | captured | recovering
-      skills: {},
-      equipment: {}
+      morale: 60
     }
-  ],
-  activePartyIds: []
+  ]
 }
 ```
 
-This is a proposed schema, not an existing state object. Skills/equipment can be expanded by their owning systems; this contract only requires stable identity and loyalty fields.
+This is the persisted snapshot shape on main. Runtime campaign state owns the roster manager; save data stores its snapshot. Active-party membership, skills and character equipment are not part of this roster module yet.
 
 ### ID generation
 
@@ -115,9 +113,9 @@ The current battle simulation does not yet accept or return this persistent part
 
 ## 5. Save migration and replay safety
 
-- The current save version is 5. The future roster integration should introduce a versioned migration (proposed version 6).
-- Version 5 saves migrate to an empty `characterRoster` with a newly persisted campaign token and sequences starting at 1; existing gold, troops, location, inventory and discoveries remain unchanged.
-- New saves persist the entire roster, active-party IDs, campaign token and both next-sequence counters.
+- The current save version is 6.
+- Version 5 saves migrate to an empty `characterRoster` with a newly persisted campaign token and sequences starting at 1; existing gold, troops, location, inventory, discoveries and encounter histories remain unchanged.
+- New saves persist the roster snapshot, campaign token, character sequence and event sequence. Active-party IDs are not yet part of this module.
 - On load, validate IDs, roles, motivation, numeric ranges and party references. Invalid character entries should be reported/recovered safely rather than corrupting the whole campaign.
 - The loyalty service's event history is currently bounded to the most recent 200 IDs per character. This is a bounded replay guard, not a permanent audit ledger; if stronger replay guarantees are needed, design a compact campaign event ledger before production.
 - Save the event sequence with the action's state update so reload cannot reuse an event ID.
@@ -132,45 +130,40 @@ Recommended Chronicle entries are major standing-tier changes, not every small t
 
 | Area | Likely files | Required agreement |
 |---|---|---|
-| Campaign state and roster hydration | `js/core/state.js` | Campaign/gameplay owner |
-| Save migration and persistence | `js/core/save.js` | Campaign/gameplay owner |
-| Event-bus creation and action producers | `js/game.js`, `js/engine/event-bus.js` | Campaign/gameplay owner |
-| Script loading / application shell | `index.html` | Shell owner |
-| Recruit and loyalty rules | `js/characters/*` | Character-systems owner |
-| Persistent battle participant mapping | `js/battle/battle-simulation.js` | Battle owner |
-| Chronicle storage/UI | Not present yet | Must be assigned before implementation |
+| Area | Current files | Current ownership |
+|---|---|---|
+| Campaign state and roster hydration | `js/core/state.js`, `js/characters/campaign-roster.js` | Lead developer |
+| Save migration and persistence | `js/core/save.js` | Lead developer |
+| Campaign actions and event producers | `js/game.js`, `js/engine/event-bus.js` | Lead developer |
+| Script loading / application shell | `index.html`, `sw.js` | Lead developer |
+| Recruitment and loyalty rules | `js/characters/*` | Lead developer |
+| Persistent battle participant mapping | `js/battle/battle-simulation.js` | Lead developer; not yet integrated with campaign roster |
+| Chronicle storage/UI | Not present yet | Deferred until a real storage contract is required |
 
-Do not modify shared campaign, save, shell, or battle files until Issue #7 confirms owners and the exact integration boundary. This document does not authorize merging PR #6 or changing another workstream's files.
+Issue #7 records the initial identity and ownership decisions. The current 16 Nov user directive consolidates responsibility for the entire repository under this lead; shared-file changes still use focused branches, regression checks and documented compatibility boundaries.
 
 ## 8. Acceptance criteria for live integration
 
-- [ ] Issue #7 confirms owners and shared-file boundaries.
-- [ ] Stable campaign token and character/event ID generators are implemented and tested.
+- [x] Issue #7 records the initial identity and ownership decisions.
+- [x] Stable campaign token and character/event ID generators are implemented and tested.
 - [ ] Recruitment creates a persistent named record without double-counting soldiers.
 - [ ] Battle entry/exit preserves named participant IDs and applies the result once.
-- [ ] Save version 5 migration preserves existing campaigns without fabricating NPCs.
-- [ ] Save/load tests prove IDs, trust, morale, roster membership and event replay protection survive reload.
+- [x] Save version 5 migration preserves existing campaigns without fabricating NPCs.
+- [x] Save/load tests prove character IDs, trust, morale, roster membership and event-sequence continuity survive reload; loyalty-event replay integration remains untested.
 - [ ] Campaign event producers emit only after successful actions.
 - [ ] Chronicle storage is implemented and tested before claiming Chronicle persistence.
 - [ ] Browser and Android-sized viewport smoke tests pass.
 
 
 
-## Implementation update — campaign save v6 (16 Nov 2026)
+## Implementation status — campaign save v6 (16 Nov 2026)
 
-- The roster module now uses version 2 snapshots with a persisted campaign token, monotonic campaign-scoped character IDs (ic:<campaignId>:character:<sequence>) and event IDs (ic:<campaignId>:event:<sequence>).
-- js/core/state.js now owns the roster manager as part of the single campaign state object. It does not manufacture individual records for aggregate troops.
-- js/core/save.js writes save version 6 and migrates version 5 saves by preserving their existing campaign fields and creating an empty named-character roster. Saves from a newer version are left untouched.
-- The roster module is loaded before campaign state and added to the service-worker shell cache (v12).
-- Legacy in-memory v1 char-N roster snapshots are accepted by the roster restore function and mapped into a campaign-scoped sequence. This is a module compatibility path; no v1 roster was present in live saves.
-- Focused tests now cover campaign-scoped IDs, event-sequence persistence, legacy roster restoration, v5 save migration, no fabricated recruits, save/restore and future-version protection. Test execution is pending CI.
-
-### Remaining integration boundaries
-
-- The existing settlement button still recruits an aggregate generic soldier; it must remain that way until a distinct named-recruit action is added.
-- The recruitment and loyalty services are not yet wired to the live campaign roster.
-- Battle participant mapping and exactly-once campaign outcome application are not implemented.
-- No Chronicle dependency is planned.
-- Browser, Android-sized viewport, local-storage runtime and offline service-worker checks remain outstanding.
-
-The implementation is on feature/campaign-save-v6-roster; do not treat it as part of stable main until its automated checks and review pass.
+- **Merged:** PR #13, merge commit dad34d81f9529e178a13361b857cfacf04165c8a.
+- The roster uses version-2 snapshots with a persisted campaign token, monotonic campaign-scoped character IDs and monotonic event IDs.
+- The roster manager is owned by the authoritative campaign state. Generic troop counts remain aggregate.
+- Save version 6 migrates v5 saves by preserving existing campaign data and creating an empty roster; it does not invent individual recruits. Saves from a newer version are left untouched.
+- The roster module is loaded before state and included in service-worker shell v13.
+- GitHub Actions run 43843577129 passed JavaScript syntax checks and all six then-existing Node test files, including v5 migration and roster round-trip tests.
+- The later world-resource integration run 43844525553 also passed syntax checks and the expanded eight-file regression suite.
+- **Still incomplete:** named recruit UI/action, recruitment-service adapter, live loyalty-event producers/replay guard, party membership, persistent battle participant mapping and exactly-once campaign battle result application.
+- **Not tested:** browser runtime, Android-sized viewport, browser local-storage runtime, offline service-worker launch.
