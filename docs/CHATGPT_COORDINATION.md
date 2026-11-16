@@ -162,13 +162,13 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 
 ### Campaign roster and save v6 integration — lead gameplay (16 Nov 2026)
 
-- **Status:** Implemented on a focused branch; awaiting automated checks and review.
-- **Branch:** feature/campaign-save-v6-roster.
+- **Status:** Merged into main through PR #13.
+- **Branch:** feature/campaign-save-v6-roster (merged; branch retained).
 - **Goal:** Make the named-character roster part of the single authoritative campaign state and persist it without changing aggregate troop counts.
 - **Files changed:** js/characters/campaign-roster.js, js/core/state.js, js/core/save.js, js/game.js, index.html, sw.js, tests/campaign-roster.test.js, tests/campaign-save.test.js, .github/workflows/javascript-checks.yml, docs/CAMPAIGN_CHARACTER_CONTRACT.md.
 - **Implementation:** Roster snapshots are v2 and carry a campaign token, monotonic campaign-scoped character IDs and monotonic event IDs. The roster manager is owned by the campaign state object. Save version 6 persists the roster; v5 migration preserves the aggregate troop count and creates an empty roster rather than inventing historical characters. Newer-version saves are not overwritten. The roster script is loaded before state and included in the service-worker shell cache v12.
 - **Compatibility:** Existing generic soldier recruitment remains aggregate and unchanged. The new roster does not yet affect army headcount, settlement recruitment, loyalty, or battle results.
-- **Checks:** Focused roster and save migration tests added. JavaScript syntax and the complete existing Node test set are delegated to the new GitHub Actions workflow; run status is pending. No browser, mobile, local-storage browser runtime or offline test has been performed.
+- **Checks:** GitHub Actions run 43843577129 passed JavaScript syntax and all six then-existing Node tests, including roster and save migration coverage. No browser, mobile, local-storage browser runtime or offline test has been performed.
 - **Known limitations:** Named recruit UI/action, recruitment-service adapter, campaign event producers, persistent battle participant IDs and campaign battle result application remain future work.
 - **Next action:** Verify the workflow results. If green, review and merge this foundation; then add one transactional named-companion recruitment action using the same roster and existing gold state.
 
@@ -178,19 +178,35 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - PR #11 (stable roster module) is merged into main at aa75882e6a3db6a54c809d35a5ac0f2c389ada8c.
 - PR #12 (15 Nov hand-off) is merged into main at 8f8db9f30d4b5fc6a9d8e884de8a617e634526c4.
 - PR #10 (Lantern Run UI/state connection) is merged into the isolated sidegame/lantern-run branch at d2f1b0835d228952eb82e3b5369fec85d4f99942; it is not an Iron Crown campaign change.
-- PR #4 (world resource sites) remains a draft and not mergeable. It is 31 commits ahead and 5 behind main, and overlaps index.html and js/game.js among other map files. Preserve it; reconcile its map-only changes after the current save integration, without overwriting campaign changes.
+- PR #4 (world resource sites) is closed as superseded by PR #15. Its feature/demo-world-resources branch and all commits are preserved; the reconciled map layer is now on main.
 - PR #2 remains an isolated battlefield presentation reference, not a campaign-integrated feature. Preserve it until a coordinated renderer integration review.
-- PR #1's initial coordination questions are superseded by the ownership decision recorded on Issue #7; the issue remains open until the save/roster and live recruitment acceptance criteria are complete.
+- PR #1's coordination-only proposal is closed as superseded by Issue #7 and the current lead directive; its branch and discussion history are preserved. Issue #7 remains open for named recruitment and loyalty integration.
 - The feature/battle-core branch's battle simulation and test file are byte-identical to the corresponding files on main; its ahead/behind count reflects branch history and documentation, not an additional simulation patch to merge.
 
 
 ### Demo-world resource reconciliation — lead integration (16 Nov 2026)
 
-- **Status:** Reapplied on a clean branch from current main; awaiting automated checks and review.
-- **Branch:** feature/demo-world-resource-reconciliation.
-- **Source preserved:** PR #4 and feature/demo-world-resources remain open and unchanged while the resource-map work is reconciled against the newer campaign/save baseline.
+- **Status:** Merged into main through PR #15.
+- **Branch:** feature/demo-world-resource-reconciliation (merged; branch retained).
+- **Source preserved:** PR #4 was closed as superseded after its useful changes were reapplied; feature/demo-world-resources remains intact for reference.
 - **Changes:** 12 validated resource-site records; SVG markers; category filter and visible count; persistent inspection panel; keyboard activation and Escape close; focus return to the map; markers excluded from drag/free-roam input; non-interactive region landmarks.
 - **Integration protection:** The current save v6 and campaign roster callbacks in js/game.js are retained. sw.js advances from shell v12 to v13 while preserving the campaign-roster.js cache entry. No gathering, production, inventory stock or save-state mutation was introduced.
-- **Validation:** Added world catalogue and map UI contract tests. GitHub Actions will run syntax checks and all Node tests. No browser, mobile, save/load runtime or offline-launch test has been performed.
+- **Validation:** GitHub Actions run 43844525553 passed JavaScript syntax and all eight Node test files, including world-catalogue and map-UI contract tests. No browser, mobile, save/load runtime or offline-launch test has been performed.
 - **Ownership update:** The current 16 Nov user directive supersedes older two-conversation ownership notes: this lead manages the entire Iron Crown repository. Existing map work remains preserved and is being integrated in place, not discarded or overwritten.
-- **Next action:** Verify CI, inspect the combined PR against current main, merge if green, then close PR #4 as superseded while retaining its branch and history.
+- **Next action:** Add a transactional named-companion recruitment action that writes to this roster and the existing campaign gold state without duplicating soldier counts.
+
+
+### Final daily hand-off — 16 Nov 2026
+
+- **Current main:** c79ced134beefcb9153670223f16393333d3b0cd.
+- **Iron Crown PR #13:** merged save v6 and authoritative roster foundation (dad34d81f9529e178a13361b857cfacf04165c8a).
+- **Iron Crown PR #15:** merged reconciled demo-world resource map (c79ced134beefcb9153670223f16393333d3b0cd).
+- **Old PR #4:** closed as superseded; feature/demo-world-resources branch retained.
+- **Old PR #1:** closed as superseded; coordination branch retained.
+- **PR #2:** remains an isolated draft reference and is not integrated into the campaign.
+- **Side game PR #14:** merged into sidegame/lantern-run at f0e90fe8748d6cdd6c36375f7761f39e87eea90b.
+- **Iron Crown checks:** run 43843577129 passed syntax and six Node tests; run 43844525553 passed syntax and eight Node tests.
+- **Lantern Run checks:** PR run 43843855783 and post-merge push run 43844035863 passed deterministic state and UI-contract checks. An earlier test-only failure was corrected in commit 816156f; no browser runtime test has been performed.
+- **Known untested areas:** browser play, mobile touch behaviour, save/load in a browser, offline launch and real device performance.
+- **Next Iron Crown priority:** named-companion recruitment integrated with the roster, with transactional gold deduction and no aggregate troop double-counting.
+- **Next Lantern Run priority:** add a DOM-level interaction harness or perform a real browser smoke test for keyboard/touch controls, panel rendering and restart.
