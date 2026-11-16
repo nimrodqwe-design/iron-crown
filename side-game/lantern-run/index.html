@@ -7,16 +7,25 @@
 <style>
 body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111b16;color:#f3ead5;font:16px system-ui,sans-serif}
 main{width:min(92vw,430px);padding:20px;border:1px solid #59654e;border-radius:14px;background:#17231d}
-h1{margin:0 0 6px;font-size:1.5rem}p{color:#c8c2ae}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:18px 0}.cell{aspect-ratio:1;display:grid;place-items:center;border-radius:7px;background:#243127;font-size:1.4rem}.player{outline:3px solid #e8c76b}.goal{background:#30452f}.trap{background:#40252a}.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:230px;margin:auto}.controls button,button{padding:12px;border:1px solid #71805e;border-radius:8px;background:#29382d;color:inherit;font:inherit}.controls button:focus-visible,button:focus-visible{outline:3px solid #e8c76b}#status{min-height:2.5em;font-weight:600}
+h1{margin:0 0 6px;font-size:1.5rem}p{color:#c8c2ae}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:18px 0}
+.cell{aspect-ratio:1;display:grid;place-items:center;border-radius:7px;background:#243127;font-size:1.4rem}
+.player{outline:3px solid #e8c76b}.goal{background:#30452f}.trap{background:#40252a}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:230px;margin:auto}
+.controls button,button{padding:12px;border:1px solid #71805e;border-radius:8px;background:#29382d;color:inherit;font:inherit;touch-action:manipulation}
+.controls button:focus-visible,button:focus-visible{outline:3px solid #e8c76b;outline-offset:2px}
+button:disabled{opacity:.5;cursor:not-allowed}
+#status{min-height:2.5em;font-weight:600}
+@media(max-width:360px){main{padding:14px}.grid{gap:3px}.cell{font-size:1.2rem}}
 </style>
 </head>
 <body><main>
 <h1>Lantern Run</h1>
 <p>Find the exit before your lantern burns out. Avoid the ruins marked with ✕.</p>
-<div id="grid" class="grid" aria-label="Lantern Run board"></div>
-<div id="status" aria-live="polite"></div>
-<div class="controls" aria-label="Movement controls">
-<span></span><button data-move="up" aria-label="Move up">▲</button><span></span>
+<div id="grid" class="grid" role="grid" aria-label="Ruin board" aria-rowcount="5" aria-colcount="5"></div>
+<div id="status" aria-live="polite" aria-atomic="true"></div>
+<div class="controls" role="group" aria-label="Movement controls">
+<span aria-hidden="true"></span><button data-move="up" aria-label="Move up">▲</button><span aria-hidden="true"></span>
 <button data-move="left" aria-label="Move left">◀</button><button data-move="down" aria-label="Move down">▼</button><button data-move="right" aria-label="Move right">▶</button>
 </div>
 <p><button id="restart">New run</button></p>
@@ -24,28 +33,34 @@ h1{margin:0 0 6px;font-size:1.5rem}p{color:#c8c2ae}.grid{display:grid;grid-templ
 <script>
 (()=>{
 'use strict';
-const api=window.LanternRunState;
-if(!api) throw new Error('Lantern Run state model failed to load');
-let state;
 const grid=document.getElementById('grid'),status=document.getElementById('status');
-const trapSet=new Set(['1,3','3,3','2,1','4,2']);
-const key=(x,y)=>x+','+y;
+const api=window.LanternRunState;
+if(!api){
+ status.textContent='The game could not start. Reload the page to try again.';
+ document.querySelectorAll('button[data-move]').forEach(button=>button.disabled=true);
+ return;
+}
+let state;
 function message(s){
  if(!s.ended)return 'Lantern light: '+s.light+'.';
  if(s.outcome==='escaped')return 'You escaped the ruins with '+Math.max(0,s.light)+' light remaining.';
- if(s.outcome==='trapped')return 'The ruins collapse beneath you. Run ended.';
+ if(s.outcome==='trapped')return 'The ruins close around your path. Run ended.';
  return 'Your lantern goes dark. Run ended.';
 }
 function render(){
  grid.replaceChildren();
  for(let y=0;y<api.SIZE;y++)for(let x=0;x<api.SIZE;x++){
-  const cell=document.createElement('div');cell.className='cell';
-  if(x===api.GOAL.x&&y===api.GOAL.y){cell.classList.add('goal');cell.textContent='⌂'}
-  if(trapSet.has(key(x,y))){cell.classList.add('trap');cell.textContent='✕'}
-  if(x===state.x&&y===state.y){cell.classList.add('player');cell.textContent='🕯'}
+  const cell=document.createElement('div'),kind=api.cellKind(x,y);
+  cell.className='cell';cell.setAttribute('role','gridcell');
+  if(kind==='goal'){cell.classList.add('goal');cell.textContent='⌂'}
+  if(kind==='trap'){cell.classList.add('trap');cell.textContent='✕'}
+  const isPlayer=x===state.x&&y===state.y;
+  if(isPlayer){cell.classList.add('player');cell.textContent='🕯';cell.setAttribute('aria-current','location')}
+  cell.setAttribute('aria-label',(isPlayer?'Your position, ':'')+api.cellLabel(x,y)+', row '+(y+1)+', column '+(x+1));
   grid.append(cell);
  }
  status.textContent=message(state);
+ document.querySelectorAll('button[data-move]').forEach(button=>button.disabled=state.ended);
 }
 function reset(){state=api.initial();render();}
 function move(dir){
@@ -55,8 +70,13 @@ function move(dir){
  if(state===before){status.textContent='The darkness blocks that way.';return;}
  render();
 }
-document.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('click',()=>move(b.dataset.move)));
-document.addEventListener('keydown',e=>{const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[e.key];if(m){e.preventDefault();move(m)}});
+document.querySelectorAll('[data-move]').forEach(button=>button.addEventListener('click',()=>move(button.dataset.move)));
+document.addEventListener('keydown',event=>{
+ const target=event.target;
+ if(event.defaultPrevented||event.altKey||event.ctrlKey||event.metaKey||target.isContentEditable||/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(target.tagName))return;
+ const direction={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[event.key];
+ if(direction){event.preventDefault();move(direction);}
+});
 document.getElementById('restart').addEventListener('click',reset);
 reset();
 })();

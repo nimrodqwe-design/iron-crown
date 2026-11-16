@@ -1,0 +1,23 @@
+name: Lantern Run checks
+on:
+  push:
+    branches: ["sidegame/**"]
+  pull_request:
+    branches: [sidegame/lantern-run]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check state module syntax
+        run: node --check side-game/lantern-run/game-state.js
+      - name: Run deterministic state checks
+        run: node side-game/lantern-run/game-state.test.js
+      - name: Run UI contract checks
+        run: node side-game/lantern-run/ui-contract.test.js
