@@ -167,6 +167,13 @@ This increment is intentionally informational. Gathering, production, inventory 
 
 The campaign state now owns a persistent named-character roster manager. Generic soldiers remain an aggregate troop count; existing troop totals are not converted into fictional individual records. Roster snapshots carry a campaign token, monotonic character IDs and monotonic event IDs.
 
-Save version 6 persists the roster snapshot. Version 5 saves migrate to an empty roster while preserving existing campaign values, including location, gold, troops, inventory, discoveries and encounter history. Saves from a newer version are left untouched. The roster module is loaded before campaign state and included in service-worker shell v13.
+Save version 6 persists the roster snapshot. Version 5 saves migrate to an empty roster while preserving existing campaign values, including location, gold, troops, inventory, discoveries and encounter history. Saves from a newer version are left untouched. The roster module is loaded before campaign state and included in service-worker shell v14.
 
-Automated Node tests cover campaign-scoped IDs, event-sequence continuity, legacy roster snapshot restoration, v5 migration, save/restore and newer-version protection. The named recruit action, live loyalty events, party membership and battle participant integration remain future work. Browser, mobile, local-storage browser runtime and offline-launch checks have not yet been performed.
+Automated Node tests cover campaign-scoped IDs, event-sequence continuity, legacy roster snapshot restoration, v5 migration, save/restore, newer-version protection and named-recruit identity. Named settlement recruitment is now implemented at Kingsbridge, Highcourt and Silverkeep through the existing pricing service and authoritative campaign gold/roster; generic soldiers remain aggregate. Live loyalty events, active-party membership and battle participant integration remain future work. Browser, mobile, local-storage browser runtime and offline-launch checks have not yet been performed.
+
+
+## Named settlement recruitment — merged 17 Nov 2026
+
+PR #17 adds three persistent named candidates: Mara Venn at Kingsbridge, Iven Rook at Highcourt and Sella Quill at Silverkeep. The settlement panel shows each candidate only at their assigned location. The existing recruitment service determines the price; the campaign adapter writes to the save-v6 character roster and deducts from authoritative campaign gold. Optional `candidateId` metadata prevents duplicate recruitment after reload. Specialist roles are supported. Generic soldier recruitment and aggregate troop counts are unchanged.
+
+The service currently receives a neutral reputation baseline of 50 because the campaign has no authoritative reputation field yet. GitHub Actions run 44051187245 and post-merge main run 44051514383 passed syntax and all nine Node test files. Browser/mobile/save-load/offline runtime testing remains outstanding.

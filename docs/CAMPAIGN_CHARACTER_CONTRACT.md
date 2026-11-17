@@ -1,6 +1,6 @@
 # Campaign Character and Event Integration Contract
 
-**Status:** Roster and save-version-6 foundation merged through PR #13. Named companion recruitment is implemented on `feature/named-companion-recruitment` and awaiting CI/review. Loyalty-event producers and persistent battle-participant mapping remain incomplete.  
+**Status:** Roster/save v6 foundation is merged through PR #13. Named companion recruitment is merged into `main` through PR #17 (`05018d50ab94b6c3cf507b97ab783bc1451b7346`). Loyalty-event producers, active-party membership and persistent battle-participant mapping remain incomplete.  
 **Related work:** PR #6 (recruitment and loyalty services), Issue #7 (ownership and integration decisions).
 
 ## 1. Verified current baseline
@@ -146,32 +146,32 @@ Issue #7 records the initial identity and ownership decisions. The current 16 No
 
 - [x] Issue #7 records the initial identity and ownership decisions.
 - [x] Stable campaign token and character/event ID generators are implemented and tested.
-- [ ] Recruitment creates a persistent named record without double-counting soldiers.
+- [x] Recruitment creates a persistent named record without double-counting soldiers (PR #17).
 - [ ] Battle entry/exit preserves named participant IDs and applies the result once.
 - [x] Save version 5 migration preserves existing campaigns without fabricating NPCs.
-- [x] Save/load tests prove character IDs, trust, morale, roster membership and event-sequence continuity survive reload; loyalty-event replay integration remains untested.
+- [x] Save/load tests prove character IDs, candidate source identity, trust, morale, roster membership and event-sequence continuity survive reload; loyalty-event replay integration remains untested.
 - [ ] Campaign event producers emit only after successful actions.
 - [ ] Chronicle storage is implemented and tested before claiming Chronicle persistence.
 - [ ] Browser and Android-sized viewport smoke tests pass.
 
 
 
-## Implementation status — campaign save v6 (16 Nov 2026)
+## Implementation status — campaign save v6 and named recruitment (17 Nov 2026)
 
 - **Merged:** PR #13, merge commit dad34d81f9529e178a13361b857cfacf04165c8a.
 - The roster uses version-2 snapshots with a persisted campaign token, monotonic campaign-scoped character IDs and monotonic event IDs.
 - The roster manager is owned by the authoritative campaign state. Generic troop counts remain aggregate.
 - Save version 6 migrates v5 saves by preserving existing campaign data and creating an empty roster; it does not invent individual recruits. Saves from a newer version are left untouched.
-- The roster module is loaded before state and included in service-worker shell v13.
+- The roster module is loaded before state and included in service-worker shell v14 with the named-recruitment modules.
 - GitHub Actions run 43843577129 passed JavaScript syntax checks and all six then-existing Node test files, including v5 migration and roster round-trip tests.
 - The later world-resource integration run 43844525553 also passed syntax checks and the expanded eight-file regression suite.
-- **Still incomplete:** named recruit UI/action, recruitment-service adapter, live loyalty-event producers/replay guard, party membership, persistent battle participant mapping and exactly-once campaign battle result application.
+- **Still incomplete:** active-party membership, live loyalty-event producers/replay guard, persistent battle participant mapping and exactly-once campaign battle result application.
 - **Not tested:** browser runtime, Android-sized viewport, browser local-storage runtime, offline service-worker launch.
 
 
-## 8. Named companion recruitment v1
+## 9. Named companion recruitment v1
 
-The lead integration branch adds a small settlement-based named-recruitment slice:
+The merged main branch includes a small settlement-based named-recruitment slice:
 
 - Candidate definitions live in `js/data/recruits.js`; current candidates are Mara Venn at Kingsbridge, Iven Rook at Highcourt and Sella Quill at Silverkeep.
 - `js/characters/recruitment.js` remains the pricing/eligibility rule service. The campaign adapter uses its quote/recruit result but treats `state.gold` and the campaign roster as authoritative.
@@ -181,4 +181,4 @@ The lead integration branch adds a small settlement-based named-recruitment slic
 - Campaign reputation does not yet exist as an authoritative state field; recruitment uses a documented neutral baseline of 50 until the faction/reputation system is designed.
 - The town panel shows named candidates only at their assigned settlement and retains a joined status after save/load.
 
-**Validation required before merge:** focused Node tests for campaign recruitment, existing recruitment pricing, and save/load candidate identity, plus the repository JavaScript workflow. Browser/mobile interaction testing remains outstanding.
+**Validation performed:** GitHub Actions run 44051187245 passed JavaScript syntax checks and all nine Node test files; post-merge main run 44051514383 passed the same suite. Browser/mobile interaction, browser save/load and offline-launch testing remain outstanding.
