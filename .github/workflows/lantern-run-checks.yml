@@ -21,3 +21,5 @@ jobs:
         run: node side-game/lantern-run/game-state.test.js
       - name: Run UI contract checks
         run: node side-game/lantern-run/ui-contract.test.js
+      - name: Run UI interaction checks
+        run: node side-game/lantern-run/ui-interaction.test.js

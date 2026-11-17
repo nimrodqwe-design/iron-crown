@@ -19,6 +19,9 @@ Arrow keys or on-screen touch buttons. Restart creates a fresh deterministic run
 Run from the repository root:
 - node side-game/lantern-run/game-state.test.js
 - node side-game/lantern-run/ui-contract.test.js
+- node side-game/lantern-run/ui-interaction.test.js
+
+The interaction harness runs the actual inline UI controller against a small fake DOM and checks keyboard input, touch-button clicks, blocked movement, traps, escape and restart.
 
 ## Design constraints
 - One HTML file, no build tooling or external assets.
