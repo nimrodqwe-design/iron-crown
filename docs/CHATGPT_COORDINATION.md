@@ -210,3 +210,15 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Known untested areas:** browser play, mobile touch behaviour, save/load in a browser, offline launch and real device performance.
 - **Next Iron Crown priority:** named-companion recruitment integrated with the roster, with transactional gold deduction and no aggregate troop double-counting.
 - **Next Lantern Run priority:** add a DOM-level interaction harness or perform a real browser smoke test for keyboard/touch controls, panel rendering and restart.
+
+
+### Named companion recruitment — lead integration (17 Nov 2026)
+
+- **Status:** Implemented on `feature/named-companion-recruitment`; awaiting automated checks and PR review.
+- **Goal:** Connect notable settlement recruits to the authoritative campaign roster and existing gold state without changing generic troop accounting.
+- **Files changed:** `js/data/recruits.js`, `js/characters/campaign-recruitment.js`, `js/characters/campaign-roster.js`, `js/characters/recruitment.js`, `js/game.js`, `index.html`, `styles/main.css`, `sw.js`, `tests/campaign-recruitment.test.js`, `tests/campaign-save.test.js`, `tests/recruitment.test.js`, `docs/CAMPAIGN_CHARACTER_CONTRACT.md`.
+- **Implementation:** Adds Mara Venn (Kingsbridge), Iven Rook (Highcourt) and Sella Quill (Silverkeep). The town panel shows only the candidates assigned to the visited settlement. Recruitment quotes use the existing pricing service, then add the named character to the campaign roster and deduct the quoted amount from authoritative `state.gold`. Persisted `candidateId` prevents a candidate being recruited twice after save/load. Specialist is an accepted role. The generic soldier action and aggregate `state.troops` are unchanged.
+- **Compatibility:** `candidateId` is optional additive roster metadata; older version-6 records hydrate with `null`. No save-version bump. Service-worker shell cache advances from v13 to v14 and includes the new modules.
+- **Design boundary:** No authoritative reputation field exists yet; the adapter uses a neutral reputation baseline of 50. No loyalty events or battle participation mapping are wired in this slice.
+- **Checks:** Added campaign-recruitment tests and extended save/recruitment tests. Automated workflow not yet observed at hand-off; no browser, mobile, save/load browser runtime or offline test performed.
+- **Next action:** Inspect the PR diff and GitHub Actions result. Merge only if all JavaScript syntax and regression tests pass; then proceed to persistent party membership and loyalty-event integration.
