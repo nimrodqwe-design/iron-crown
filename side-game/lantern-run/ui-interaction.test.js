@@ -5,7 +5,7 @@ const vm=require('node:vm');
 const path=require('node:path');
 const game=require('./game-state.js');
 const html=fs.readFileSync(path.join(__dirname,'index.html'),'utf8');
-const inline=[...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/g)].map(match=>match[1]).filter(source=>source.trim());
+const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match=>match[1]).filter(source=>source.trim());
 assert.equal(inline.length,1,'expected one inline UI controller');
 
 class Element{
@@ -20,7 +20,7 @@ class Element{
   this.className='';
   this.isContentEditable=false;
   this.classList={add:name=>{
-   const names=new Set(this.className.split(/\\s+/).filter(Boolean));
+   const names=new Set(this.className.split(/\s+/).filter(Boolean));
    names.add(name);
    this.className=[...names].join(' ');
   }};
