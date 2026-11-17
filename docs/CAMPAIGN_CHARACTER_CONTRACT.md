@@ -1,6 +1,6 @@
 # Campaign Character and Event Integration Contract
 
-**Status:** Roster and save-version-6 foundation merged into main through PR #13. Live named recruitment, loyalty-event producers and persistent battle-participant mapping remain incomplete.  
+**Status:** Roster and save-version-6 foundation merged through PR #13. Named companion recruitment is implemented on `feature/named-companion-recruitment` and awaiting CI/review. Loyalty-event producers and persistent battle-participant mapping remain incomplete.  
 **Related work:** PR #6 (recruitment and loyalty services), Issue #7 (ownership and integration decisions).
 
 ## 1. Verified current baseline
@@ -167,3 +167,18 @@ Issue #7 records the initial identity and ownership decisions. The current 16 No
 - The later world-resource integration run 43844525553 also passed syntax checks and the expanded eight-file regression suite.
 - **Still incomplete:** named recruit UI/action, recruitment-service adapter, live loyalty-event producers/replay guard, party membership, persistent battle participant mapping and exactly-once campaign battle result application.
 - **Not tested:** browser runtime, Android-sized viewport, browser local-storage runtime, offline service-worker launch.
+
+
+## 8. Named companion recruitment v1
+
+The lead integration branch adds a small settlement-based named-recruitment slice:
+
+- Candidate definitions live in `js/data/recruits.js`; current candidates are Mara Venn at Kingsbridge, Iven Rook at Highcourt and Sella Quill at Silverkeep.
+- `js/characters/recruitment.js` remains the pricing/eligibility rule service. The campaign adapter uses its quote/recruit result but treats `state.gold` and the campaign roster as authoritative.
+- `js/characters/campaign-recruitment.js` accepts a candidate only at their assigned settlement, rejects duplicate recruitment by persisted `candidateId`, adds the person to the existing roster, and deducts the service's quoted gold from campaign state.
+- The roster now persists optional `candidateId` metadata. Existing roster records without it hydrate as `null`; save version remains 6 because this is an additive optional field.
+- Specialist is now a supported named-recruit role. No current candidate is a generic soldier, so the existing aggregate `state.troops` and generic soldier recruitment action remain unchanged.
+- Campaign reputation does not yet exist as an authoritative state field; recruitment uses a documented neutral baseline of 50 until the faction/reputation system is designed.
+- The town panel shows named candidates only at their assigned settlement and retains a joined status after save/load.
+
+**Validation required before merge:** focused Node tests for campaign recruitment, existing recruitment pricing, and save/load candidate identity, plus the repository JavaScript workflow. Browser/mobile interaction testing remains outstanding.
