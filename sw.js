@@ -1,11 +1,14 @@
-const CACHE_NAME = "iron-crown-shell-v13";
+const CACHE_NAME = "iron-crown-shell-v14";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles/main.css",
   "./js/data/world.js",
   "./js/data/items.js",
+  "./js/data/recruits.js",
   "./js/characters/campaign-roster.js",
+  "./js/characters/recruitment.js",
+  "./js/characters/campaign-recruitment.js",
   "./js/core/state.js",
   "./js/core/save.js",
   "./js/engine/event-bus.js",

@@ -23,6 +23,7 @@ function normaliseCharacter(input,campaignId){
   name:String(input.name||'Unknown character').trim().slice(0,80)||'Unknown character',
   role,
   background:String(input.background||'').trim().slice(0,160),
+  candidateId:typeof input.candidateId==='string'&&/^[a-z0-9][a-z0-9-]{0,63}$/i.test(input.candidateId)?input.candidateId:null,
   motivation,
   status,
   recruited:input.recruited!==false,

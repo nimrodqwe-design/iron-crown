@@ -10,7 +10,7 @@ const resourceSites=window.IronCrownWorld.resourceSites||[];
 const items=window.IronCrownItems;
 const byId=id=>places.find(p=>p.id===id);
 let state=window.IronCrownState.createInitialState();
-let selected=null,drag=null,playerGroup=null,roamMode=false;
+let selected=null,drag=null,playerGroup=null,roamMode=false,campaignRecruitment=null;
 const currentPoint=()=>state.freePosition||byId(state.current);
 const svgNS='http://www.w3.org/2000/svg';
 function node(tag,attrs,parent){let n=document.createElementNS(svgNS,tag);Object.keys(attrs||{}).forEach(k=>n.setAttribute(k,attrs[k]));(parent||$('world')).appendChild(n);return n}
@@ -119,8 +119,34 @@ function explore(){
 }
 function terrainFactor(x,y){if(x>980&&y<250)return .55;if((x<330&&y>390&&y<640)||(x>790&&y>760)||(x>1400&&y>520))return .72;return 1}
 function tick(now){if(!state.target||state.paused)return;let dt=Math.min(80,now-state.last||16);let factor=state.target==='__free__'?terrainFactor(state.to.x,state.to.y):1;state.progress=Math.min(1,state.progress+dt/1000/(Math.max(8,Math.hypot(state.to.x-state.from.x,state.to.y-state.from.y)/28)/state.speed/factor));state.minutes+=dt/1000*1.7*state.speed;if(state.minutes>=1440){state.minutes-=1440;state.day++}if(state.progress>=1){if(state.target==='__free__'){state.freePosition={x:state.to.x,y:state.to.y}}else{state.current=state.target;state.freePosition=null}state.target=null;state.from=state.to=null;state.progress=0;processEncounters(currentPoint().x,currentPoint().y);drawDiscoveries();updateExplorationControls();$('travelTitle').textContent=state.freePosition?'Your party is exploring the wilderness':'Your party has arrived at '+byId(state.current).name;$('travelSub').textContent='Tap Roam, then choose another point on the map.';$('cancel').disabled=true;save();notify(state.freePosition?'Reached the wilderness.':'Arrived at '+byId(state.current).name);updateHud();drawPlayer();drawRoute();return}state.last=now;drawPlayer();updateHud();requestAnimationFrame(tick)}
+function renderNamedRecruitment(){
+ const section=$('namedRecruitSection'),list=$('namedRecruitList');
+ if(!section||!list)return;
+ list.replaceChildren();
+ const entries=campaignRecruitment&&selected?campaignRecruitment.listForSettlement(selected.id):[];
+ section.style.display=entries.length?'block':'none';
+ entries.forEach(entry=>{
+  const card=document.createElement('div');card.className='named-recruit-card';
+  const details=document.createElement('div');
+  const heading=document.createElement('strong');heading.textContent=entry.name+' · '+entry.role;
+  const background=document.createElement('p');background.textContent=entry.background+' Motivation: '+entry.motivation+'.';
+  details.append(heading,background);
+  const button=document.createElement('button');button.className='action';
+  if(entry.recruited){button.textContent='Joined';button.disabled=true}
+  else if(!entry.quote.ok){button.textContent=entry.quote.reason;button.disabled=true}
+  else{button.textContent=entry.quote.cost===0?'Recruit · Free':'Recruit · '+entry.quote.cost+' gold';button.disabled=state.gold<entry.quote.cost;button.addEventListener('click',()=>recruitNamed(entry.id))}
+  card.append(details,button);list.append(card);
+ });
+}
 function visit(){if(!selected||selected.id!==state.current)return;$('townTitle').textContent=selected.name;$('townDescription').textContent=selected.desc;$('townPanel').classList.add('open');$('townPanel').setAttribute('aria-hidden','false');$('drawer').classList.remove('open');const hasSmith=['town','castle'].includes(selected.kind);$('recruitSection').style.display=hasSmith?'block':'none';$('blacksmithSection').style.display=hasSmith?'block':'none';updateTownPanel();$('townNote').textContent='You are visiting '+selected.name+'. Prices are fixed in this first market build.'}
-function updateTownPanel(){$('townGold').textContent=state.gold;$('townSupplies').textContent=state.supplies;$('townTroops').textContent=state.troops;$('buySupplies').disabled=state.gold<10||state.supplies>999994;$('sellSupplies').disabled=state.supplies<5;$('recruitSoldier').disabled=state.gold<10||state.troops>=9999;$('tavernRest').disabled=state.gold<5||state.health>=100;renderEquipment()}
+function updateTownPanel(){$('townGold').textContent=state.gold;$('townSupplies').textContent=state.supplies;$('townTroops').textContent=state.troops;$('buySupplies').disabled=state.gold<10||state.supplies>999994;$('sellSupplies').disabled=state.supplies<5;$('recruitSoldier').disabled=state.gold<10||state.troops>=9999;$('tavernRest').disabled=state.gold<5||state.health>=100;renderEquipment();renderNamedRecruitment()}
+function recruitNamed(candidateId){
+ if(!campaignRecruitment||!selected||selected.id!==state.current)return;
+ const result=campaignRecruitment.recruit(candidateId,selected.id);
+ if(!result.ok){$('townNote').textContent=result.reason;notify(result.reason);updateTownPanel();return}
+ updateHud();updateTownPanel();save();
+ $('townNote').textContent=result.character.name+' joined your company for '+result.cost+' gold.';
+}
 function equipmentStats(){return Object.values(state.equipment).reduce((sum,id)=>{const item=items[id];if(item){sum.attack+=item.attack;sum.defence+=item.defence}return sum},{attack:0,defence:0})}
 function renderEquipment(){const stats=equipmentStats();$('equipmentStats').textContent='Equipment bonuses · Attack +'+stats.attack+' · Defence +'+stats.defence;const list=$('inventoryList');list.textContent='';state.inventory.forEach(id=>{const item=items[id];if(!item)return;const row=document.createElement('div');row.className='inventory-row';const info=document.createElement('span');const slot=Object.keys(state.equipment).find(key=>state.equipment[key]===id);info.textContent=item.name+' · '+item.slot+(slot?' · Equipped':'');const button=document.createElement('button');button.className='action';button.textContent=slot?'Equipped':'Equip';button.disabled=!!slot;button.addEventListener('click',()=>equipItem(id));row.append(info,button);list.appendChild(row)});Object.keys(items).filter(id=>items[id].shop).forEach(id=>{const item=items[id],button=$('buy-'+id);if(button)button.disabled=state.gold<item.price||state.inventory.includes(id)})}
 function buyEquipment(id){const item=items[id];if(!item||!item.shop||!selected||selected.id!==state.current||!['town','castle'].includes(selected.kind)||state.inventory.includes(id)||state.gold<item.price)return;state.gold-=item.price;state.inventory.push(id);updateHud();updateTownPanel();save();$('townNote').textContent='Purchased '+item.name+' for '+item.price+' gold. Equip it from your inventory.'}
@@ -153,7 +179,7 @@ $('resourceFilter').addEventListener('change',filterResourceSites);
 $('townClose').onclick=closeTown;$('buy-worn-sword').onclick=()=>buyEquipment('worn-sword');$('buy-iron-sword').onclick=()=>buyEquipment('iron-sword');$('buy-padded-armour').onclick=()=>buyEquipment('padded-armour');$('buy-round-shield').onclick=()=>buyEquipment('round-shield');$('buySupplies').onclick=buySupplies;$('sellSupplies').onclick=sellSupplies;$('recruitSoldier').onclick=recruitSoldier;$('tavernRest').onclick=tavernRest;$('audience').onclick=requestAudience;$('explore').onclick=explore;$('roamMode').onclick=()=>{roamMode=!roamMode;$('roamMode').style.borderColor=roamMode?'#e0c37e':'#697253';notify(roamMode?'Roam mode: tap open ground to set a destination.':'Roam mode off.')};$('zoomIn').onclick=()=>zoom(1.18);$('zoomOut').onclick=()=>zoom(.85);$('center').onclick=center;$('travel').onclick=travel;$('camp').onclick=camp;$('rest').onclick=rest;$('visit').onclick=visit;$('close').onclick=()=>$('drawer').classList.remove('open');$('cancel').onclick=cancel;
 $('pause').onclick=()=>{state.paused=!state.paused;$('pause').textContent=state.paused?'▶ Resume':'Ⅱ Pause';if(state.target){state.last=performance.now();if(!state.paused)requestAnimationFrame(tick)}};
 $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?4:1;$('speed').textContent='▶▶ '+state.speed+'×'};
-load();drawSettlements();drawResourceSites();filterResourceSites();drawParties();drawPlayer();drawDiscoveries();updateExplorationControls();updateHud();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is in the wilderness':'Your party is at '+byId(state.current).name;applyView();center();window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});window.addEventListener('resize',applyView);
+load();campaignRecruitment=window.IronCrownCampaignRecruitment.create({roster:state.characterRoster,candidates:window.IronCrownRecruitCandidates,getGold:()=>state.gold,setGold:value=>{state.gold=value},getReputation:()=>50});drawSettlements();drawResourceSites();filterResourceSites();drawParties();drawPlayer();drawDiscoveries();updateExplorationControls();updateHud();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is in the wilderness':'Your party is at '+byId(state.current).name;applyView();center();window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});window.addEventListener('resize',applyView);
 if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
  }
 });

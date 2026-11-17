@@ -25,4 +25,6 @@ assert.equal(poor.recruit('paid').reason,'Not enough gold');
 assert.equal(poor.snapshot().recruited.length,0,'failed recruitment must not mutate roster');
 const scalable=api.create({gold:10000,reputation:50,candidates:Array.from({length:150},(_,i)=>({...candidate,id:'recruit-'+i,role:i%3===0?'companion':'soldier'}))});
 assert.equal(scalable.snapshot().candidates.length,150,'candidate roster has no arbitrary tiny hard cap');
+const specialist=api.create({gold:100,reputation:50,candidates:[{...candidate,id:'specialist',role:'specialist'}]});
+assert.equal(specialist.quote('specialist').candidate.role,'specialist','specialist candidates must retain their campaign role');
 console.log('Recruitment motivation tests passed.');
