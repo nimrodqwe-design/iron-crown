@@ -7,7 +7,7 @@ function cleanCandidate(input){
  const motivation=MOTIVATIONS.has(input.motivation)?input.motivation:'coin';
  return Object.freeze({
   id:input.id,name:String(input.name||'Unknown recruit'),
-  role:['companion','officer','soldier'].includes(input.role)?input.role:'soldier',
+  role:['companion','officer','specialist','soldier'].includes(input.role)?input.role:'soldier',
   background:String(input.background||'Unknown background'),
   motivation,baseCost:Math.round(clamp(input.baseCost??20,0,999999)),
   trust:clamp(input.trust??25,0,100),
