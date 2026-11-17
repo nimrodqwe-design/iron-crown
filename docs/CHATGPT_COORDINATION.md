@@ -222,3 +222,18 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Design boundary:** No authoritative reputation field exists yet; the adapter uses a neutral reputation baseline of 50. No loyalty events or battle participation mapping are wired in this slice.
 - **Checks:** Added campaign-recruitment tests and extended save/recruitment tests. Automated workflow not yet observed at hand-off; no browser, mobile, save/load browser runtime or offline test performed.
 - **Next action:** Inspect the PR diff and GitHub Actions result. Merge only if all JavaScript syntax and regression tests pass; then proceed to persistent party membership and loyalty-event integration.
+
+
+### Daily development hand-off — 17 Nov 2026
+
+- **Current main before this documentation PR:** `05018d50ab94b6c3cf507b97ab783bc1451b7346`.
+- **Iron Crown PR #17:** named settlement recruitment merged into main as `05018d50ab94b6c3cf507b97ab783bc1451b7346`. Adds Mara Venn at Kingsbridge, Iven Rook at Highcourt and Sella Quill at Silverkeep; uses the existing recruitment pricing service; persists optional `candidateId`; deducts authoritative campaign gold; preserves generic soldier recruitment and aggregate `state.troops`.
+- **Iron Crown checks:** PR branch run 44051187245 passed JavaScript syntax checks and all nine Node test files. Post-merge main run 44051514383 passed the same suite. GitHub Pages deploy run 44051516028 completed successfully.
+- **Iron Crown limitations:** no browser, Android viewport, browser local-storage save/load, offline-launch or real device performance test has been performed. Recruitment reputation currently uses a neutral baseline of 50 because no authoritative campaign reputation field exists.
+- **Issue #7:** updated with PR #17 completion. Remaining work is active-party membership, loyalty-event producers/replay persistence, named battle participants and exactly-once campaign battle outcome application.
+- **World Issue #5:** map/resource layer remains informational and merged through PR #15 (`c79ced134beefcb9153670223f16393333d3b0cd`). Issue remains open for browser/mobile/save/offline runtime validation.
+- **Battle prototype PR #2:** remains an isolated draft reference. It is not connected to campaign state, battle simulation events, saves or persistent participants; do not merge it as finished campaign gameplay.
+- **Branch reconciliation:** battle-core simulation and test files are byte-identical to main. Recruitment/loyalty feature branches contain historical versions of code already merged through PR #6; preserve these branches rather than re-merging stale diffs. World reconciliation branch source data is already represented on main; its older game.js differs due to later campaign integration and should not overwrite main.
+- **Track B — Lantern Run:** PR #18 merged into `sidegame/lantern-run` only (not main), merge commit `dd6d59a6d58ff729506716fa96863ed615e1970a`. Added a fake-DOM harness that executes the actual UI controller and checks keyboard/buttons, blocked movement, focus guard, trap/escape endings and restart. Workflow run 44051414407 passed state, UI-contract and DOM-interaction checks; post-merge branch run 44051588845 passed all three. No real browser or Android device test performed. The side game remains isolated in `side-game/lantern-run/` and its dedicated branch.
+- **Next Iron Crown priority:** design and persist active-party membership for named companions without changing aggregate troop counts; then connect loyalty actions and explicit named battle participants.
+- **Next Lantern Run priority:** perform a real browser/mobile smoke test when a browser environment is available, then tune the small board's feedback and replayability based on observed behavior.
