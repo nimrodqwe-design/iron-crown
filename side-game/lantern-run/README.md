@@ -3,16 +3,16 @@
 A tiny, dependency-free browser game developed as an autonomous side project.
 
 ## Current loop
-Navigate a deterministic 5×5 ruin, avoid four fixed hazards, and reach the exit before 12 lantern moves are exhausted.
+Navigate three deterministic 5×5 ruins with distinct hazard layouts. Reach each exit before the 12-move lantern budget is exhausted; the Next ruin button advances to the next layout.
 
 ## Controls
-Arrow keys or on-screen touch buttons. Restart creates a fresh deterministic run. Arrow-key movement does not intercept keys while a button or text-entry control has focus.
+Arrow keys or on-screen touch buttons. Next ruin starts the next deterministic layout and cycles back to the first after the third. Arrow-key movement does not intercept keys while a button or text-entry control has focus.
 
 ## Accessibility and architecture
 - The board exposes grid and cell semantics with spoken cell labels.
 - The current player position is marked for assistive technology.
 - Movement controls disable after the run ends; restart remains available.
-- The UI reads cell types and labels from the same state module that resolves movement, so hazard coordinates are not duplicated.
+- The UI reads the current layout's cell types and labels from the same state module that resolves movement, so hazard coordinates are not duplicated. All three routes have state-level regression coverage.
 - Blocked movement returns the unchanged state object and does not consume light.
 
 ## Validation
