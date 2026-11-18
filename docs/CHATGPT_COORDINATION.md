@@ -36,7 +36,7 @@ Copy this section for each new feature and fill it in.
 - **Implementation notes:**
 - **Checks performed:**
 - **Known limitations or bugs:**
-- **Pull request:**
+- **Pull request:** #20.
 - **Next action for the other session:**
 
 ## Update protocol
@@ -241,12 +241,12 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 
 ### Persistent party management — 18 November 2026
 
-- **Status:** Implemented on an isolated feature branch; awaiting CI and review.
+- **Status:** Ready for review; CI passed on the current PR head.
 - **Branch:** `feature/persistent-party-management`.
 - **Goal:** Let the player assign named roster characters to a saved active party without converting generic troops into individual records.
 - **Files:** `js/characters/party.js`, `js/core/state.js`, `js/core/save.js`, `js/game.js`, `index.html`, `styles/main.css`, `sw.js`, `tests/party.test.js`, `tests/campaign-save.test.js`, `docs/CAMPAIGN_CHARACTER_CONTRACT.md`, `README.md`.
 - **Implementation:** Adds an ordered `activePartyIds` list with a four-character capacity; assignments validate against the campaign roster, reject duplicates/unknown IDs, and do not change aggregate `troops`. The Company panel exposes assignment/removal and saves successful changes. Save version 7 preserves v5/v6 campaigns and filters stale/duplicate IDs during load.
-- **Checks:** Focused party and save tests added; not yet executed in this session. GitHub Actions PR checks pending.
+- **Checks:** JavaScript syntax and all 10 Node test files passed in GitHub Actions run 44265118989 (current PR head). No browser/mobile/offline runtime test was performed.
 - **Known limitations:** Active-party membership is not yet passed to the battle simulation. Loyalty events are still not produced by campaign actions. No browser/mobile/offline runtime test was performed.
 - **Next action:** Run the full Node regression suite; then connect explicit active-party participant IDs to the battle encounter adapter without changing aggregate troop accounting.
 
