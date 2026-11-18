@@ -21,14 +21,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
 </head>
 <body><main>
 <h1>Lantern Run</h1>
-<p>Find the exit before your lantern burns out. Avoid the ruins marked with ✕.</p>
+<p>Find the exit before your lantern burns out. Avoid the ruins marked with ✕. Three layouts rotate when you start a new run.</p>
 <div id="grid" class="grid" role="grid" aria-label="Ruin board" aria-rowcount="5" aria-colcount="5"></div>
 <div id="status" aria-live="polite" aria-atomic="true"></div>
 <div class="controls" role="group" aria-label="Movement controls">
 <span aria-hidden="true"></span><button data-move="up" aria-label="Move up">▲</button><span aria-hidden="true"></span>
 <button data-move="left" aria-label="Move left">◀</button><button data-move="down" aria-label="Move down">▼</button><button data-move="right" aria-label="Move right">▶</button>
 </div>
-<p><button id="restart">New run</button></p>
+<p><button id="restart">Next ruin</button></p>
 <script src="game-state.js"></script>
 <script>
 (()=>{
@@ -42,27 +42,28 @@ if(!api){
 }
 let state;
 function message(s){
- if(!s.ended)return 'Lantern light: '+s.light+'.';
- if(s.outcome==='escaped')return 'You escaped the ruins with '+Math.max(0,s.light)+' light remaining.';
- if(s.outcome==='trapped')return 'The ruins close around your path. Run ended.';
- return 'Your lantern goes dark. Run ended.';
+ const prefix='Ruin '+(s.level+1)+' · ';
+ if(!s.ended)return prefix+'Lantern light: '+s.light+'.';
+ if(s.outcome==='escaped')return prefix+'You escaped with '+Math.max(0,s.light)+' light remaining.';
+ if(s.outcome==='trapped')return prefix+'The ruins close around your path. Run ended.';
+ return prefix+'Your lantern goes dark. Run ended.';
 }
 function render(){
  grid.replaceChildren();
  for(let y=0;y<api.SIZE;y++)for(let x=0;x<api.SIZE;x++){
-  const cell=document.createElement('div'),kind=api.cellKind(x,y);
+  const cell=document.createElement('div'),kind=api.cellKind(x,y,state.level);
   cell.className='cell';cell.setAttribute('role','gridcell');
   if(kind==='goal'){cell.classList.add('goal');cell.textContent='⌂'}
   if(kind==='trap'){cell.classList.add('trap');cell.textContent='✕'}
   const isPlayer=x===state.x&&y===state.y;
   if(isPlayer){cell.classList.add('player');cell.textContent='🕯';cell.setAttribute('aria-current','location')}
-  cell.setAttribute('aria-label',(isPlayer?'Your position, ':'')+api.cellLabel(x,y)+', row '+(y+1)+', column '+(x+1));
+  cell.setAttribute('aria-label',(isPlayer?'Your position, ':'')+api.cellLabel(x,y,state.level)+', row '+(y+1)+', column '+(x+1));
   grid.append(cell);
  }
  status.textContent=message(state);
  document.querySelectorAll('button[data-move]').forEach(button=>button.disabled=state.ended);
 }
-function reset(){state=api.initial();render();}
+function reset(){state=api.initial(state?(state.level+1)%api.LEVEL_COUNT:0);render();}
 function move(dir){
  if(state.ended)return;
  const before=state;
