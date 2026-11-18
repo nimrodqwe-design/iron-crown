@@ -241,20 +241,22 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 
 ### Persistent party management — 18 November 2026
 
-- **Status:** Ready for review; CI passed on the current PR head.
+- **Status:** Merged into `main` through PR #20.
 - **Branch:** `feature/persistent-party-management`.
-- **Goal:** Let the player assign named roster characters to a saved active party without converting generic troops into individual records.
-- **Files:** `js/characters/party.js`, `js/core/state.js`, `js/core/save.js`, `js/game.js`, `index.html`, `styles/main.css`, `sw.js`, `tests/party.test.js`, `tests/campaign-save.test.js`, `docs/CAMPAIGN_CHARACTER_CONTRACT.md`, `README.md`.
-- **Implementation:** Adds an ordered `activePartyIds` list with a four-character capacity; assignments validate against the campaign roster, reject duplicates/unknown IDs, and do not change aggregate `troops`. The Company panel exposes assignment/removal and saves successful changes. Save version 7 preserves v5/v6 campaigns and filters stale/duplicate IDs during load.
-- **Checks:** JavaScript syntax and all 10 Node test files passed in GitHub Actions run 44265118989 (current PR head). No browser/mobile/offline runtime test was performed.
-- **Known limitations:** Active-party membership is not yet passed to the battle simulation. Loyalty events are still not produced by campaign actions. No browser/mobile/offline runtime test was performed.
-- **Next action:** Run the full Node regression suite; then connect explicit active-party participant IDs to the battle encounter adapter without changing aggregate troop accounting.
+- **Merge commit:** `4f0c1e0abafa9c60e53c9685747d1c590765928d`.
+- **Goal:** Assign named roster characters to a saved active party without converting generic troops into individual records.
+- **Files:** `js/characters/party.js`, `js/core/state.js`, `js/core/save.js`, `js/game.js`, `index.html`, `styles/main.css`, `sw.js`, `tests/party.test.js`, `tests/campaign-save.test.js`, `tests/map-resource-ui.test.js`, `docs/CAMPAIGN_CHARACTER_CONTRACT.md`, `README.md`.
+- **Implementation:** Adds ordered `activePartyIds` with a four-character capacity. Assignments validate against the campaign roster, preserve assignment order, reject duplicates/unknown IDs and leave aggregate `troops` unchanged. The Company panel exposes assignment/removal. Save v7 migrates v5/v6 campaigns and filters stale/duplicate IDs during load.
+- **Checks:** JavaScript syntax and all 10 Node test files passed in GitHub Actions run 44265206031 on the final PR head. No browser/mobile/offline runtime test was performed.
+- **Known limitations:** Active-party membership is not yet passed into the battle simulation. Loyalty events are still not produced by campaign actions.
+- **Next action:** Connect explicit active-party participant IDs to the battle encounter and result adapter while preserving reserve accounting and aggregate troop counts.
 
 ### Branch reconciliation — 18 November 2026
 
-- Current `main` is `ec4f7155e3478da87594b11e0018540acfbde837`.
+- Current `main` is `4f0c1e0abafa9c60e53c9685747d1c590765928d`.
 - Only open PR is #2, the standalone battlefield reference prototype. It remains draft and is intentionally not merged as integrated gameplay.
-- Historical roster/save, named-recruitment and world-resource branches are behind/diverged and their compatible changes are already present on `main`; do not merge them again.
-- `feature/battle-core` remains a separate divergent simulation branch with unmerged `js/battle/battle-simulation.js` and tests. Review/reconcile it after party persistence; it must not be wired to campaign outcomes until reserve accounting and named participant mapping are tested.
-- `feature/campaign-loyalty-adapter` and `feature/recruit-loyalty` retain standalone loyalty work; campaign event producers and party/battle participant ownership remain incomplete.
-- Side game remains isolated under `side-game/lantern-run/` on `sidegame/lantern-run`.
+- The roster/save, named-recruitment and world-resource changes are already represented on `main`. Their older branches are historical references; do not re-merge stale diffs. The old save-v6 branch is behind and must not overwrite save v7.
+- `feature/battle-core` has battle simulation and test blobs byte-identical to `main`; no code re-merge is required. Campaign battle entry/exit, persistent participant mapping and result application remain incomplete.
+- `feature/campaign-loyalty-adapter` has adapter and loyalty service files byte-identical to `main`. The service exists, but live campaign action producers and loyalty-state persistence are not connected.
+- Side game PR #21 merged into `sidegame/lantern-run` only, merge commit `76020a9cfd5239930b1c88b2fdd965140a243c23`. Lantern Run now cycles through three deterministic ruin layouts; state, UI contract and fake-DOM interaction checks passed in workflow run 44264871440. No real browser or Android device test was performed.
+- Side game remains isolated under `side-game/lantern-run/` on `sidegame/lantern-run`; its changes are not part of Iron Crown `main`.
