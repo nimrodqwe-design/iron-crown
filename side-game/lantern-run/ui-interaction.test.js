@@ -60,7 +60,7 @@ const button=direction=>movement.find(item=>item.dataset.move===direction);
 
 assert.equal(grid.children.length,25,'initial board renders all 25 cells');
 assert.equal(playerAt(0,4),true,'player starts in the lower-left cell');
-assert.equal(status.textContent,'Lantern light: 12.');
+assert.equal(status.textContent,'Ruin 1 · Lantern light: 12.');
 assert.equal(cell(4,0).getAttribute('aria-label').startsWith('Exit'),true);
 
 button('left').click();
@@ -70,7 +70,7 @@ assert.equal(status.textContent,'The darkness blocks that way.');
 const key= document.dispatch('keydown',{key:'ArrowUp'});
 assert.equal(key.defaultPrevented,true,'handled arrow keys prevent page scrolling');
 assert.equal(playerAt(0,3),true,'keyboard movement updates the rendered position');
-assert.equal(status.textContent,'Lantern light: 11.');
+assert.equal(status.textContent,'Ruin 1 · Lantern light: 11.');
 
 document.dispatch('keydown',{key:'ArrowRight',target:button('right')});
 assert.equal(playerAt(0,3),true,'focused buttons must not also receive global arrow-key movement');
@@ -82,12 +82,13 @@ assert.equal(button('up').disabled,true,'movement controls disable after an endi
 restart.click();
 assert.equal(playerAt(0,4),true,'restart returns the player to the start');
 assert.equal(button('up').disabled,false,'restart re-enables movement');
-assert.equal(status.textContent,'Lantern light: 12.');
+assert.equal(status.textContent,'Ruin 2 · Lantern light: 12.');
 
-['up','up','right','right','right','up','up','right'].forEach(direction=>button(direction).click());
-assert.match(status.textContent,/You escaped the ruins/,'the known safe route reaches the exit');
+['up','right','up','right','up','up','right','right'].forEach(direction=>button(direction).click());
+assert.match(status.textContent,/Ruin 2 · You escaped/,'the second layout safe route reaches the exit');
 assert.equal(button('right').disabled,true,'movement remains disabled after escape');
 
 restart.click();
 assert.equal(playerAt(0,4),true,'restart also works after victory');
+assert.equal(status.textContent,'Ruin 3 · Lantern light: 12.','restart advances to the third ruin');
 console.log('Lantern Run DOM interaction checks passed');
