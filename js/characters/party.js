@@ -38,7 +38,7 @@ function create(options){
   const activeIds=new Set(normalise());
   return roster.list().map(character=>({...character,active:activeIds.has(character.id)}));
  }
- function active(){return list().filter(character=>character.active)}
+ function active(){return normalise().map(id=>roster.get(id)).filter(Boolean)}
  return Object.freeze({assign,remove,list,active,get maxSize(){return maxSize}});
 }
 root.IronCrownParty=Object.freeze({create});
