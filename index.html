@@ -66,7 +66,7 @@
  </div>
  <div class="resource-filter" aria-label="Map resource filters"><label for="resourceFilter">Resource sites</label><select id="resourceFilter"><option value="all">All resources</option><option value="grain">Grain</option><option value="timber">Timber</option><option value="fish">Fish</option><option value="stone">Stone</option><option value="salt">Salt</option><option value="reeds">Reeds</option><option value="iron">Iron</option><option value="ore">Ore</option><option value="wool">Wool</option><option value="trade">Trade</option></select><span id="resourceCount" aria-live="polite">12 of 12 sites</span></div>
  <div class="hud"><div class="eyebrow">Current location</div><strong id="currentName">Greyhaven</strong><span id="currentSub">Crownlands · Village</span></div>
- <div class="tools"><button class="tool" id="zoomIn" aria-label="Zoom in">＋</button><button class="tool" id="zoomOut" aria-label="Zoom out">−</button><button class="tool" id="center" aria-label="Center map">⌖</button><button class="tool" id="roamMode" aria-label="Toggle off-road destination">◎</button><button class="tool explore-tool" id="explore" aria-label="Explore nearby location" title="Explore nearby location">⚑</button></div>
+ <div class="tools"><button class="tool" id="zoomIn" aria-label="Zoom in">＋</button><button class="tool" id="zoomOut" aria-label="Zoom out">−</button><button class="tool" id="center" aria-label="Center map">⌖</button><button class="tool" id="roamMode" aria-label="Toggle off-road destination">◎</button><button class="tool company-tool" id="companyButton" aria-label="Open company roster" title="Company roster">♟</button><button class="tool explore-tool" id="explore" aria-label="Explore nearby location" title="Explore nearby location">⚑</button></div>
  <div class="legend"><span>● Your party</span><span>🔴 Hostile bandits</span><span>🔵 Hostile patrols</span><span>🟢 Neutral traders</span></div>
  <section class="drawer" id="drawer">
   <div class="drawer-head"><div><div class="eyebrow" id="kindLabel">Settlement</div><h2 id="placeName">Greyhaven</h2><span class="tag" id="placeTag">Village</span></div><button class="close" id="close">×</button></div>
@@ -91,6 +91,13 @@
   <div class="town-section"><h3>Tavern</h3><p>Rest for an hour and recover some health. Costs 5 gold.</p><button class="action" id="tavernRest">Rest at the tavern · 5 gold</button></div>
   <p class="town-note" id="townNote" aria-live="polite">Your business here will be recorded in your campaign.</p>
  </section>
+ <section class="town-panel company-panel" id="companyPanel" aria-labelledby="companyTitle" aria-hidden="true">
+  <div class="town-head"><div><div class="eyebrow">Your company</div><h2 id="companyTitle">Party &amp; companions</h2><p>Assign named recruits to the active party. Generic soldiers remain a separate troop count.</p></div><button class="close" id="companyClose" aria-label="Close company roster">×</button></div>
+  <div class="town-balance"><span>Active party <b id="activePartyCount">0/4</b></span><span>Named roster <b id="rosterCount">0</b></span><span>Generic troops <b id="companyTroops">12</b></span></div>
+  <div class="town-section"><h3>Active party</h3><p>Up to four named characters can travel with your active company.</p><div id="activePartyList" class="named-recruit-list"></div></div>
+  <div class="town-section"><h3>Available recruits</h3><p>Characters not currently assigned to the active party.</p><div id="availablePartyList" class="named-recruit-list"></div></div>
+  <p class="town-note" id="companyNote" aria-live="polite">Party assignments are saved with this campaign. Battle participation is a separate upcoming integration.</p>
+ </section>
  <div class="toast" id="toast"></div>
 </main>
 <footer class="bottom"><div class="travel"><b id="travelTitle">Your party is at Greyhaven</b><small id="travelSub">Select a settlement to plot a route.</small></div><div class="actions"><button class="action" id="pause">Ⅱ Pause</button><button class="action" id="speed">▶▶ 1×</button><button class="action" id="camp">Camp</button><button class="action camp-rest" id="rest">Rest 2h</button><button class="action" id="cancel" disabled>Cancel</button></div></footer>
@@ -99,6 +106,7 @@
 <script src="./js/data/items.js" defer></script>
 <script src="./js/data/recruits.js" defer></script>
 <script src="./js/characters/campaign-roster.js" defer></script>
+<script src="./js/characters/party.js" defer></script>
 <script src="./js/characters/recruitment.js" defer></script>
 <script src="./js/characters/campaign-recruitment.js" defer></script>
 <script src="./js/core/state.js" defer></script>
