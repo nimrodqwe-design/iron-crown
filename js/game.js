@@ -10,7 +10,7 @@ const resourceSites=window.IronCrownWorld.resourceSites||[];
 const items=window.IronCrownItems;
 const byId=id=>places.find(p=>p.id===id);
 let state=window.IronCrownState.createInitialState();
-let selected=null,drag=null,playerGroup=null,roamMode=false,campaignRecruitment=null;
+let selected=null,drag=null,playerGroup=null,roamMode=false,campaignRecruitment=null,partyManager=null;
 const currentPoint=()=>state.freePosition||byId(state.current);
 const svgNS='http://www.w3.org/2000/svg';
 function node(tag,attrs,parent){let n=document.createElementNS(svgNS,tag);Object.keys(attrs||{}).forEach(k=>n.setAttribute(k,attrs[k]));(parent||$('world')).appendChild(n);return n}
@@ -144,8 +144,64 @@ function recruitNamed(candidateId){
  if(!campaignRecruitment||!selected||selected.id!==state.current)return;
  const result=campaignRecruitment.recruit(candidateId,selected.id);
  if(!result.ok){$('townNote').textContent=result.reason;notify(result.reason);updateTownPanel();return}
- updateHud();updateTownPanel();save();
+ updateHud();updateTownPanel();renderCompanyPanel();save();
  $('townNote').textContent=result.character.name+' joined your company for '+result.cost+' gold.';
+}
+function updateCompanyButton(){
+ const button=$('companyButton');if(!button)return;
+ const active=partyManager?partyManager.active().length:0,total=state.characterRoster.list().length,limit=partyManager?partyManager.maxSize:4;
+ button.setAttribute('aria-label','Open company roster. '+active+' of '+limit+' active; '+total+' named recruits.');
+ button.title='Company · '+active+'/'+limit+' active';
+}
+function createPartyCard(character,isActive){
+ const card=document.createElement('div');card.className='named-recruit-card';
+ const details=document.createElement('div'),heading=document.createElement('strong'),summary=document.createElement('p');
+ heading.textContent=character.name+' · '+character.role;
+ summary.textContent='Motivation: '+character.motivation+' · Trust '+character.trust+'/100 · Morale '+character.morale+'/100';
+ details.append(heading,summary);
+ const button=document.createElement('button');button.className='action';
+ if(isActive){button.textContent='Remove from party';button.addEventListener('click',()=>changeParty('remove',character.id))}
+ else{
+  button.textContent='Add to party';
+  button.disabled=partyManager.active().length>=partyManager.maxSize;
+  if(button.disabled)button.title='The active party is full';
+  button.addEventListener('click',()=>changeParty('assign',character.id));
+ }
+ card.append(details,button);return card;
+}
+function renderCompanyPanel(){
+ if(!partyManager)return;
+ const entries=partyManager.list(),active=partyManager.active(),activeIds=new Set(active.map(character=>character.id));
+ $('activePartyCount').textContent=active.length+'/'+partyManager.maxSize;
+ $('rosterCount').textContent=entries.length;
+ $('companyTroops').textContent=state.troops;
+ const activeList=$('activePartyList'),availableList=$('availablePartyList');
+ activeList.replaceChildren();availableList.replaceChildren();
+ if(!active.length){const empty=document.createElement('p');empty.className='company-empty';empty.textContent='No named characters are assigned yet. Recruit someone at a settlement, then add them here.';activeList.append(empty)}
+ active.forEach(character=>activeList.append(createPartyCard(character,true)));
+ const available=entries.filter(character=>!activeIds.has(character.id));
+ if(!available.length){const empty=document.createElement('p');empty.className='company-empty';empty.textContent='No unassigned named recruits.';availableList.append(empty)}
+ available.forEach(character=>availableList.append(createPartyCard(character,false)));
+ updateCompanyButton();
+}
+function changeParty(action,id){
+ if(!partyManager)return;
+ const result=action==='assign'?partyManager.assign(id):partyManager.remove(id);
+ $('companyNote').textContent=result.ok?(action==='assign'?result.character.name+' joined the active party.':result.character.name+' left the active party.'):result.reason;
+ if(result.ok)save();
+ renderCompanyPanel();updateCompanyButton();
+}
+function openCompanyPanel(){
+ $('drawer').classList.remove('open');
+ $('resourcePanel').classList.remove('open');$('resourcePanel').setAttribute('aria-hidden','true');
+ $('townPanel').classList.remove('open');$('townPanel').setAttribute('aria-hidden','true');
+ renderCompanyPanel();
+ $('companyPanel').classList.add('open');$('companyPanel').setAttribute('aria-hidden','false');
+ $('companyClose').focus();
+}
+function closeCompanyPanel(){
+ $('companyPanel').classList.remove('open');$('companyPanel').setAttribute('aria-hidden','true');
+ $('companyButton').focus();
 }
 function equipmentStats(){return Object.values(state.equipment).reduce((sum,id)=>{const item=items[id];if(item){sum.attack+=item.attack;sum.defence+=item.defence}return sum},{attack:0,defence:0})}
 function renderEquipment(){const stats=equipmentStats();$('equipmentStats').textContent='Equipment bonuses · Attack +'+stats.attack+' · Defence +'+stats.defence;const list=$('inventoryList');list.textContent='';state.inventory.forEach(id=>{const item=items[id];if(!item)return;const row=document.createElement('div');row.className='inventory-row';const info=document.createElement('span');const slot=Object.keys(state.equipment).find(key=>state.equipment[key]===id);info.textContent=item.name+' · '+item.slot+(slot?' · Equipped':'');const button=document.createElement('button');button.className='action';button.textContent=slot?'Equipped':'Equip';button.disabled=!!slot;button.addEventListener('click',()=>equipItem(id));row.append(info,button);list.appendChild(row)});Object.keys(items).filter(id=>items[id].shop).forEach(id=>{const item=items[id],button=$('buy-'+id);if(button)button.disabled=state.gold<item.price||state.inventory.includes(id)})}
@@ -160,7 +216,7 @@ function cancel(){if(!state.target)return;state.target=null;state.from=state.to=
 function updateCampControls(){$('camp').textContent=state.camped?'Break camp':'Camp';$('camp').disabled=!!state.target;$('rest').classList.toggle('visible',state.camped);$('rest').disabled=!!state.target||!state.camped}
 function camp(){if(state.target){notify('You cannot make camp while travelling.');return}state.camped=!state.camped;updateCampControls();save();notify(state.camped?'Camp established. Your party can rest here.':'Camp broken. Ready to travel.')}
 function rest(){if(!state.camped||state.target)return;state.minutes+=120;if(state.minutes>=1440){state.day+=Math.floor(state.minutes/1440);state.minutes%=1440}state.health=Math.min(100,state.health+5);updateHud();save();notify('Two hours pass. Your party has rested.')}
-function updateHud(){let p=currentPoint();const values={crownProgress:state.discoveries.length+'/3',gold:state.gold,troops:state.troops,health:state.health,currentName:state.target?'On the move':state.freePosition?'The Wilderness':p.name,currentSub:(state.target?'Travelling party · '+(state.target==='__free__'?'open country':state.to.name):state.freePosition?'Unclaimed countryside':p.faction+' · '+(p.kind==='town'?'Market town':p.kind==='castle'?'Fortress':'Village'))+' · Supplies '+state.supplies,clock:'DAY '+state.day+' · '+String(Math.floor(state.minutes/60)).padStart(2,'0')+':'+String(Math.floor(state.minutes%60)).padStart(2,'0')};Object.keys(values).forEach(id=>{const el=$(id),value=String(values[id]);if(el.textContent!==value)el.textContent=value})}
+function updateHud(){let p=currentPoint();const values={crownProgress:state.discoveries.length+'/3',gold:state.gold,troops:state.troops,health:state.health,currentName:state.target?'On the move':state.freePosition?'The Wilderness':p.name,currentSub:(state.target?'Travelling party · '+(state.target==='__free__'?'open country':state.to.name):state.freePosition?'Unclaimed countryside':p.faction+' · '+(p.kind==='town'?'Market town':p.kind==='castle'?'Fortress':'Village'))+' · Supplies '+state.supplies,clock:'DAY '+state.day+' · '+String(Math.floor(state.minutes/60)).padStart(2,'0')+':'+String(Math.floor(state.minutes%60)).padStart(2,'0')};Object.keys(values).forEach(id=>{const el=$(id),value=String(values[id]);if(el.textContent!==value)el.textContent=value});updateCompanyButton()}
 const saveSystem=window.IronCrownSave.create({getState:()=>state,getPlace:byId,getDiscoveryIds:()=>discoveries.map(site=>site.id),getItemIds:slot=>Object.keys(items).filter(id=>!slot||items[id].slot===slot),getCharacterRoster:()=>state.characterRoster.snapshot(),setCharacterRoster:snapshot=>{state.characterRoster=window.IronCrownCharacters.restore(snapshot,{onWarning:message=>notify(message)})},createCharacterRoster:()=>window.IronCrownCharacters.create(),notify,version:window.IronCrownState.saveVersion});
 function save(){return saveSystem.save()}
 function load(){return saveSystem.load()}
@@ -174,12 +230,12 @@ let panFrame=0,pendingPointer=null;wrap.addEventListener('pointermove',e=>{if(!d
 wrap.addEventListener('pointerup',e=>{if(drag&&!drag.moved&&roamMode&&!e.target.closest('.settlement,.resource-site')){let pt=$('map').createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;let q=pt.matrixTransform($('map').getScreenCTM().inverse());let x=(q.x-state.panX)/state.zoom,y=(q.y-state.panY)/state.zoom;if(x>20&&x<1580&&y>20&&y<980)startFreeRoam(x,y)}drag=null;wrap.classList.remove('drag')});['pointercancel','lostpointercapture'].forEach(k=>wrap.addEventListener(k,()=>{drag=null;wrap.classList.remove('drag')}));
 wrap.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY<0?1.08:.92)},{passive:false});
 $('resourcePanelClose').onclick=closeResourcePanel;
-document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('resourcePanel').classList.contains('open')){event.preventDefault();closeResourcePanel()}});
+document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if($('companyPanel').classList.contains('open')){event.preventDefault();closeCompanyPanel();return}if($('resourcePanel').classList.contains('open')){event.preventDefault();closeResourcePanel()}});
 $('resourceFilter').addEventListener('change',filterResourceSites);
-$('townClose').onclick=closeTown;$('buy-worn-sword').onclick=()=>buyEquipment('worn-sword');$('buy-iron-sword').onclick=()=>buyEquipment('iron-sword');$('buy-padded-armour').onclick=()=>buyEquipment('padded-armour');$('buy-round-shield').onclick=()=>buyEquipment('round-shield');$('buySupplies').onclick=buySupplies;$('sellSupplies').onclick=sellSupplies;$('recruitSoldier').onclick=recruitSoldier;$('tavernRest').onclick=tavernRest;$('audience').onclick=requestAudience;$('explore').onclick=explore;$('roamMode').onclick=()=>{roamMode=!roamMode;$('roamMode').style.borderColor=roamMode?'#e0c37e':'#697253';notify(roamMode?'Roam mode: tap open ground to set a destination.':'Roam mode off.')};$('zoomIn').onclick=()=>zoom(1.18);$('zoomOut').onclick=()=>zoom(.85);$('center').onclick=center;$('travel').onclick=travel;$('camp').onclick=camp;$('rest').onclick=rest;$('visit').onclick=visit;$('close').onclick=()=>$('drawer').classList.remove('open');$('cancel').onclick=cancel;
+$('companyButton').onclick=openCompanyPanel;$('companyClose').onclick=closeCompanyPanel;$('townClose').onclick=closeTown;$('buy-worn-sword').onclick=()=>buyEquipment('worn-sword');$('buy-iron-sword').onclick=()=>buyEquipment('iron-sword');$('buy-padded-armour').onclick=()=>buyEquipment('padded-armour');$('buy-round-shield').onclick=()=>buyEquipment('round-shield');$('buySupplies').onclick=buySupplies;$('sellSupplies').onclick=sellSupplies;$('recruitSoldier').onclick=recruitSoldier;$('tavernRest').onclick=tavernRest;$('audience').onclick=requestAudience;$('explore').onclick=explore;$('roamMode').onclick=()=>{roamMode=!roamMode;$('roamMode').style.borderColor=roamMode?'#e0c37e':'#697253';notify(roamMode?'Roam mode: tap open ground to set a destination.':'Roam mode off.')};$('zoomIn').onclick=()=>zoom(1.18);$('zoomOut').onclick=()=>zoom(.85);$('center').onclick=center;$('travel').onclick=travel;$('camp').onclick=camp;$('rest').onclick=rest;$('visit').onclick=visit;$('close').onclick=()=>$('drawer').classList.remove('open');$('cancel').onclick=cancel;
 $('pause').onclick=()=>{state.paused=!state.paused;$('pause').textContent=state.paused?'▶ Resume':'Ⅱ Pause';if(state.target){state.last=performance.now();if(!state.paused)requestAnimationFrame(tick)}};
 $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?4:1;$('speed').textContent='▶▶ '+state.speed+'×'};
-load();campaignRecruitment=window.IronCrownCampaignRecruitment.create({roster:state.characterRoster,candidates:window.IronCrownRecruitCandidates,getGold:()=>state.gold,setGold:value=>{state.gold=value},getReputation:()=>50});drawSettlements();drawResourceSites();filterResourceSites();drawParties();drawPlayer();drawDiscoveries();updateExplorationControls();updateHud();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is in the wilderness':'Your party is at '+byId(state.current).name;applyView();center();window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});window.addEventListener('resize',applyView);
+load();partyManager=window.IronCrownParty.create({roster:state.characterRoster,getActiveIds:()=>state.activePartyIds,setActiveIds:ids=>{state.activePartyIds=ids},maxSize:4});campaignRecruitment=window.IronCrownCampaignRecruitment.create({roster:state.characterRoster,candidates:window.IronCrownRecruitCandidates,getGold:()=>state.gold,setGold:value=>{state.gold=value},getReputation:()=>50});drawSettlements();drawResourceSites();filterResourceSites();drawParties();drawPlayer();drawDiscoveries();updateExplorationControls();updateHud();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is in the wilderness':'Your party is at '+byId(state.current).name;applyView();center();window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});window.addEventListener('resize',applyView);
 if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
  }
 });

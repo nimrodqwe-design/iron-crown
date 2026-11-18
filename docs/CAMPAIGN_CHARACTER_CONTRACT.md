@@ -1,6 +1,6 @@
 # Campaign Character and Event Integration Contract
 
-**Status:** Roster/save v6 foundation is merged through PR #13. Named companion recruitment is merged into `main` through PR #17 (`05018d50ab94b6c3cf507b97ab783bc1451b7346`). Loyalty-event producers, active-party membership and persistent battle-participant mapping remain incomplete.  
+**Status:** Roster/save v6 foundation is merged through PR #13. Named companion recruitment is merged into `main` through PR #17 (`05018d50ab94b6c3cf507b97ab783bc1451b7346`). Active-party membership is implemented by the party manager and save version 7 in PR #20. Loyalty-event producers and persistent battle-participant mapping remain incomplete.  
 **Related work:** PR #6 (recruitment and loyalty services), Issue #7 (ownership and integration decisions).
 
 ## 1. Verified current baseline
@@ -68,6 +68,16 @@ The existing `state.troops` is an aggregate army headcount. It remains authorita
 - When a named recruit with role `soldier` joins, count that soldier exactly once in the army headcount and roster; derive generic headcount as total soldiers minus named soldiers.
 - Companions and officers are tracked as named party characters but must not accidentally increment the generic soldier count.
 - The future roster/party owner must define reserve, active-party and garrison accounting before battle integration.
+
+## 3A. Active-party membership — implemented in save v7
+
+- `state.activePartyIds` is the authoritative ordered list of named character IDs assigned to the active party.
+- The current party capacity is four named characters. This is a named-character assignment limit, not a limit on `state.troops`.
+- The party manager validates every assignment against the persistent roster, rejects duplicates and unknown IDs, and removes stale IDs during hydration.
+- Generic soldiers remain represented by the aggregate troop count; assigning a named companion/officer/specialist does not change `state.troops`.
+- Save version 7 persists active-party IDs. Version 5 and version 6 saves migrate to an empty active party unless valid assignments already exist in a v6 payload; existing roster records and aggregate troops are preserved.
+- The company panel supports assigning/removing named recruits and saves every successful change.
+- **Not yet implemented:** party assignments are not yet passed into the battle simulation. The encounter caller must explicitly select named participants and retain their stable IDs through battle resolution.
 
 ## 4. Campaign event contract
 
