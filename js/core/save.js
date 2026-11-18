@@ -9,7 +9,8 @@ function create(options){
  const setCharacterRoster=options.setCharacterRoster;
  const createCharacterRoster=options.createCharacterRoster;
  const notify=typeof options.notify==='function'?options.notify:()=>{};
- const SAVE_VERSION=options.version||6;
+ const SAVE_VERSION=options.version||7;
+ const PARTY_LIMIT=Number.isInteger(options.partyLimit)?Math.max(1,Math.min(12,options.partyLimit)):4;
  const STORAGE_KEY='ironCrownSave';
  function save(){
   try{
@@ -19,7 +20,8 @@ function create(options){
     health:state.health,day:state.day,minutes:state.minutes,camped:state.camped,supplies:state.supplies,
     inventory:state.inventory,equipment:state.equipment,discoveries:state.discoveries,
     defeatedParties:state.defeatedParties,metCaravans:state.metCaravans,
-    houseStanding:state.houseStanding,audiences:state.audiences
+    houseStanding:state.houseStanding,audiences:state.audiences,
+    activePartyIds:Array.isArray(state.activePartyIds)?[...new Set(state.activePartyIds.filter(id=>typeof id==='string'))].slice(0,PARTY_LIMIT):[]
    };
    if(typeof getCharacterRoster==='function')savedState.characterRoster=getCharacterRoster();
    const payload={version:SAVE_VERSION,savedAt:new Date().toISOString(),state:savedState};
@@ -64,13 +66,17 @@ function create(options){
    state.houseStanding={alder:number(d.houseStanding?.alder,0,0,100),veyne:number(d.houseStanding?.veyne,0,0,100),rowan:number(d.houseStanding?.rowan,0,0,100)};
    state.audiences=Array.isArray(d.audiences)?[...new Set(d.audiences.filter(id=>['alder','veyne','rowan'].includes(id)))]:[];
    if(typeof setCharacterRoster==='function'){
-    if(parsed.version===SAVE_VERSION&&d.characterRoster&&typeof d.characterRoster==='object'){
+    if(parsed.version<=SAVE_VERSION&&d.characterRoster&&typeof d.characterRoster==='object'){
      setCharacterRoster(d.characterRoster);
     }else if(typeof createCharacterRoster==='function'){
      setCharacterRoster(createCharacterRoster().snapshot());
      if(parsed.version===SAVE_VERSION)notify('The save had no character roster; a fresh empty roster was created.');
     }
    }
+   const roster=state.characterRoster;
+   const knownCharacterIds=new Set(roster&&typeof roster.list==='function'?roster.list().map(character=>character.id):[]);
+   const requestedPartyIds=Array.isArray(d.activePartyIds)?d.activePartyIds:[];
+   state.activePartyIds=[...new Set(requestedPartyIds.filter(id=>typeof id==='string'&&knownCharacterIds.has(id)))].slice(0,PARTY_LIMIT);
    if(parsed.version!==SAVE_VERSION)save();
    return true;
   }catch(e){
