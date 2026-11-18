@@ -171,7 +171,7 @@ function createPartyCard(character,isActive){
 }
 function renderCompanyPanel(){
  if(!partyManager)return;
- const entries=partyManager.list(),active=entries.filter(character=>character.active);
+ const entries=partyManager.list(),active=partyManager.active(),activeIds=new Set(active.map(character=>character.id));
  $('activePartyCount').textContent=active.length+'/'+partyManager.maxSize;
  $('rosterCount').textContent=entries.length;
  $('companyTroops').textContent=state.troops;
@@ -179,7 +179,7 @@ function renderCompanyPanel(){
  activeList.replaceChildren();availableList.replaceChildren();
  if(!active.length){const empty=document.createElement('p');empty.className='company-empty';empty.textContent='No named characters are assigned yet. Recruit someone at a settlement, then add them here.';activeList.append(empty)}
  active.forEach(character=>activeList.append(createPartyCard(character,true)));
- const available=entries.filter(character=>!character.active);
+ const available=entries.filter(character=>!activeIds.has(character.id));
  if(!available.length){const empty=document.createElement('p');empty.className='company-empty';empty.textContent='No unassigned named recruits.';availableList.append(empty)}
  available.forEach(character=>availableList.append(createPartyCard(character,false)));
  updateCompanyButton();
