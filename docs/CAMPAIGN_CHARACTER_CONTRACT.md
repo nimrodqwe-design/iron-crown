@@ -1,6 +1,6 @@
 # Campaign Character and Event Integration Contract
 
-**Status:** Roster/save v6 foundation is merged through PR #13. Named companion recruitment is merged into `main` through PR #17 (`05018d50ab94b6c3cf507b97ab783bc1451b7346`). Active-party membership is now implemented on main through the party manager and save version 7. Loyalty-event producers and persistent battle-participant mapping remain incomplete.  
+**Status:** Roster/save v6 foundation is merged through PR #13. Named companion recruitment is merged into `main` through PR #17 (`05018d50ab94b6c3cf507b97ab783bc1451b7346`). Active-party membership is implemented by the party manager and save version 7 in PR #20. Loyalty-event producers and persistent battle-participant mapping remain incomplete.  
 **Related work:** PR #6 (recruitment and loyalty services), Issue #7 (ownership and integration decisions).
 
 ## 1. Verified current baseline
