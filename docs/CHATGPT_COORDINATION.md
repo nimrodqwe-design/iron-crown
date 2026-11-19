@@ -260,3 +260,16 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - `feature/campaign-loyalty-adapter` has adapter and loyalty service files byte-identical to `main`. The service exists, but live campaign action producers and loyalty-state persistence are not connected.
 - Side game PR #21 merged into `sidegame/lantern-run` only, merge commit `76020a9cfd5239930b1c88b2fdd965140a243c23`. Lantern Run now cycles through three deterministic ruin layouts; state, UI contract and fake-DOM interaction checks passed in workflow run 44264871440. No real browser or Android device test was performed.
 - Side game remains isolated under `side-game/lantern-run/` on `sidegame/lantern-run`; its changes are not part of Iron Crown `main`.
+
+
+### Campaign battle outcomes — lead integration (19 Nov 2026)
+
+- **Status:** Implemented on `feature/campaign-battle-outcomes`; awaiting CI and review.
+- **Goal:** Connect active named-party membership to the existing battle simulation and apply outcomes once to authoritative campaign state.
+- **Files:** `js/battle/battle-simulation.js`, `js/characters/campaign-battle.js`, `js/characters/campaign-roster.js`, `js/characters/party.js`, `js/core/state.js`, `js/core/save.js`, `js/game.js`, `index.html`, `sw.js`, focused battle/save/party/UI tests, README and campaign contract.
+- **Implementation:** Hostile roaming encounters now run through the existing deterministic battle simulation rather than the previous power-comparison shortcut. Active named party members are sent as explicit stable character IDs and fielded before generic foot troops. The simulation returns participant IDs and named-character survival outcomes. Campaign application updates generic troop survivors from the `foot` group only, hero health, victory rewards, defeated-party state, and participant trust/morale through the existing loyalty adapter. Named characters who fall become `recovering`, are removed from the active party and cannot be reassigned while recovering.
+- **Replay safety:** Save version 8 adds a bounded last-200 resolved battle ID ledger. Encounter event sequence is saved before simulation; result application checks the ledger before changing rewards, casualties or loyalty.
+- **Important limitation:** Current campaign encounters use automatic tactical resolution. The separate battlefield prototype PR #2 remains an unmerged reference; player-controlled battlefield presentation, retreat UI and real browser/mobile playtesting are not included in this slice.
+- **Checks:** Added focused Node tests for campaign battle mapping, participant outcomes, retreat, party recovery and v7→v8 migration. CI result pending at hand-off; no browser, mobile, local-storage runtime or offline launch test performed.
+- **Next action:** Review CI and diff, merge only if all root checks pass; then build the player-controlled battlefield renderer on top of the same simulation contract. Preserve PR #2 as a visual/reference source until its independent logic is reconciled.
+
