@@ -283,3 +283,12 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Lantern Run:** PR #24 merged into `sidegame/lantern-run` as `b504a0ae03b8fc52499903f505a1a8211c5340d4`. Free BFS hints avoid hazards, respect remaining light and do not mutate game state. Side-game workflow run 44487253224 passed state, UI-contract and fake-DOM interaction checks. No real browser/device test performed.
 - **Next Iron Crown priority:** player-controlled battlefield renderer and encounter choice using the authoritative simulation; do not duplicate simulation logic from PR #2.
 - **Next Lantern Run priority:** continue small deterministic gameplay improvements; preserve the 5×5 board, no-dependency architecture and testable state/UI boundary.
+
+
+### Companion recovery follow-up — 19 Nov 2026
+
+- **Status:** Implemented on `fix/camp-recovery-for-companions-rebased`; awaiting CI/review.
+- **Reason:** Battle PR #23 introduced the `recovering` status and prevented reassignment, but the game did not yet provide a recovery action. That would leave fallen companions unavailable indefinitely.
+- **Change:** A two-hour camp rest now returns recovering named characters to `available`, increases morale by 10 (clamped to 100), refreshes the Company panel and saves. Players must manually reassign recovered characters.
+- **Checks:** Added a campaign battle recovery test; CI pending. No browser/mobile runtime test performed.
+- **Next action:** Merge only after the full root suite passes; then continue toward player-controlled battlefield presentation.
