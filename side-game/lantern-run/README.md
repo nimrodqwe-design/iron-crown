@@ -3,7 +3,7 @@
 A tiny, dependency-free browser game developed as an autonomous side project.
 
 ## Current loop
-Navigate three deterministic 5×5 ruins with distinct hazard layouts. Reach each exit before the 12-move lantern budget is exhausted; the Next ruin button advances to the next layout.
+Navigate three deterministic 5×5 ruins with distinct hazard layouts. Reach each exit before the 12-move lantern budget is exhausted; the Next ruin button advances to the next layout. A free hint finds a safe next direction without moving the player or consuming lantern light.
 
 ## Controls
 Arrow keys or on-screen touch buttons. Next ruin starts the next deterministic layout and cycles back to the first after the third. Arrow-key movement does not intercept keys while a button or text-entry control has focus.
@@ -13,6 +13,7 @@ Arrow keys or on-screen touch buttons. Next ruin starts the next deterministic l
 - The current player position is marked for assistive technology.
 - Movement controls disable after the run ends; restart remains available.
 - The UI reads the current layout's cell types and labels from the same state module that resolves movement, so hazard coordinates are not duplicated. All three routes have state-level regression coverage.
+- The hint uses a bounded breadth-first search over the current 5×5 board, avoids traps, respects remaining light and never mutates the run state.
 - Blocked movement returns the unchanged state object and does not consume light.
 
 ## Validation
@@ -20,6 +21,8 @@ Run from the repository root:
 - node side-game/lantern-run/game-state.test.js
 - node side-game/lantern-run/ui-contract.test.js
 - node side-game/lantern-run/ui-interaction.test.js
+
+The interaction harness also verifies that hints are available on safe runs and do not move the player or spend light.
 
 The interaction harness runs the actual inline UI controller against a small fake DOM and checks keyboard input, touch-button clicks, blocked movement, traps, escape and restart.
 
