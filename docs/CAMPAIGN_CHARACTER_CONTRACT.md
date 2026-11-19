@@ -67,7 +67,7 @@ The existing `state.troops` is an aggregate army headcount. It remains authorita
 - Do not create one fake character per existing troop.
 - When a named recruit with role `soldier` joins, count that soldier exactly once in the army headcount and roster; derive generic headcount as total soldiers minus named soldiers.
 - Companions and officers are tracked as named party characters but must not accidentally increment the generic soldier count.
-- The future roster/party owner must define reserve, active-party and garrison accounting before battle integration.
+- Campaign battle integration fields up to four named party characters before the aggregate `foot` group. The simulation's 12-unit field cap preserves unfielded generic troops as reserves; garrison accounting remains deferred.
 
 ## 3A. Active-party membership — implemented in save v7; battle-connected in save v8
 
@@ -108,7 +108,7 @@ The producer supplies the exact affected character IDs. The adapter must not gue
 
 ### Battle participation
 
-The campaign encounter owner must explicitly pass persistent IDs for named characters who actually joined the battle. The battle presentation/simulation may use temporary field-unit IDs, but the campaign must retain the mapping:
+The campaign battle adapter explicitly passes persistent IDs for named characters in the active party. The simulation may use temporary field-unit IDs, but the campaign retains the mapping and returns it in the result:
 
 ```js
 {
@@ -119,15 +119,15 @@ The campaign encounter owner must explicitly pass persistent IDs for named chara
 
 After the battle, call the adapter once with the stable `battleId`, outcome (`victory` or `defeat`), and the recorded participant IDs. Do not apply participant loyalty to absent companions, reserves, prisoners, or generic soldiers unless a later system explicitly defines their exposure to the event.
 
-The current battle simulation does not yet accept or return this persistent participant mapping. That is a separate coordinated change owned by the battle workstream.
+Implemented on PR #23: `battle:started` and `battle:ended` carry the participant IDs, and the result includes a per-character survival outcome. The campaign adapter applies the matching loyalty result and records the battle ID before saving.
 
 ## 5. Save migration and replay safety
 
 - The current save version is 8.
 - Version 5 saves migrate to an empty `characterRoster` with a newly persisted campaign token and sequences starting at 1; existing gold, troops, location, inventory, discoveries and encounter histories remain unchanged. Versions 6 and 7 preserve their existing roster and active-party data while adding the battle-result ledger.
-- New saves persist the roster snapshot, campaign token, character sequence and event sequence. Active-party IDs are not yet part of this module.
+- New saves persist the roster snapshot, campaign token, character sequence, event sequence, active-party IDs and the last 200 resolved battle IDs.
 - On load, validate IDs, roles, motivation, numeric ranges and party references. Invalid character entries should be reported/recovered safely rather than corrupting the whole campaign.
-- The loyalty service's event history is currently bounded to the most recent 200 IDs per character. This is a bounded replay guard, not a permanent audit ledger; if stronger replay guarantees are needed, design a compact campaign event ledger before production.
+- Battle result idempotency is enforced by the save-v8 campaign ledger (last 200 resolved battle IDs); trust/morale are copied back into the character roster. The standalone loyalty service's own event list is not separately persisted, so future non-battle event producers must either persist their event history or use the campaign event ledger.
 - Save the event sequence with the action's state update so reload cannot reuse an event ID.
 
 ## 6. Chronicle boundary
@@ -157,8 +157,8 @@ Issue #7 records the initial identity and ownership decisions. The current 16 No
 - [x] Issue #7 records the initial identity and ownership decisions.
 - [x] Stable campaign token and character/event ID generators are implemented and tested.
 - [x] Recruitment creates a persistent named record without double-counting soldiers (PR #17).
-- [ ] Battle entry/exit preserves named participant IDs and applies the result once.
-- [x] Save version 5 migration preserves existing campaigns without fabricating NPCs.
+- [ ] Battle entry/exit preserves named participant IDs and applies the result once (implemented on PR #23; awaiting merge).
+- [x] Save version 5/6/7 migration preserves existing campaigns without fabricating NPCs and adds the v8 battle-result ledger.
 - [x] Save/load tests prove character IDs, candidate source identity, trust, morale, roster membership and event-sequence continuity survive reload; loyalty-event replay integration remains untested.
 - [ ] Campaign event producers emit only after successful actions.
 - [ ] Chronicle storage is implemented and tested before claiming Chronicle persistence.
@@ -172,7 +172,7 @@ Issue #7 records the initial identity and ownership decisions. The current 16 No
 - The roster uses version-2 snapshots with a persisted campaign token, monotonic campaign-scoped character IDs and monotonic event IDs.
 - The roster manager is owned by the authoritative campaign state. Generic troop counts remain aggregate.
 - Save version 8 migrates v5 saves by preserving existing campaign data and creating an empty roster; it does not invent individual recruits. Saves from a newer version are left untouched.
-- The roster module is loaded before state and included in service-worker shell v14 with the named-recruitment modules.
+- The roster module is loaded before state and included in service-worker shell v16 with the named-recruitment and campaign-battle modules.
 - GitHub Actions run 43843577129 passed JavaScript syntax checks and all six then-existing Node test files, including v5 migration and roster round-trip tests.
 - The later world-resource integration run 43844525553 also passed syntax checks and the expanded eight-file regression suite.
 - **Still incomplete:** active-party membership, live loyalty-event producers/replay guard, persistent battle participant mapping and exactly-once campaign battle result application.
