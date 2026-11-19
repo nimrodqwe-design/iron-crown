@@ -1,6 +1,6 @@
 # Campaign Character and Event Integration Contract
 
-**Status:** Roster/save v8, named recruitment (PR #17), and active-party membership (PR #20) are merged. Campaign battle participant mapping and exactly-once result application are implemented on PR #23 and await CI/review. General non-battle loyalty event producers and interactive battlefield presentation remain incomplete.  
+**Status:** Roster/save v8, named recruitment (PR #17), and active-party membership (PR #20) are merged. Campaign battle participant mapping and exactly-once result application are merged through PR #23 (`ce74ffa02e43bcfdcf1bdec572271fa931e03e22`). General non-battle loyalty event producers, recovery actions and interactive battlefield presentation remain incomplete.  
 **Related work:** PR #6 (recruitment and loyalty services), Issue #7 (ownership and integration decisions).
 
 ## 1. Verified current baseline
@@ -157,7 +157,7 @@ Issue #7 records the initial identity and ownership decisions. The current 16 No
 - [x] Issue #7 records the initial identity and ownership decisions.
 - [x] Stable campaign token and character/event ID generators are implemented and tested.
 - [x] Recruitment creates a persistent named record without double-counting soldiers (PR #17).
-- [ ] Battle entry/exit preserves named participant IDs and applies the result once (implemented on PR #23; awaiting merge).
+- [x] Battle entry/exit preserves named participant IDs and applies the result once (PR #23).
 - [x] Save version 5/6/7 migration preserves existing campaigns without fabricating NPCs and adds the v8 battle-result ledger.
 - [x] Save/load tests prove character IDs, candidate source identity, trust, morale, roster membership and event-sequence continuity survive reload; loyalty-event replay integration remains untested.
 - [ ] Campaign event producers emit only after successful actions.
