@@ -77,7 +77,7 @@ The existing `state.troops` is an aggregate army headcount. It remains authorita
 - Generic soldiers remain represented by the aggregate troop count; assigning a named companion/officer/specialist does not change `state.troops`.
 - Save version 8 persists active-party IDs and the last 200 resolved battle IDs. Version 5, 6 and 7 saves migrate to version 8; existing roster records, active-party assignments and aggregate troops are preserved.
 - The company panel supports assigning/removing named recruits and saves every successful change.
-- Active party IDs are passed into the battle simulation as explicit persistent participant IDs. Results return per-character survival outcomes; characters who fall are marked `recovering`, removed from the active party and blocked from reassignment.
+- Active party IDs are passed into the battle simulation as explicit persistent participant IDs. Results return per-character survival outcomes; characters who fall are marked `recovering`, removed from the active party and blocked from reassignment. A two-hour camp rest restores recovering characters to `available` and increases their morale by 10; the player must reassign them.
 
 ## 4. Campaign event contract
 
