@@ -28,7 +28,7 @@ assert.match(game,/IronCrownParty\.create/);
 assert.match(game,/resourcePanelClose'\)\.focus\(\)/);
 assert.match(css,/\.resource-panel\.open/);
 assert.match(css,/@media\(max-width:620px\).*resource-panel/s);
-assert.match(sw,/iron-crown-shell-v15/);
+assert.match(sw,/iron-crown-shell-v16/);
 assert.match(sw,/\.\/js\/characters\/campaign-roster\.js/);
 assert.match(sw,/\.\/js\/characters\/party\.js/);
 assert.match(sw,/\.\/js\/data\/recruits\.js/);
