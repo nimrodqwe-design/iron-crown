@@ -44,4 +44,21 @@ assert.equal(result.casualties.friendly + Object.values(result.fieldedSurvivors.
 
 const wrongBattle = sim.setPlayerInput({ battleId: 'wrong-id', moveX: 1 });
 assert.equal(wrongBattle, false, 'stale battle input rejected');
+const namedSim=api.create();
+const namedStarted=namedSim.start({
+ battleId:'named-retreat',
+ participantIds:['ic:campaign:character:1','unknown'],
+ friendly:[{id:'mara-group',characterId:'ic:campaign:character:1',type:'named',count:1},{id:'foot-group',type:'foot',count:2}],
+ enemy:[{id:'raiders',type:'raider',count:2}]
+});
+assert.deepEqual(JSON.parse(JSON.stringify(namedStarted.friendly.filter(unit=>unit.characterId).map(unit=>unit.characterId))),['ic:campaign:character:1']);
+const namedResult=namedSim.retreat();
+assert.equal(namedResult.outcome,'defeat');
+assert.equal(namedResult.reason,'retreated');
+assert.deepEqual(JSON.parse(JSON.stringify(namedResult.participantIds)),['ic:campaign:character:1']);
+assert.equal(namedResult.characterOutcomes.length,1);
+assert.equal(namedResult.characterOutcomes[0].characterId,'ic:campaign:character:1');
+assert.equal(namedResult.characterOutcomes[0].alive,true);
+assert.equal(namedSim.retreat(),null,'a finished battle cannot be retreated twice');
+
 console.log('Battle simulation reserve and contract tests passed.');

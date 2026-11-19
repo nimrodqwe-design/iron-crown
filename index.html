@@ -96,7 +96,7 @@
   <div class="town-balance"><span>Active party <b id="activePartyCount">0/4</b></span><span>Named roster <b id="rosterCount">0</b></span><span>Generic troops <b id="companyTroops">12</b></span></div>
   <div class="town-section"><h3>Active party</h3><p>Up to four named characters can travel with your active company.</p><div id="activePartyList" class="named-recruit-list"></div></div>
   <div class="town-section"><h3>Available recruits</h3><p>Characters not currently assigned to the active party.</p><div id="availablePartyList" class="named-recruit-list"></div></div>
-  <p class="town-note" id="companyNote" aria-live="polite">Party assignments are saved with this campaign. Battle participation is a separate upcoming integration.</p>
+  <p class="town-note" id="companyNote" aria-live="polite">Named active-party characters take part in hostile encounters. Wounded characters recover before they can rejoin.</p>
  </section>
  <div class="toast" id="toast"></div>
 </main>
@@ -115,6 +115,10 @@
 <script src="./js/engine/registry.js" defer></script>
 <script src="./js/engine/module-manager.js" defer></script>
 <script src="./js/engine/engine.js" defer></script>
+<script src="./js/battle/battle-simulation.js" defer></script>
+<script src="./js/characters/loyalty.js" defer></script>
+<script src="./js/characters/campaign-loyalty-adapter.js" defer></script>
+<script src="./js/characters/campaign-battle.js" defer></script>
 <script src="./js/game.js" defer></script>
 
 </body>
