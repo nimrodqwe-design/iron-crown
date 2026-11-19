@@ -60,7 +60,9 @@ A mod directory is reserved, but external mod execution is **not enabled**. The 
 - `index.html` — application shell and script order.
 - `styles/main.css` — map and interface styling.
 - `js/engine/` — module manager, event bus, registry and engine facade.
-- `js/game.js` — current campaign module and existing prototype behaviour.
+- `js/characters/` — named roster, recruitment, party, loyalty and campaign-battle adapters.
+- `js/battle/` — authoritative battle simulation.
+- `js/game.js` — campaign composition and current map/settlement behaviour.
 - `js/data/world.js` — settlement and discovery definitions.
 - `js/core/state.js` — initial campaign state and save schema version.
 - `js/core/save.js` — local save/load, validation and recovery copy.
@@ -70,9 +72,9 @@ A mod directory is reserved, but external mod execution is **not enabled**. The 
 
 ## Save-data contract
 
-Browser save key: `ironCrownSave`. Current schema version: **3**.
+Browser save key: `ironCrownSave`. Current schema version: **8**.
 
-The saved state includes current settlement/free-roam position, gold, troops, health, day/time, camp status, supplies, discoveries, noble-house standing and completed audiences. New fields must receive safe defaults when loading older saves. Increment the schema version and add an explicit migration when a change cannot be safely defaulted.
+The saved state includes current settlement/free-roam position, gold, aggregate troops, health, day/time, camp status, supplies, discoveries, noble-house standing, completed audiences, the named-character roster, ordered active-party IDs and a bounded resolved-battle ID ledger. New fields must receive safe defaults when loading older saves. Increment the schema version and add an explicit migration when a change cannot be safely defaulted.
 
 Rules:
 
@@ -110,7 +112,7 @@ Before each update:
 
 ## Current limitations
 
-Travel still uses straight-line interpolation; terrain speed is a coarse prototype heuristic; party markers are illustrative rather than fully simulated; settlement services are not implemented yet. The engine infrastructure is now in place, but the campaign's gameplay systems will be migrated into separate modules incrementally rather than through a risky full rewrite.
+Travel still uses straight-line interpolation; terrain speed is a coarse prototype heuristic; party markers are illustrative; hostile encounters now use automatic tactical simulation, but a player-controlled battlefield renderer, recovery actions, resource production and settlement ownership remain unfinished. The engine infrastructure is now in place, but the campaign's gameplay systems will be migrated into separate modules incrementally rather than through a risky full rewrite.
 
 
 ## Performance pass
@@ -118,7 +120,7 @@ Travel still uses straight-line interpolation; terrain speed is a coarse prototy
 - HUD values are only written to the DOM when their displayed text changes, avoiding redundant updates during travel.
 - Travel animation stops scheduling frames while paused and restarts on resume.
 - Map dragging coalesces pointer movement into at most one SVG view transform per animation frame.
-- The service-worker shell cache is versioned to v7 so updated clients can refresh cached assets.
+- The service-worker shell cache is versioned to v16 so updated clients can refresh cached assets.
 
 These are targeted reductions in unnecessary work, not a measured FPS claim. Browser profiling and real-device testing remain required before publishing performance figures.
 
