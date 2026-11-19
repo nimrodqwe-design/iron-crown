@@ -22,12 +22,13 @@ Open `index.html` in a modern browser. No build step, package manager, framework
 - Basic HUD and local save data.
 - Responsive touch and mouse controls.
 - Settlement activities: market, blacksmith, tavern, generic soldier recruitment and named companions/officers/specialists at selected towns.
-- Save schema v7 with backward migration from v5/v6, a persistent named-character roster and saved active-party assignments (up to four named characters).
+- Save schema v8 with backward migration from v5/v6/v7, a persistent named-character roster, saved active-party assignments (up to four named characters) and an exactly-once battle-result ledger.
 - Twelve informational resource sites with category filtering and an inspection panel.
+- Hostile roaming encounters use the authoritative battle simulation; active named party members are carried by stable IDs, generic troop reserves are preserved, and battle casualties, rewards, hero health and participant loyalty are applied once to campaign state. Named-character casualties enter recovery.
 
 ## Roadmap
 1. Loyalty events connected to actual campaign actions.
-2. Active named-party participants connected to the authoritative battle simulation and battle outcomes.
+2. Interactive battlefield presentation and player-controlled battle orders; the current campaign integration uses automatic tactical resolution.
 3. Faction diplomacy, territory ownership and kingdom progression.
 4. Settlements, resource gathering/production and sieges.
 5. Browser/mobile/offline regression testing, onboarding and release polish.
