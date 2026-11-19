@@ -287,8 +287,19 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 
 ### Companion recovery follow-up — 19 Nov 2026
 
-- **Status:** Implemented on `fix/camp-recovery-for-companions-rebased`; awaiting CI/review.
+- **Status:** Merged into `main` through PR #27 (`7d2e7a26600eaffe993231f7259b313d24359b13`).
 - **Reason:** Battle PR #23 introduced the `recovering` status and prevented reassignment, but the game did not yet provide a recovery action. That would leave fallen companions unavailable indefinitely.
 - **Change:** A two-hour camp rest now returns recovering named characters to `available`, increases morale by 10 (clamped to 100), refreshes the Company panel and saves. Players must manually reassign recovered characters.
-- **Checks:** Added a campaign battle recovery test; CI pending. No browser/mobile runtime test performed.
-- **Next action:** Merge only after the full root suite passes; then continue toward player-controlled battlefield presentation.
+- **Checks:** PR workflow run 44488043913 passed JavaScript syntax and all 11 root Node test files. The main post-merge syntax/deployment workflows were still running at this hand-off. No browser/mobile runtime test performed.
+- **Next action:** Continue toward player-controlled battlefield presentation; retain the recovery test and require camp rest before a recovering character can rejoin.
+
+
+### Final daily hand-off — 19 Nov 2026 (post-recovery)
+
+- **Iron Crown main:** `7d2e7a26600eaffe993231f7259b313d24359b13`. PR #23 connected hostile campaign encounters to the authoritative battle simulation and applied participant outcomes exactly once. PR #27 added a two-hour camp recovery action for named characters who fall in battle. Save schema remains v8; generic troops remain aggregate and unfielded troops remain reserves.
+- **Iron Crown CI:** PR #23 workflow run 44487667971 passed JavaScript syntax and all 11 root Node tests. PR #27 workflow run 44488043913 also passed all 11 root Node tests. Main post-merge workflow 44488334340 and Pages deployment 44488334331 were pending at hand-off; do not claim their final result until rechecked.
+- **Open work:** PR #2 remains the only open PR, a draft standalone battlefield presentation reference. It is not integrated campaign gameplay and must not replace the authoritative simulation. Issue #5 remains open for browser/mobile/offline map validation. Issue #7 remains open for general non-battle loyalty event producers, Chronicle deferral and battle presentation work.
+- **Branch reconciliation:** PR #26 was closed as superseded by PR #27; its branch is preserved. No historical feature branch was deleted. Old battle-core and loyalty branches remain references because their relevant service code is already on main.
+- **Lantern Run:** PR #24 merged into `sidegame/lantern-run` as `b504a0ae03b8fc52499903f505a1a8211c5340d4`. Free safe-route hints use BFS, avoid traps, respect remaining light and do not mutate state. Post-merge workflow run 44487636410 passed all three side-game test groups. No real browser/device test performed.
+- **Next Iron Crown priority:** build a player-controlled renderer and encounter choice on the current battle event contract; then test browser/mobile and save/offline flows.
+- **Next Lantern Run priority:** continue deterministic, low-dependency gameplay refinements; a real browser smoke test remains outstanding.
