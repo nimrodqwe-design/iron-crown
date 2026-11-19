@@ -10,7 +10,7 @@ const resourceSites=window.IronCrownWorld.resourceSites||[];
 const items=window.IronCrownItems;
 const byId=id=>places.find(p=>p.id===id);
 let state=window.IronCrownState.createInitialState();
-let selected=null,drag=null,playerGroup=null,roamMode=false,campaignRecruitment=null,partyManager=null;
+let selected=null,drag=null,playerGroup=null,roamMode=false,campaignRecruitment=null,partyManager=null,campaignBattle=null;
 const currentPoint=()=>state.freePosition||byId(state.current);
 const svgNS='http://www.w3.org/2000/svg';
 function node(tag,attrs,parent){let n=document.createElementNS(svgNS,tag);Object.keys(attrs||{}).forEach(k=>n.setAttribute(k,attrs[k]));(parent||$('world')).appendChild(n);return n}
@@ -87,7 +87,38 @@ const roamingParties=[
 {id:'river-caravan',name:'River Traders',kind:'neutral',faction:'Independent',x:500,y:870,power:0,color:'#6fb58a'}
 ];
 function drawParties(){let g=$('roadParties');g.innerHTML='';roamingParties.forEach(p=>{if(state.defeatedParties.includes(p.id)||state.metCaravans.includes(p.id))return;let group=node('g',{transform:'translate('+p.x+' '+p.y+')',class:'roaming-party',role:'button',tabindex:0,'aria-label':p.name},g);node('circle',{r:19,fill:'#17231f',stroke:p.color,'stroke-width':4},group);if(p.kind==='neutral'){node('rect',{x:-8,y:-6,width:16,height:12,rx:3,fill:p.color,stroke:'#17231f','stroke-width':1.5},group);node('circle',{cx:-5,cy:8,r:2.5,fill:'#17231f'},group);node('circle',{cx:5,cy:8,r:2.5,fill:'#17231f'},group)}else{node('path',{d:'M0 -11L10 8H-10Z',fill:p.color,stroke:'#17231f','stroke-width':2},group);node('path',{d:'M-4 1L4 1',stroke:'#17231f','stroke-width':2},group)}label(23,5,p.name,group);const inspect=()=>notify(p.name+' · '+(p.kind==='neutral'?'Neutral traders — they will not attack.':'Hostile '+p.faction+' force — avoid or meet them with a strong party.'));group.addEventListener('click',inspect);group.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspect()}})})}
-function processEncounters(x,y){let messages=[];roamingParties.forEach(p=>{if(Math.hypot(p.x-x,p.y-y)>58)return;if(p.kind==='neutral'){if(!state.metCaravans.includes(p.id)){state.metCaravans.push(p.id);state.supplies+=3;messages.push('Met '+p.name+'. The traders shared 3 supplies and continued peacefully.')}return}if(state.defeatedParties.includes(p.id))return;const equipment=equipmentStats(),partyPower=state.troops+equipment.attack*2+equipment.defence,enemyPower=p.power;state.defeatedParties.push(p.id);if(partyPower>=enemyPower){const losses=Math.min(state.troops,Math.max(0,Math.floor(enemyPower/9)));state.troops-=losses;state.gold+=12;messages.push('Encountered '+p.name+'. Your company drove them off, losing '+losses+' troops and recovering 12 gold.')}else{const losses=Math.min(state.troops,Math.max(1,Math.ceil((enemyPower-partyPower)/4)));state.troops-=losses;state.health=Math.max(10,state.health-15);messages.push(p.name+' ambushed your company. You withdrew, losing '+losses+' troops and 15 health.')}});if(messages.length){drawParties();updateHud();save();messages.forEach(notify)}}
+function processEncounters(x,y){
+ let messages=[];
+ for(const p of roamingParties){
+  if(Math.hypot(p.x-x,p.y-y)>58)continue;
+  if(p.kind==='neutral'){
+   if(!state.metCaravans.includes(p.id)){
+    state.metCaravans.push(p.id);state.supplies+=3;
+    messages.push('Met '+p.name+'. The traders shared 3 supplies and continued peacefully.');
+   }
+   continue;
+  }
+  if(state.defeatedParties.includes(p.id))continue;
+  if(!campaignBattle){messages.push('Battle services are unavailable. Your company avoids the encounter.');break;}
+  const equipment=equipmentStats();
+  const started=campaignBattle.start(p,{
+   id:'campaign-hero',name:'Commander',hp:state.health,maxHp:100,
+   attack:12+equipment.attack*2,defence:2+equipment.defence,speed:170
+  });
+  if(!started.ok){messages.push('Could not begin the encounter with '+p.name+': '+started.reason+'.');break;}
+  const resolved=campaignBattle.autoResolve();
+  if(!resolved.ok||!resolved.result){messages.push('The encounter with '+p.name+' could not be resolved safely.');break;}
+  const result=resolved.result;
+  if(result.outcome==='victory'){
+   messages.push('Battle won against '+p.name+'. Remaining troops: '+state.troops+'. Reward: '+(result.rewards&&result.rewards.gold||0)+' gold.');
+  }else{
+   messages.push('Battle lost against '+p.name+'. Your company withdrew. Remaining troops: '+state.troops+'.');
+  }
+  drawParties();renderCompanyPanel();updateCompanyButton();
+  break;
+ }
+ if(messages.length){updateHud();updateCampControls();messages.forEach(notify);save();}
+}
 function drawPlayer(){if(!playerGroup){playerGroup=node('g',{},$('player'));node('circle',{cx:0,cy:5,r:17,fill:'#101712',opacity:.5},playerGroup);node('circle',{r:13,fill:'#e0c37e',stroke:'#201e17','stroke-width':3},playerGroup);node('circle',{r:7,fill:'#e7dfc8',stroke:'#1a241e','stroke-width':2},playerGroup);node('path',{d:'M0 -23L-5 -13H5Z',fill:'#e0c37e',stroke:'#1b211a','stroke-width':1.5},playerGroup);label(-33,-25,'YOU',playerGroup)}let p=currentPoint(),x=p.x,y=p.y;if(state.target&&state.from&&state.to){x=state.from.x+(state.to.x-state.from.x)*state.progress;y=state.from.y+(state.to.y-state.from.y)*state.progress}playerGroup.setAttribute('transform','translate('+x+' '+y+')')}
 function drawRoute(){let g=$('route');g.innerHTML='';if(state.target)node('path',{d:'M'+state.from.x+' '+state.from.y+' L'+state.to.x+' '+state.to.y,fill:'none',stroke:state.target==='__free__'?'#9bd0b0':'#f1d58e','stroke-width':4,'stroke-dasharray':'10 8'},g)}
 function selectPlace(p){selected=p;$('drawer').classList.add('open');$('kindLabel').textContent=p.kind==='castle'?'Fortification':p.kind==='town'?'Settlement':'Rural holding';$('placeName').textContent=p.name;$('placeTag').textContent=p.kind;$('description').textContent=p.desc;$('faction').textContent=p.faction;$('prosperity').textContent=p.prosperity;$('garrison').textContent=p.garrison+' soldiers';let here=currentPoint(),d=Math.round(Math.hypot(p.x-here.x,p.y-here.y)/10);$('distance').textContent=p.id===state.current?'You are here':d+' leagues (approx.)';$('travel').textContent=p.id===state.current?'Already here':'Travel here';$('travel').disabled=(!state.freePosition&&p.id===state.current)||!!state.target;$('visit').disabled=p.id!==state.current;updateAudiencePanel(p)}
@@ -161,6 +192,7 @@ function createPartyCard(character,isActive){
  details.append(heading,summary);
  const button=document.createElement('button');button.className='action';
  if(isActive){button.textContent='Remove from party';button.addEventListener('click',()=>changeParty('remove',character.id))}
+ else if(character.status==='recovering'){button.textContent='Recovering';button.disabled=true;button.title='This character must recover before rejoining the active party'}
  else{
   button.textContent='Add to party';
   button.disabled=partyManager.active().length>=partyManager.maxSize;
@@ -235,7 +267,7 @@ $('resourceFilter').addEventListener('change',filterResourceSites);
 $('companyButton').onclick=openCompanyPanel;$('companyClose').onclick=closeCompanyPanel;$('townClose').onclick=closeTown;$('buy-worn-sword').onclick=()=>buyEquipment('worn-sword');$('buy-iron-sword').onclick=()=>buyEquipment('iron-sword');$('buy-padded-armour').onclick=()=>buyEquipment('padded-armour');$('buy-round-shield').onclick=()=>buyEquipment('round-shield');$('buySupplies').onclick=buySupplies;$('sellSupplies').onclick=sellSupplies;$('recruitSoldier').onclick=recruitSoldier;$('tavernRest').onclick=tavernRest;$('audience').onclick=requestAudience;$('explore').onclick=explore;$('roamMode').onclick=()=>{roamMode=!roamMode;$('roamMode').style.borderColor=roamMode?'#e0c37e':'#697253';notify(roamMode?'Roam mode: tap open ground to set a destination.':'Roam mode off.')};$('zoomIn').onclick=()=>zoom(1.18);$('zoomOut').onclick=()=>zoom(.85);$('center').onclick=center;$('travel').onclick=travel;$('camp').onclick=camp;$('rest').onclick=rest;$('visit').onclick=visit;$('close').onclick=()=>$('drawer').classList.remove('open');$('cancel').onclick=cancel;
 $('pause').onclick=()=>{state.paused=!state.paused;$('pause').textContent=state.paused?'▶ Resume':'Ⅱ Pause';if(state.target){state.last=performance.now();if(!state.paused)requestAnimationFrame(tick)}};
 $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?4:1;$('speed').textContent='▶▶ '+state.speed+'×'};
-load();partyManager=window.IronCrownParty.create({roster:state.characterRoster,getActiveIds:()=>state.activePartyIds,setActiveIds:ids=>{state.activePartyIds=ids},maxSize:4});campaignRecruitment=window.IronCrownCampaignRecruitment.create({roster:state.characterRoster,candidates:window.IronCrownRecruitCandidates,getGold:()=>state.gold,setGold:value=>{state.gold=value},getReputation:()=>50});drawSettlements();drawResourceSites();filterResourceSites();drawParties();drawPlayer();drawDiscoveries();updateExplorationControls();updateHud();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is in the wilderness':'Your party is at '+byId(state.current).name;applyView();center();window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});window.addEventListener('resize',applyView);
+load();partyManager=window.IronCrownParty.create({roster:state.characterRoster,getActiveIds:()=>state.activePartyIds,setActiveIds:ids=>{state.activePartyIds=ids},maxSize:4});campaignRecruitment=window.IronCrownCampaignRecruitment.create({roster:state.characterRoster,candidates:window.IronCrownRecruitCandidates,getGold:()=>state.gold,setGold:value=>{state.gold=value},getReputation:()=>50});campaignBattle=window.IronCrownCampaignBattle.create({simulation:window.IronCrownBattleSimulation.create(),roster:state.characterRoster,party:partyManager,getState:()=>state,save});drawSettlements();drawResourceSites();filterResourceSites();drawParties();drawPlayer();drawDiscoveries();updateExplorationControls();updateHud();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is in the wilderness':'Your party is at '+byId(state.current).name;applyView();center();window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});window.addEventListener('resize',applyView);
 if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
  }
 });
