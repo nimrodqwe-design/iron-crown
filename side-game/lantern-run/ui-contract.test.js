@@ -2,6 +2,9 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const html=fs.readFileSync(__dirname+'/index.html','utf8');
 assert.match(html,/role="grid"/,'board must expose grid semantics');
+assert.match(html,/id="hint" aria-describedby="status"/,'hint control must be labelled by the live status region');
+assert.match(html,/api\.hint\(state\)/,'UI must use the state module for route hints');
+assert.match(html,/does not consume lantern light/,'hint feedback must explain that it is free');
 assert.match(html,/aria-rowcount="5"/);
 assert.match(html,/aria-live="polite"/);
 assert.match(html,/aria-current','location'/,'player position must be announced');

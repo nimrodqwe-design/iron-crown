@@ -37,9 +37,9 @@ class Element{
  }
  click(){if(!this.disabled)this.dispatch('click')}
 }
-const grid=new Element('div'),status=new Element('div'),restart=new Element('button');
+const grid=new Element('div'),status=new Element('div'),restart=new Element('button'),hint=new Element('button');
 const movement=['up','left','down','right'].map(direction=>new Element('button',{move:direction}));
-const elements={grid,status,restart};
+const elements={grid,status,restart,hint};
 const document={
  body:new Element('body'),
  listeners:{},
@@ -61,6 +61,10 @@ const button=direction=>movement.find(item=>item.dataset.move===direction);
 assert.equal(grid.children.length,25,'initial board renders all 25 cells');
 assert.equal(playerAt(0,4),true,'player starts in the lower-left cell');
 assert.equal(status.textContent,'Ruin 1 · Lantern light: 12.');
+assert.equal(hint.disabled,false,'safe hint is available at the start');
+hint.click();
+assert.match(status.textContent,/Hint: move (up|right|down|left)\. This does not consume lantern light\./);
+assert.equal(playerAt(0,4),true,'hint does not move the player');
 assert.equal(cell(4,0).getAttribute('aria-label').startsWith('Exit'),true);
 
 button('left').click();

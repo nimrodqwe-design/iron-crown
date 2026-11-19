@@ -28,16 +28,17 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <span aria-hidden="true"></span><button data-move="up" aria-label="Move up">▲</button><span aria-hidden="true"></span>
 <button data-move="left" aria-label="Move left">◀</button><button data-move="down" aria-label="Move down">▼</button><button data-move="right" aria-label="Move right">▶</button>
 </div>
-<p><button id="restart">Next ruin</button></p>
+<p><button id="hint" aria-describedby="status">Hint · free</button> <button id="restart">Next ruin</button></p>
 <script src="game-state.js"></script>
 <script>
 (()=>{
 'use strict';
-const grid=document.getElementById('grid'),status=document.getElementById('status');
+const grid=document.getElementById('grid'),status=document.getElementById('status'),hintButton=document.getElementById('hint');
 const api=window.LanternRunState;
 if(!api){
  status.textContent='The game could not start. Reload the page to try again.';
  document.querySelectorAll('button[data-move]').forEach(button=>button.disabled=true);
+ const hint=document.getElementById('hint');if(hint)hint.disabled=true;
  return;
 }
 let state;
@@ -62,6 +63,7 @@ function render(){
  }
  status.textContent=message(state);
  document.querySelectorAll('button[data-move]').forEach(button=>button.disabled=state.ended);
+ hintButton.disabled=state.ended||!api.hint(state);
 }
 function reset(){state=api.initial(state?(state.level+1)%api.LEVEL_COUNT:0);render();}
 function move(dir){
@@ -77,6 +79,10 @@ document.addEventListener('keydown',event=>{
  if(event.defaultPrevented||event.altKey||event.ctrlKey||event.metaKey||target.isContentEditable||/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(target.tagName))return;
  const direction={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[event.key];
  if(direction){event.preventDefault();move(direction);}
+});
+hintButton.addEventListener('click',()=>{
+ const direction=api.hint(state);
+ status.textContent=direction?'Hint: move '+direction+'. This does not consume lantern light.':'No safe route remains within the current lantern light.';
 });
 document.getElementById('restart').addEventListener('click',reset);
 reset();

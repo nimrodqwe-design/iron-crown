@@ -33,6 +33,17 @@ s=game.initial();s=game.move(s,'right');s=game.move(s,'up');
 assert.strictEqual(s.light,10);assert.strictEqual(s.ended,true);assert.strictEqual(s.outcome,'trapped');
 const darkness={...game.initial(),light:1};
 assert.equal(game.move(darkness,'right').outcome,'darkness','a safe move that uses the final light ends the run');
+[0,1,2].forEach(level=>{
+ const start=game.initial(level),before={...start};
+ const direction=game.hint(start);
+ assert.ok(['up','right','down','left'].includes(direction),'each ruin should provide a safe first hint');
+ const hintedMove=game.move(start,direction);
+ assert.equal(hintedMove.ended,false,'a hint must point to a safe next cell');
+ assert.deepStrictEqual(start,before,'hint calculation must not mutate campaign state');
+ assert.equal(start.light,12,'asking for a hint must not consume lantern light');
+});
+assert.equal(game.hint({...game.initial(),light:1}),null,'no hint is shown when the remaining light cannot reach the exit');
+assert.equal(game.hint({...game.initial(),ended:true,outcome:'trapped'}),null,'ended runs do not offer hints');
 const frozen=game.move(s,'left');assert.deepStrictEqual(frozen,s,'ended games must be stable');
 const invalidState=game.initial();
 assert.strictEqual(game.move(invalidState,'invalid'),invalidState,'invalid directions must preserve state');
