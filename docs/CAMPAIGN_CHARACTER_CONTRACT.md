@@ -77,7 +77,7 @@ The existing `state.troops` is an aggregate army headcount. It remains authorita
 - Generic soldiers remain represented by the aggregate troop count; assigning a named companion/officer/specialist does not change `state.troops`.
 - Save version 8 persists active-party IDs and the last 200 resolved battle IDs. Version 5, 6 and 7 saves migrate to version 8; existing roster records, active-party assignments and aggregate troops are preserved.
 - The company panel supports assigning/removing named recruits and saves every successful change.
-- Active party IDs are passed into the battle simulation as explicit persistent participant IDs. Results return per-character survival outcomes; characters who fall are marked `recovering`, removed from the active party and blocked from reassignment.
+- Active party IDs are passed into the battle simulation as explicit persistent participant IDs. Results return per-character survival outcomes; characters who fall are marked `recovering`, removed from the active party and blocked from reassignment. A two-hour camp rest restores recovering characters to `available` and increases their morale by 10; the player must reassign them.
 
 ## 4. Campaign event contract
 
@@ -200,7 +200,7 @@ The merged main branch includes a small settlement-based named-recruitment slice
 - The adapter creates a monotonic campaign event ID for each encounter, saves the consumed sequence before resolution, and passes active named character IDs explicitly to the simulation.
 - Named party characters are fielded before the aggregate `foot` troop group so the four-person named party is not displaced by a large generic army. The simulation's 12-unit field cap still applies; unfielded generic troops are retained as reserves.
 - The battle simulation returns `participantIds` and per-character survival outcomes. Temporary field-unit IDs never replace campaign character IDs.
-- Campaign result application updates generic troop totals from the `foot` survivor total only, updates hero health, awards victory gold, marks a roaming party defeated only on victory, and moves named characters who fell in battle to `recovering` status. Recovering characters are removed from active-party assignments and cannot be reassigned until their status is changed by a future recovery system.
+- Campaign result application updates generic troop totals from the `foot` survivor total only, updates hero health, awards victory gold, marks a roaming party defeated only on victory, and moves named characters who fell in battle to `recovering` status. Recovering characters are removed from active-party assignments and cannot be reassigned until a two-hour camp rest restores them to `available`; the player must then reassign them.
 - The battle loyalty adapter applies victory/defeat effects to the exact participant IDs. Trust and morale are copied back to the authoritative character roster.
 - `state.resolvedBattleIds` and the save-v8 ledger retain the last 200 resolved battle IDs. A repeated result for a recorded battle is rejected as a duplicate before rewards, casualties or loyalty can be applied again.
 - Current encounter resolution is automatic tactical simulation; the campaign does not yet expose the standalone battlefield prototype as a player-controlled renderer. Interactive battle presentation and retreat choice are future work, although the simulation API now supports retreat.
