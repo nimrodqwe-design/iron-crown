@@ -264,12 +264,22 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 
 ### Campaign battle outcomes — lead integration (19 Nov 2026)
 
-- **Status:** Implemented on `feature/campaign-battle-outcomes`; awaiting CI and review.
+- **Status:** Merged into `main` through PR #23 (`ce74ffa02e43bcfdcf1bdec572271fa931e03e22`).
 - **Goal:** Connect active named-party membership to the existing battle simulation and apply outcomes once to authoritative campaign state.
 - **Files:** `js/battle/battle-simulation.js`, `js/characters/campaign-battle.js`, `js/characters/campaign-roster.js`, `js/characters/party.js`, `js/core/state.js`, `js/core/save.js`, `js/game.js`, `index.html`, `sw.js`, focused battle/save/party/UI tests, README and campaign contract.
 - **Implementation:** Hostile roaming encounters now run through the existing deterministic battle simulation rather than the previous power-comparison shortcut. Active named party members are sent as explicit stable character IDs and fielded before generic foot troops. The simulation returns participant IDs and named-character survival outcomes. Campaign application updates generic troop survivors from the `foot` group only, hero health, victory rewards, defeated-party state, and participant trust/morale through the existing loyalty adapter. Named characters who fall become `recovering`, are removed from the active party and cannot be reassigned while recovering.
 - **Replay safety:** Save version 8 adds a bounded last-200 resolved battle ID ledger. Encounter event sequence is saved before simulation; result application checks the ledger before changing rewards, casualties or loyalty.
 - **Important limitation:** Current campaign encounters use automatic tactical resolution. The separate battlefield prototype PR #2 remains an unmerged reference; player-controlled battlefield presentation, retreat UI and real browser/mobile playtesting are not included in this slice.
 - **Checks:** Added focused Node tests for campaign battle mapping, participant outcomes, retreat, party recovery and v7→v8 migration. CI result pending at hand-off; no browser, mobile, local-storage runtime or offline launch test performed.
-- **Next action:** Review CI and diff, merge only if all root checks pass; then build the player-controlled battlefield renderer on top of the same simulation contract. Preserve PR #2 as a visual/reference source until its independent logic is reconciled.
+- **Next action:** Build the player-controlled battlefield renderer on top of the same simulation contract. Preserve PR #2 as a visual/reference source until its independent logic is reconciled; do not import its duplicate battle simulation.
 
+
+
+### Final daily hand-off — 19 Nov 2026
+
+- **Iron Crown main:** `ce74ffa02e43bcfdcf1bdec572271fa931e03e22` — campaign encounters now use the existing battle simulation through PR #23. Named active-party IDs are passed into battle and returned with survival outcomes; generic `foot` survivors and reserves remain separate; hero health, victory rewards, defeated-party state and participant loyalty are applied once. Save v8 stores the last 200 resolved battle IDs and migrates v5/v6/v7 saves.
+- **Iron Crown checks:** GitHub Actions run 44487667971 passed JavaScript syntax and all 11 root Node tests. No browser, Android, browser save/load or offline runtime test was performed.
+- **Iron Crown remaining:** current encounters auto-resolve tactically; player-controlled battlefield presentation, retreat UI, recovery actions and non-battle loyalty event producers remain future work. PR #2 remains an open draft reference and is not merged as integrated gameplay. Issue #5 remains open for map runtime validation; Issue #7 remains open for remaining loyalty and battle presentation work.
+- **Lantern Run:** PR #24 merged into `sidegame/lantern-run` as `b504a0ae03b8fc52499903f505a1a8211c5340d4`. Free BFS hints avoid hazards, respect remaining light and do not mutate game state. Side-game workflow run 44487253224 passed state, UI-contract and fake-DOM interaction checks. No real browser/device test performed.
+- **Next Iron Crown priority:** player-controlled battlefield renderer and encounter choice using the authoritative simulation; do not duplicate simulation logic from PR #2.
+- **Next Lantern Run priority:** continue small deterministic gameplay improvements; preserve the 5×5 board, no-dependency architecture and testable state/UI boundary.
