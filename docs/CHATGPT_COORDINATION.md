@@ -273,3 +273,12 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Checks:** Added focused Node tests for campaign battle mapping, participant outcomes, retreat, party recovery and v7→v8 migration. CI result pending at hand-off; no browser, mobile, local-storage runtime or offline launch test performed.
 - **Next action:** Review CI and diff, merge only if all root checks pass; then build the player-controlled battlefield renderer on top of the same simulation contract. Preserve PR #2 as a visual/reference source until its independent logic is reconciled.
 
+
+
+### Companion recovery follow-up — 19 Nov 2026
+
+- **Status:** Implemented on `fix/camp-recovery-for-companions`; awaiting CI/review.
+- **Reason:** Battle PR #23 introduced the `recovering` status and prevented reassignment, but the game did not yet provide a recovery action. That would leave fallen companions unavailable indefinitely.
+- **Change:** A two-hour camp rest now returns recovering named characters to `available`, increases morale by 10 (clamped to 100), refreshes the Company panel and saves. Players must manually reassign recovered characters.
+- **Checks:** Added a campaign battle recovery test; CI pending. No browser/mobile runtime test performed.
+- **Next action:** Merge only after the full root suite passes; then continue toward player-controlled battlefield presentation.
