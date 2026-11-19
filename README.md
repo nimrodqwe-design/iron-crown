@@ -24,7 +24,7 @@ Open `index.html` in a modern browser. No build step, package manager, framework
 - Settlement activities: market, blacksmith, tavern, generic soldier recruitment and named companions/officers/specialists at selected towns.
 - Save schema v8 with backward migration from v5/v6/v7, a persistent named-character roster, saved active-party assignments (up to four named characters) and an exactly-once battle-result ledger.
 - Twelve informational resource sites with category filtering and an inspection panel.
-- Hostile roaming encounters use the authoritative battle simulation; active named party members are carried by stable IDs, generic troop reserves are preserved, and battle casualties, rewards, hero health and participant loyalty are applied once to campaign state. Named-character casualties enter recovery.
+- Hostile roaming encounters use the authoritative battle simulation; active named party members are carried by stable IDs, generic troop reserves are preserved, and battle casualties, rewards, hero health and participant loyalty are applied once to campaign state. Named-character casualties enter recovery; a two-hour camp rest restores them to the available roster so they can be reassigned.
 
 ## Roadmap
 1. Loyalty events connected to actual campaign actions.
