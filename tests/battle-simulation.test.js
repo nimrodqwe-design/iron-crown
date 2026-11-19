@@ -51,7 +51,7 @@ const namedStarted=namedSim.start({
  friendly:[{id:'mara-group',characterId:'ic:campaign:character:1',type:'named',count:1},{id:'foot-group',type:'foot',count:2}],
  enemy:[{id:'raiders',type:'raider',count:2}]
 });
-assert.deepEqual(namedStarted.friendly.filter(unit=>unit.characterId).map(unit=>unit.characterId),['ic:campaign:character:1']);
+assert.deepEqual(JSON.parse(JSON.stringify(namedStarted.friendly.filter(unit=>unit.characterId).map(unit=>unit.characterId))),['ic:campaign:character:1']);
 const namedResult=namedSim.retreat();
 assert.equal(namedResult.outcome,'defeat');
 assert.equal(namedResult.reason,'retreated');
