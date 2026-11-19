@@ -55,7 +55,7 @@ assert.deepEqual(namedStarted.friendly.filter(unit=>unit.characterId).map(unit=>
 const namedResult=namedSim.retreat();
 assert.equal(namedResult.outcome,'defeat');
 assert.equal(namedResult.reason,'retreated');
-assert.deepEqual(namedResult.participantIds,['ic:campaign:character:1']);
+assert.deepEqual(JSON.parse(JSON.stringify(namedResult.participantIds)),['ic:campaign:character:1']);
 assert.equal(namedResult.characterOutcomes.length,1);
 assert.equal(namedResult.characterOutcomes[0].characterId,'ic:campaign:character:1');
 assert.equal(namedResult.characterOutcomes[0].alive,true);
