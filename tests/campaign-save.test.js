@@ -67,7 +67,7 @@ const v6={version:6,state:{current:'greyhaven',gold:40,troops:7,characterRoster:
 storage.setItem('ironCrownSave',JSON.stringify(v6));
 const v6State=context.window.IronCrownState.createInitialState();
 const v6System=makeSystem(v6State);
-assert.strictEqual(v6System.load(),true,'v6 saves migrate to v7');
+assert.strictEqual(v6System.load(),true,'v6 saves migrate to v8');
 assert.strictEqual(v6State.troops,7);
 assert.strictEqual(v6State.characterRoster.list()[0].name,'Legacy Mara');
 assert.deepStrictEqual(JSON.parse(JSON.stringify(v6State.activePartyIds)),[]);
