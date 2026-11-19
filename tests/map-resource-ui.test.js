@@ -12,6 +12,8 @@ assert.match(html,/id="mapWrap" tabindex="0"/,'panel close must have a focus des
 assert.match(html,/id="regionLandmarks"/);
 assert.match(html,/id="namedRecruitSection"/);
 assert.match(html,/js\/characters\/campaign-recruitment\.js/);
+assert.match(html,/js\/battle\/battle-simulation\.js/);
+assert.match(html,/js\/characters\/campaign-battle\.js/);
 assert.match(game,/function drawResourceSites\(\)/);
 assert.match(game,/role:'button'/);
 assert.match(game,/tabindex:0/);
@@ -33,5 +35,7 @@ assert.match(sw,/\.\/js\/characters\/campaign-roster\.js/);
 assert.match(sw,/\.\/js\/characters\/party\.js/);
 assert.match(sw,/\.\/js\/data\/recruits\.js/);
 assert.match(sw,/\.\/js\/characters\/campaign-recruitment\.js/);
+assert.match(sw,/\.\/js\/characters\/campaign-battle\.js/);
+assert.match(sw,/\.\/js\/battle\/battle-simulation\.js/);
 assert.match(sw,/\.\/js\/data\/world\.js/);
 console.log('map resource UI contract checks passed');
