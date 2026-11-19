@@ -42,5 +42,25 @@
     if(next.light<=0)return {...next,ended:true,outcome:'darkness'};
     return next;
   }
-  return Object.freeze({SIZE,START,GOAL,LEVEL_COUNT:LEVELS.length,initial,move,cellKind,cellLabel,levelName});
+  function hint(state){
+    if(!state||typeof state!=='object'||state.ended)return null;
+    if(!Number.isInteger(state.x)||!Number.isInteger(state.y)||!Number.isFinite(state.light)||state.light<=0)return null;
+    if(!cellKind(state.x,state.y,state.level))return null;
+    const directions=[['up',0,-1],['right',1,0],['down',0,1],['left',-1,0]];
+    const queue=[{x:state.x,y:state.y,first:null,distance:0}],visited=new Set([key(state.x,state.y)]);
+    for(let index=0;index<queue.length;index++){
+      const current=queue[index];
+      if(current.x===GOAL.x&&current.y===GOAL.y)return current.first;
+      directions.forEach(([name,dx,dy])=>{
+        const x=current.x+dx,y=current.y+dy,distance=current.distance+1;
+        if(x<0||y<0||x>=SIZE||y>=SIZE||distance>state.light||cellKind(x,y,state.level)==='trap')return;
+        const cell=key(x,y);if(visited.has(cell))return;
+        const first=current.first||name;
+        if(x===GOAL.x&&y===GOAL.y){queue.push({x,y,first,distance});return;}
+        visited.add(cell);queue.push({x,y,first,distance});
+      });
+    }
+    return null;
+  }
+  return Object.freeze({SIZE,START,GOAL,LEVEL_COUNT:LEVELS.length,initial,move,cellKind,cellLabel,levelName,hint});
 });
