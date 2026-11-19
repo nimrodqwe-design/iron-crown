@@ -9,7 +9,7 @@ function create(options){
  if(!roster||typeof roster.list!=='function'||typeof roster.get!=='function')throw new TypeError('A campaign character roster is required');
  if(typeof getActiveIds!=='function'||typeof setActiveIds!=='function')throw new TypeError('Active-party state accessors are required');
  function normalise(){
-  const known=new Set(roster.list().map(character=>character.id));
+  const known=new Set(roster.list().filter(character=>character.status!=='recovering').map(character=>character.id));
   const source=getActiveIds();
   const ids=[];
   if(Array.isArray(source))source.forEach(id=>{
@@ -19,7 +19,9 @@ function create(options){
   return ids;
  }
  function assign(id){
-  if(typeof id!=='string'||!roster.get(id))return {ok:false,reason:'That character is not in your roster'};
+  const character=typeof id==='string'?roster.get(id):null;
+  if(!character)return {ok:false,reason:'That character is not in your roster'};
+  if(character.status==='recovering')return {ok:false,reason:'That character is recovering and cannot join the active party'};
   const ids=normalise();
   if(ids.includes(id))return {ok:false,reason:'That character is already in the active party'};
   if(ids.length>=maxSize)return {ok:false,reason:'The active party is full'};
