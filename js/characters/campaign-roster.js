@@ -58,9 +58,17 @@ function create(options){
   return id;
  }
  function get(id){const value=characters.get(id);return value?clone(value):null;}
+ function update(id,patch){
+  const current=characters.get(id);if(!current||!patch||typeof patch!=='object')return null;
+  const next={...current};
+  if(VALID_STATUSES.has(patch.status))next.status=patch.status;
+  if(Number.isFinite(patch.trust))next.trust=clamp(patch.trust,next.trust);
+  if(Number.isFinite(patch.morale))next.morale=clamp(patch.morale,next.morale);
+  const character=normaliseCharacter(next,campaignId);characters.set(id,character);return clone(character);
+ }
  function list(){return [...characters.values()].map(clone);}
  function snapshot(){return {version:2,campaignId,nextCharacterSequence,nextEventSequence,characters:list()};}
- return Object.freeze({add,get,list,snapshot,createEventId,getCampaignId:()=>campaignId});
+ return Object.freeze({add,get,update,list,snapshot,createEventId,getCampaignId:()=>campaignId});
 }
 function restore(snapshot,options){
  options=options||{};
