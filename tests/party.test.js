@@ -31,4 +31,9 @@ assert.deepEqual(JSON.parse(JSON.stringify(party.active().map(character=>charact
 activePartyIds=[iven.id,iven.id,'unknown',mara.id,sella.id];
 assert.deepEqual(JSON.parse(JSON.stringify(party.active().map(character=>character.id))),[iven.id,mara.id],'hydration removes duplicates and unknown IDs and respects capacity');
 assert.deepEqual(JSON.parse(JSON.stringify(activePartyIds)),[iven.id,mara.id]);
+assert.ok(roster.update(iven.id,{status:'recovering'}),'roster exposes a safe status update');
+assert.deepEqual(JSON.parse(JSON.stringify(party.active().map(character=>character.id))),[mara.id],'recovering characters are removed from active assignments');
+assert.equal(party.assign(iven.id).ok,false,'recovering characters cannot be reassigned');
+assert.equal(roster.update(iven.id,{status:'available'}).status,'available');
+assert.equal(party.assign(iven.id).ok,true,'a recovered character can rejoin the party');
 console.log('campaign party checks passed');
