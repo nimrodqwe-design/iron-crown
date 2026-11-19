@@ -110,7 +110,15 @@ function create(options){
   simulation.retreat();
   return applyResult(simulation.getResult());
  }
- return Object.freeze({start,applyResult,autoResolve,retreat,active:()=>simulation.active(),snapshot:()=>simulation.snapshot(),getPending:()=>pending?{...pending,participantIds:pending.participantIds.slice()}:null});
+ function recoverAtCamp(){
+  const recovered=[];
+  roster.list().filter(character=>character.status==='recovering').forEach(character=>{
+   const updated=roster.update(character.id,{status:'available',morale:Math.min(100,character.morale+10)});
+   if(updated)recovered.push(updated);
+  });
+  return recovered;
+ }
+ return Object.freeze({start,applyResult,autoResolve,retreat,recoverAtCamp,active:()=>simulation.active(),snapshot:()=>simulation.snapshot(),getPending:()=>pending?{...pending,participantIds:pending.participantIds.slice()}:null});
 }
 root.IronCrownCampaignBattle=Object.freeze({create});
 })(window);
