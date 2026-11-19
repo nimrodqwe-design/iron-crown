@@ -1,6 +1,6 @@
 # Campaign Character and Event Integration Contract
 
-**Status:** Roster/save v6 foundation is merged through PR #13. Named companion recruitment is merged into `main` through PR #17 (`05018d50ab94b6c3cf507b97ab783bc1451b7346`). Active-party membership is merged on main through PR #20 (`4f0c1e0abafa9c60e53c9685747d1c590765928d`), using the party manager and save version 8. Loyalty-event producers and persistent battle-participant mapping remain incomplete.  
+**Status:** Roster/save v8, named recruitment (PR #17), and active-party membership (PR #20) are merged. Campaign battle participant mapping and exactly-once result application are implemented on PR #23 and await CI/review. General non-battle loyalty event producers and interactive battlefield presentation remain incomplete.  
 **Related work:** PR #6 (recruitment and loyalty services), Issue #7 (ownership and integration decisions).
 
 ## 1. Verified current baseline
@@ -10,11 +10,11 @@ The current `main` branch has these constraints:
 - `js/core/state.js` stores aggregate `troops` and owns the authoritative named-character roster manager. Generic soldiers remain aggregate.
 - `js/core/save.js` writes save version 8 and persists a version-2 roster snapshot with the campaign token and both monotonic sequences.
 - `js/engine/event-bus.js` provides a reusable event bus, but `js/game.js` does not currently instantiate and wire it into campaign actions.
-- The settlement recruitment action in `js/game.js` spends 10 gold and increments `state.troops`; it does not create a named character.
-- `js/battle/battle-simulation.js` emits battle lifecycle events and generates field-unit IDs from troop-group IDs and array positions. Those IDs are battle-local, not persistent campaign character identities.
+- The generic soldier action in `js/game.js` spends 10 gold and increments `state.troops`; the separate named-recruit action writes to the persistent roster and deducts its negotiated cost.
+- `js/battle/battle-simulation.js` emits battle lifecycle events and generates battle-local field-unit IDs. Named field units also carry their persistent `characterId` metadata; campaign code retains the explicit participant-ID mapping.
 - No Chronicle module/API appears in the current `main` file tree.
 
-The roster foundation is now persistent, but the recruitment and loyalty services are not yet wired to it. The existing troop count must not be converted into invented named people.
+The roster, named recruitment and active-party assignment are persistent. Battle participants now use the same stable character IDs, and battle outcomes update those characters. The existing troop count must not be converted into invented named people.
 
 ## 2. Character identity rules
 
@@ -69,7 +69,7 @@ The existing `state.troops` is an aggregate army headcount. It remains authorita
 - Companions and officers are tracked as named party characters but must not accidentally increment the generic soldier count.
 - The future roster/party owner must define reserve, active-party and garrison accounting before battle integration.
 
-## 3A. Active-party membership — implemented in save v7
+## 3A. Active-party membership — implemented in save v7; battle-connected in save v8
 
 - `state.activePartyIds` is the authoritative ordered list of named character IDs assigned to the active party.
 - The current party capacity is four named characters. This is a named-character assignment limit, not a limit on `state.troops`.
@@ -77,7 +77,7 @@ The existing `state.troops` is an aggregate army headcount. It remains authorita
 - Generic soldiers remain represented by the aggregate troop count; assigning a named companion/officer/specialist does not change `state.troops`.
 - Save version 8 persists active-party IDs and the last 200 resolved battle IDs. Version 5, 6 and 7 saves migrate to version 8; existing roster records, active-party assignments and aggregate troops are preserved.
 - The company panel supports assigning/removing named recruits and saves every successful change.
-- **Not yet implemented:** party assignments are not yet passed into the battle simulation. The encounter caller must explicitly select named participants and retain their stable IDs through battle resolution.
+- Active party IDs are passed into the battle simulation as explicit persistent participant IDs. Results return per-character survival outcomes; characters who fall are marked `recovering`, removed from the active party and blocked from reassignment.
 
 ## 4. Campaign event contract
 
@@ -171,7 +171,7 @@ Issue #7 records the initial identity and ownership decisions. The current 16 No
 - **Merged:** PR #13, merge commit dad34d81f9529e178a13361b857cfacf04165c8a.
 - The roster uses version-2 snapshots with a persisted campaign token, monotonic campaign-scoped character IDs and monotonic event IDs.
 - The roster manager is owned by the authoritative campaign state. Generic troop counts remain aggregate.
-- Save version 6 migrates v5 saves by preserving existing campaign data and creating an empty roster; it does not invent individual recruits. Saves from a newer version are left untouched.
+- Save version 8 migrates v5 saves by preserving existing campaign data and creating an empty roster; it does not invent individual recruits. Saves from a newer version are left untouched.
 - The roster module is loaded before state and included in service-worker shell v14 with the named-recruitment modules.
 - GitHub Actions run 43843577129 passed JavaScript syntax checks and all six then-existing Node test files, including v5 migration and roster round-trip tests.
 - The later world-resource integration run 43844525553 also passed syntax checks and the expanded eight-file regression suite.
