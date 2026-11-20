@@ -1,6 +1,6 @@
 # Campaign Character and Event Integration Contract
 
-**Status:** Roster/save v8, named recruitment (PR #17), and active-party membership (PR #20) are merged. Campaign battle participant mapping and exactly-once result application are merged through PR #23 (`ce74ffa02e43bcfdcf1bdec572271fa931e03e22`). General non-battle loyalty event producers, recovery actions and interactive battlefield presentation remain incomplete.  
+**Status:** Roster/save v9, named recruitment (PR #17), active-party membership (PR #20), campaign battle outcomes (PR #23), companion recovery (PR #27), and the player-controlled battlefield are merged. General non-battle loyalty event producers remain incomplete.  
 **Related work:** PR #6 (recruitment and loyalty services), Issue #7 (ownership and integration decisions).
 
 ## 1. Verified current baseline
@@ -8,7 +8,7 @@
 The current `main` branch has these constraints:
 
 - `js/core/state.js` stores aggregate `troops` and owns the authoritative named-character roster manager. Generic soldiers remain aggregate.
-- `js/core/save.js` writes save version 8 and persists a version-2 roster snapshot with the campaign token and both monotonic sequences.
+- `js/core/save.js` writes save version 9 and persists a version-2 roster snapshot with the campaign token and both monotonic sequences.
 - `js/engine/event-bus.js` provides a reusable event bus, but `js/game.js` does not currently instantiate and wire it into campaign actions.
 - The generic soldier action in `js/game.js` spends 10 gold and increments `state.troops`; the separate named-recruit action writes to the persistent roster and deducts its negotiated cost.
 - `js/battle/battle-simulation.js` emits battle lifecycle events and generates battle-local field-unit IDs. Named field units also carry their persistent `characterId` metadata; campaign code retains the explicit participant-ID mapping.
@@ -69,13 +69,13 @@ The existing `state.troops` is an aggregate army headcount. It remains authorita
 - Companions and officers are tracked as named party characters but must not accidentally increment the generic soldier count.
 - Campaign battle integration fields up to four named party characters before the aggregate `foot` group. The simulation's 12-unit field cap preserves unfielded generic troops as reserves; garrison accounting remains deferred.
 
-## 3A. Active-party membership — implemented in save v7; battle-connected in save v8
+## 3A. Active-party membership — implemented in save v7; battle-connected in save v8; resumable in save v9
 
 - `state.activePartyIds` is the authoritative ordered list of named character IDs assigned to the active party.
 - The current party capacity is four named characters. This is a named-character assignment limit, not a limit on `state.troops`.
 - The party manager validates every assignment against the persistent roster, rejects duplicates and unknown IDs, and removes stale IDs during hydration.
 - Generic soldiers remain represented by the aggregate troop count; assigning a named companion/officer/specialist does not change `state.troops`.
-- Save version 8 persists active-party IDs and the last 200 resolved battle IDs. Version 5, 6 and 7 saves migrate to version 8; existing roster records, active-party assignments and aggregate troops are preserved.
+- Save version 9 persists active-party IDs, the last 200 resolved battle IDs and an optional validated in-progress battle checkpoint. Version 5, 6, 7 and 8 saves migrate to version 9; existing roster records, active-party assignments and aggregate troops are preserved.
 - The company panel supports assigning/removing named recruits and saves every successful change.
 - Active party IDs are passed into the battle simulation as explicit persistent participant IDs. Results return per-character survival outcomes; characters who fall are marked `recovering`, removed from the active party and blocked from reassignment. A two-hour camp rest restores recovering characters to `available` and increases their morale by 10; the player must reassign them.
 
@@ -123,11 +123,11 @@ Implemented on PR #23: `battle:started` and `battle:ended` carry the participant
 
 ## 5. Save migration and replay safety
 
-- The current save version is 8.
-- Version 5 saves migrate to an empty `characterRoster` with a newly persisted campaign token and sequences starting at 1; existing gold, troops, location, inventory, discoveries and encounter histories remain unchanged. Versions 6 and 7 preserve their existing roster and active-party data while adding the battle-result ledger.
-- New saves persist the roster snapshot, campaign token, character sequence, event sequence, active-party IDs and the last 200 resolved battle IDs.
+- The current save version is 9.
+- Version 5 saves migrate to an empty `characterRoster` with a newly persisted campaign token and sequences starting at 1; existing gold, troops, location, inventory, discoveries and encounter histories remain unchanged. Versions 6 and 7 preserve their existing roster and active-party data while adding the battle-result ledger. Version 8 adds the active-battle checkpoint field without changing existing campaign values.
+- New saves persist the roster snapshot, campaign token, character sequence, event sequence, active-party IDs, the last 200 resolved battle IDs and an optional version-1 in-progress battle checkpoint. The checkpoint contains the authoritative simulation state plus the campaign enemy/participant mapping and is refreshed on campaign save, page hide, visibility change and a five-second active-battle checkpoint.
 - On load, validate IDs, roles, motivation, numeric ranges and party references. Invalid character entries should be reported/recovered safely rather than corrupting the whole campaign.
-- Battle result idempotency is enforced by the save-v8 campaign ledger (last 200 resolved battle IDs); trust/morale are copied back into the character roster. The standalone loyalty service's own event list is not separately persisted, so future non-battle event producers must either persist their event history or use the campaign event ledger.
+- Battle result idempotency is enforced by the save-v9 campaign ledger (last 200 resolved battle IDs); trust/morale are copied back into the character roster. A saved active battle is resumed only when its simulation ID, enemy identity and exact active-party participant order still validate; invalid checkpoints are discarded without applying a battle result. The standalone loyalty service's own event list is not separately persisted, so future non-battle event producers must either persist their event history or use the campaign event ledger.
 - Save the event sequence with the action's state update so reload cannot reuse an event ID.
 
 ## 6. Chronicle boundary

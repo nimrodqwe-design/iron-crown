@@ -9,7 +9,7 @@ function create(options){
  const setCharacterRoster=options.setCharacterRoster;
  const createCharacterRoster=options.createCharacterRoster;
  const notify=typeof options.notify==='function'?options.notify:()=>{};
- const SAVE_VERSION=options.version||8;
+ const SAVE_VERSION=options.version||9;
  const PARTY_LIMIT=Number.isInteger(options.partyLimit)?Math.max(1,Math.min(12,options.partyLimit)):4;
  const STORAGE_KEY='ironCrownSave';
  function save(){
@@ -22,6 +22,7 @@ function create(options){
     defeatedParties:state.defeatedParties,metCaravans:state.metCaravans,
     houseStanding:state.houseStanding,audiences:state.audiences,
     activePartyIds:Array.isArray(state.activePartyIds)?[...new Set(state.activePartyIds.filter(id=>typeof id==='string'))].slice(0,PARTY_LIMIT):[],
+    activeBattle:state.activeBattle&&typeof state.activeBattle==='object'&&!Array.isArray(state.activeBattle)?state.activeBattle:null,
     resolvedBattleIds:Array.isArray(state.resolvedBattleIds)?[...new Set(state.resolvedBattleIds.filter(id=>typeof id==='string'&&id.length<=160))].slice(-200):[]
    };
    if(typeof getCharacterRoster==='function')savedState.characterRoster=getCharacterRoster();
@@ -78,6 +79,7 @@ function create(options){
    const knownCharacterIds=new Set(roster&&typeof roster.list==='function'?roster.list().map(character=>character.id):[]);
    const requestedPartyIds=Array.isArray(d.activePartyIds)?d.activePartyIds:[];
    state.activePartyIds=[...new Set(requestedPartyIds.filter(id=>typeof id==='string'&&knownCharacterIds.has(id)))].slice(0,PARTY_LIMIT);
+   state.activeBattle=d.activeBattle&&typeof d.activeBattle==='object'&&!Array.isArray(d.activeBattle)?d.activeBattle:null;
    state.resolvedBattleIds=Array.isArray(d.resolvedBattleIds)?[...new Set(d.resolvedBattleIds.filter(id=>typeof id==='string'&&id.length<=160))].slice(-200):[];
    if(parsed.version!==SAVE_VERSION)save();
    return true;

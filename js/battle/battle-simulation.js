@@ -29,7 +29,7 @@ function create(options){
    const count=Math.min(remaining,requested);
    if(!count)return;
    const type=String(entry.type||'foot');
-   const stats={id:String(entry.id||team+'-'+type+'-'+index),characterId:typeof entry.characterId==='string'?entry.characterId:null,type,count,hp:clamp(finite(entry.hp,58),1,1000),attack:clamp(finite(entry.attack,9),1,100),defence:clamp(finite(entry.defence,1),0,100),speed:clamp(finite(entry.speed,65),20,180),morale:clamp(finite(entry.morale,75),0,100)};
+   const stats={id:String(entry.id||team+'-'+type+'-'+index),characterId:typeof entry.characterId==='string'?entry.characterId:null,name:typeof entry.name==='string'?entry.name.slice(0,40):'',type,count,hp:clamp(finite(entry.hp,58),1,1000),attack:clamp(finite(entry.attack,9),1,100),defence:clamp(finite(entry.defence,1),0,100),speed:clamp(finite(entry.speed,65),20,180),morale:clamp(finite(entry.morale,75),0,100)};
    result.push(stats);remaining-=count;
   });
   return result;
@@ -41,7 +41,7 @@ function create(options){
     const col=i%4,row=Math.floor(i/4);
     const x=team==='friendly'?350+col*34+row*12:650-col*34-row*12;
     const y=team==='friendly'?420+row*28:180+row*28;
-    units.push({id:group.id+'-'+i,characterId:group.characterId||null,type:group.type,team,hp:group.hp,maxHp:group.hp,attack:group.attack,defence:group.defence,speed:group.speed,morale:group.morale,x,y,cooldown:((index++%5)*.11),targetId:null});
+    units.push({id:group.id+'-'+i,characterId:group.characterId||null,name:group.name||'',type:group.type,team,hp:group.hp,maxHp:group.hp,attack:group.attack,defence:group.defence,speed:group.speed,morale:group.morale,x,y,cooldown:((index++%5)*.11),targetId:null});
    }
   });
   return units;
@@ -199,8 +199,53 @@ function create(options){
  }
  function retreat(){if(!battle||battle.phase!=='active')return null;return finish('defeat','retreated')}
  function getResult(){return battle&&battle.result?copy(battle.result):null}
+
+ function serialize(){
+  if(!battle||battle.phase!=='active')return null;
+  return {version:1,nextBattle,battle:copy(battle)};
+ }
+ function validCountMap(value){
+  return !!value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).every(key=>Number.isInteger(value[key])&&value[key]>=0&&value[key]<=100000);
+ }
+ function validUnit(unit,team){
+  if(!unit||typeof unit!=='object'||typeof unit.id!=='string'||!unit.id||unit.id.length>160||unit.team!==team||typeof unit.type!=='string')return false;
+  const numeric=['hp','maxHp','attack','defence','speed','morale','x','y','cooldown'];
+  if(!numeric.every(key=>Number.isFinite(unit[key])))return false;
+  if(unit.hp<0||unit.maxHp<=0||unit.attack<0||unit.defence<0||unit.speed<0||unit.morale<0||unit.morale>100||unit.x<0||unit.x>1000||unit.y<0||unit.y>620||unit.cooldown<0)return false;
+  if(unit.characterId!==null&&typeof unit.characterId!=='string')return false;
+  if(unit.name!==undefined&&typeof unit.name!=='string')return false;
+  if(unit._anchor!==undefined&&(!unit._anchor||!Number.isFinite(unit._anchor.x)||!Number.isFinite(unit._anchor.y)))return false;
+  return true;
+ }
+ function restore(saved){
+  if(!saved||saved.version!==1||!saved.battle||typeof saved.battle!=='object')return false;
+  let candidate;
+  try{candidate=copy(saved.battle)}catch(_){return false}
+  const validUnits=(units,team)=>Array.isArray(units)&&units.length<=MAX_FIELD_TROOPS&&units.every(unit=>validUnit(unit,team));
+  const hero=candidate.hero;
+  const heroValid=!!hero&&typeof hero.id==='string'&&typeof hero.name==='string'&&
+   ['hp','maxHp','attack','defence','speed','x','y','attackCooldown','moveX','moveY','facingX','facingY'].every(key=>Number.isFinite(hero[key]))&&
+   hero.hp>=0&&hero.maxHp>0&&hero.attack>=0&&hero.defence>=0&&hero.speed>0&&hero.x>=0&&hero.x<=1000&&hero.y>=0&&hero.y<=620&&
+   hero.attackCooldown>=0&&Math.abs(hero.moveX)<=1&&Math.abs(hero.moveY)<=1;
+  if(candidate.phase!=='active'||typeof candidate.battleId!=='string'||!candidate.battleId||candidate.battleId.length>160||
+   typeof candidate.terrain!=='string'||candidate.terrain.length>40||!heroValid||
+   !validUnits(candidate.friendly,'friendly')||!validUnits(candidate.enemy,'enemy')||
+   !validUnits(candidate.friendlyInitial,'friendly')||!validUnits(candidate.enemyInitial,'enemy')||
+   !Array.isArray(candidate.participantIds)||candidate.participantIds.length>4||
+   candidate.participantIds.some(id=>typeof id!=='string'||!id||id.length>160)||
+   new Set(candidate.participantIds).size!==candidate.participantIds.length||
+   !validCountMap(candidate.friendlyRoster)||!validCountMap(candidate.enemyRoster)||
+   !validCountMap(candidate.friendlyReserves)||!validCountMap(candidate.enemyReserves)||
+   !candidate.morale||!Number.isFinite(candidate.morale.friendly)||!Number.isFinite(candidate.morale.enemy)||
+   candidate.morale.friendly<0||candidate.morale.friendly>100||candidate.morale.enemy<0||candidate.morale.enemy>100||
+   !['advance','hold','regroup'].includes(candidate.order)||!Number.isFinite(candidate.elapsed)||candidate.elapsed<0||
+   candidate.troopCap!==MAX_FIELD_TROOPS)return false;
+  battle=candidate;
+  nextBattle=Number.isSafeInteger(saved.nextBattle)&&saved.nextBattle>0?saved.nextBattle:1;
+  return true;
+ }
  function active(){return !!battle&&battle.phase==='active'}
- return Object.freeze({start,setPlayerInput,issueOrder,step,snapshot,getResult,retreat,active,events});
+ return Object.freeze({start,setPlayerInput,issueOrder,step,snapshot,getResult,retreat,active,serialize,restore,events});
 }
 root.IronCrownBattleSimulation=Object.freeze({create,MAX_FIELD_TROOPS});
 })(window);

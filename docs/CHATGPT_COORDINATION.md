@@ -323,3 +323,25 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Files changed:** Side-game `index.html`, UI contract test, fake-DOM interaction test and README.
 - **Checks:** Lantern Run workflow runs 44705629585 and 44705587920 passed deterministic state, UI contract and fake-DOM interaction tests. No real browser or Android-device test was performed.
 - **Next action:** Merge PR #30 into the side-game branch after review, then prioritize a real browser smoke test rather than adding more mechanics.
+
+
+### Active battle checkpoint and resume — 20 Nov 2026
+
+- **Status:** Implemented on `feature/resumable-campaign-battles`; latest GitHub Actions run 44708570322 passed.
+- **Goal:** Preserve an in-progress player-controlled campaign battle across reloads without applying a result twice or changing campaign casualties/rewards.
+- **Implementation:** Battle simulation exposes a version-1 active-state serializer and guarded restore path. The campaign battle adapter serializes the pending enemy/participant mapping with the simulation state and restores only when the enemy is not already defeated and the exact active-party IDs still match. Save schema advances from v8 to v9; v5-v8 migration preserves existing campaign values. The campaign checkpoints on initial battle save, every five seconds while active, page hide and visibility change. Invalid checkpoints are discarded without applying a result. If animation-frame support is absent, the valid checkpoint is retained.
+- **Presentation detail:** Named battle units now carry their recruit names into the simulation snapshot and the battlefield draws those labels above the named units.
+- **Files:** `js/battle/battle-simulation.js`, `js/battle/battle-view.js`, `js/characters/campaign-battle.js`, `js/core/state.js`, `js/core/save.js`, `js/game.js`, `sw.js`, save/battle/view tests, README, and `docs/CAMPAIGN_CHARACTER_CONTRACT.md`.
+- **Tests added:** Simulation snapshot/restore and deterministic continuation; campaign checkpoint restore and participant mismatch rejection; v8→v9 migration; active-battle save/load round trip; named companion label rendering.
+- **Checks:** First Actions run `44707925914` passed syntax but failed in the Node suite because save tests still expected v8. Those expectations were updated and an explicit v8→v9 migration test was added. The latest run is `44708463072` and was in progress at this hand-off; do not claim it passed until rechecked. No browser, Android, browser local-storage, pagehide or offline runtime test has been performed.
+- **Known limitations:** Checkpoints are best-effort every five seconds and on page lifecycle events; abrupt process termination between checkpoints can lose the last few seconds. Mid-battle checkpoints are versioned and rejected if participant order or enemy state no longer matches.
+- **PR:** #32 open against `main`; complete diff inspected, no review comments. Await mergeability/required checks before merging. Preserve PR #2 as an isolated prototype reference; its duplicate combat loop remains unsuitable for merge.
+
+
+### Lantern Run HUD — 20 Nov 2026
+
+- **Status:** Merged into `sidegame/lantern-run` through PR #31 as `fde63bb0f3c0771d8311b5a2e861dffba75507fe`.
+- **Change:** Added a visible lantern-light progress meter, accessible remaining-light text and a move counter. Legal movement updates both; hints and blocked moves leave them unchanged; retry resets them.
+- **Files:** `side-game/lantern-run/index.html`, UI contract test, fake-DOM interaction test and README.
+- **Checks:** Latest side-game workflow run `44708374153` passed; earlier incremental run `44708359933` failed before the updated interaction/contract tests landed. No real browser or Android-device test performed.
+- **Next action:** Perform real browser validation when an actual browser environment is available; keep the side-game branch isolated from Iron Crown main.

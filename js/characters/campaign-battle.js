@@ -17,7 +17,7 @@ function create(options){
   const characters=party.active().filter(character=>character.status!=='recovering');
   const participantIds=characters.map(character=>character.id);
   const friendly=characters.map((character,index)=>({
-   id:'named-party-'+index,characterId:character.id,type:'named',count:1,
+   id:'named-party-'+index,characterId:character.id,name:character.name,type:'named',count:1,
    hp:Math.round(46+character.morale*.12),
    attack:character.role==='officer'?10:character.role==='companion'?9:7,
    defence:character.role==='officer'?3:2,
@@ -127,6 +127,31 @@ function create(options){
   simulation.retreat();
   return applyResult(simulation.getResult());
  }
+ function serialize(){
+  if(!pending||!simulation.active()||typeof simulation.serialize!=='function')return null;
+  const savedSimulation=simulation.serialize();
+  if(!savedSimulation)return null;
+  return {version:1,pending:{battleId:pending.battleId,enemyId:pending.enemyId,enemyName:pending.enemyName,participantIds:pending.participantIds.slice(),initialTroops:pending.initialTroops},simulation:savedSimulation};
+ }
+ function restore(saved){
+  if(pending||simulation.active()||!saved||saved.version!==1||!saved.pending||!saved.simulation||typeof simulation.restore!=='function')return false;
+  const data=saved.pending,ids=Array.isArray(data.participantIds)?data.participantIds:[];
+  if(typeof data.battleId!=='string'||!data.battleId||typeof data.enemyId!=='string'||!data.enemyId||
+   typeof data.enemyName!=='string'||!Number.isFinite(data.initialTroops)||data.initialTroops<0||data.initialTroops>9999||
+   ids.length>4||ids.some(id=>typeof id!=='string'||!id)||new Set(ids).size!==ids.length)return false;
+  const state=getState();
+  if((Array.isArray(state.defeatedParties)?state.defeatedParties:[]).includes(data.enemyId))return false;
+  const knownIds=new Set(roster.list().map(character=>character.id));
+  if(ids.some(id=>!knownIds.has(id)))return false;
+  const activeIds=party.active().map(character=>character.id);
+  if(activeIds.length!==ids.length||activeIds.some((id,index)=>id!==ids[index]))return false;
+  const savedBattle=saved.simulation.battle;
+  if(!savedBattle||savedBattle.battleId!==data.battleId||!Array.isArray(savedBattle.participantIds)||
+   savedBattle.participantIds.length!==ids.length||savedBattle.participantIds.some((id,index)=>id!==ids[index]))return false;
+  if(!simulation.restore(saved.simulation))return false;
+  pending={battleId:data.battleId,enemyId:data.enemyId,enemyName:data.enemyName,participantIds:ids.slice(),initialTroops:Math.floor(data.initialTroops)};
+  return true;
+ }
  function recoverAtCamp(){
   const recovered=[];
   roster.list().filter(character=>character.status==='recovering').forEach(character=>{
@@ -135,7 +160,7 @@ function create(options){
   });
   return recovered;
  }
- return Object.freeze({start,applyResult,step,setPlayerInput,issueOrder,autoResolve,retreat,recoverAtCamp,active:()=>simulation.active(),snapshot:()=>simulation.snapshot(),getResult:()=>simulation.getResult(),getPending:()=>pending?{...pending,participantIds:pending.participantIds.slice()}:null});
+ return Object.freeze({start,applyResult,step,setPlayerInput,issueOrder,autoResolve,retreat,recoverAtCamp,serialize,restore,active:()=>simulation.active(),snapshot:()=>simulation.snapshot(),getResult:()=>simulation.getResult(),getPending:()=>pending?{...pending,participantIds:pending.participantIds.slice()}:null});
 }
 root.IronCrownCampaignBattle=Object.freeze({create});
 })(window);

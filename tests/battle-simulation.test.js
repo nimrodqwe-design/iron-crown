@@ -48,10 +48,11 @@ const namedSim=api.create();
 const namedStarted=namedSim.start({
  battleId:'named-retreat',
  participantIds:['ic:campaign:character:1','unknown'],
- friendly:[{id:'mara-group',characterId:'ic:campaign:character:1',type:'named',count:1},{id:'foot-group',type:'foot',count:2}],
+ friendly:[{id:'mara-group',characterId:'ic:campaign:character:1',name:'Mara Venn',type:'named',count:1},{id:'foot-group',type:'foot',count:2}],
  enemy:[{id:'raiders',type:'raider',count:2}]
 });
 assert.deepEqual(JSON.parse(JSON.stringify(namedStarted.friendly.filter(unit=>unit.characterId).map(unit=>unit.characterId))),['ic:campaign:character:1']);
+assert.equal(namedStarted.friendly.find(unit=>unit.characterId).name,'Mara Venn','named battle participants retain their display names for the renderer');
 const namedResult=namedSim.retreat();
 assert.equal(namedResult.outcome,'defeat');
 assert.equal(namedResult.reason,'retreated');
@@ -61,4 +62,19 @@ assert.equal(namedResult.characterOutcomes[0].characterId,'ic:campaign:character
 assert.equal(namedResult.characterOutcomes[0].alive,true);
 assert.equal(namedSim.retreat(),null,'a finished battle cannot be retreated twice');
 
-console.log('Battle simulation reserve and contract tests passed.');
+
+const checkpointSource=api.create();
+checkpointSource.start({battleId:'checkpoint-battle',friendly:[{id:'guard',type:'foot',count:2}],enemy:[{id:'raiders',type:'raider',count:2}]});
+checkpointSource.issueOrder({battleId:'checkpoint-battle',order:'hold'});
+checkpointSource.setPlayerInput({battleId:'checkpoint-battle',moveX:1,moveY:0,facingX:1,facingY:0});
+checkpointSource.step(.05);
+const checkpoint=checkpointSource.serialize();
+assert.ok(checkpoint&&checkpoint.version===1,'active simulation can be serialized');
+const checkpointTarget=api.create();
+assert.equal(checkpointTarget.restore(checkpoint),true,'active simulation checkpoint restores');
+assert.deepEqual(JSON.parse(JSON.stringify(checkpointTarget.snapshot())),JSON.parse(JSON.stringify(checkpointSource.snapshot())));
+checkpointSource.step(.05);checkpointTarget.step(.05);
+assert.deepEqual(JSON.parse(JSON.stringify(checkpointTarget.snapshot())),JSON.parse(JSON.stringify(checkpointSource.snapshot())),'restored simulation continues deterministically');
+assert.equal(checkpointTarget.restore({version:1,battle:{phase:'active'}}),false,'malformed checkpoints are rejected');
+
+console.log('Battle simulation reserve, checkpoint and contract tests passed.');
