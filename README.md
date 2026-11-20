@@ -28,7 +28,7 @@ Open `index.html` in a modern browser. No build step, package manager, framework
 
 ## Roadmap
 1. Loyalty events connected to actual campaign actions.
-2. Interactive battlefield presentation and player-controlled battle orders; the current campaign integration uses automatic tactical resolution.
+2. Battle terrain/formation controls, encounter choices and outcome feedback; the first player-controlled battlefield renderer and orders are integrated.
 3. Faction diplomacy, territory ownership and kingdom progression.
 4. Settlements, resource gathering/production and sieges.
 5. Browser/mobile/offline regression testing, onboarding and release polish.
