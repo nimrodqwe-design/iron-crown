@@ -21,19 +21,19 @@ button:disabled{opacity:.5;cursor:not-allowed}
 </head>
 <body><main>
 <h1>Lantern Run</h1>
-<p>Find the exit before your lantern burns out. Avoid the ruins marked with ✕. Three layouts rotate when you start a new run.</p>
+<p>Find the exit before your lantern burns out. Avoid the ruins marked with ✕. Three layouts. Retry a failed ruin; advance only after escaping.</p>
 <div id="grid" class="grid" role="grid" aria-label="Ruin board" aria-rowcount="5" aria-colcount="5"></div>
 <div id="status" aria-live="polite" aria-atomic="true"></div>
 <div class="controls" role="group" aria-label="Movement controls">
 <span aria-hidden="true"></span><button data-move="up" aria-label="Move up">▲</button><span aria-hidden="true"></span>
 <button data-move="left" aria-label="Move left">◀</button><button data-move="down" aria-label="Move down">▼</button><button data-move="right" aria-label="Move right">▶</button>
 </div>
-<p><button id="hint" aria-describedby="status">Hint · free</button> <button id="restart">Next ruin</button></p>
+<p><button id="hint" aria-describedby="status">Hint · free</button> <button id="restart">Restart ruin</button></p>
 <script src="game-state.js"></script>
 <script>
 (()=>{
 'use strict';
-const grid=document.getElementById('grid'),status=document.getElementById('status'),hintButton=document.getElementById('hint');
+const grid=document.getElementById('grid'),status=document.getElementById('status'),hintButton=document.getElementById('hint'),restartButton=document.getElementById('restart');
 const api=window.LanternRunState;
 if(!api){
  status.textContent='The game could not start. Reload the page to try again.';
@@ -64,8 +64,13 @@ function render(){
  status.textContent=message(state);
  document.querySelectorAll('button[data-move]').forEach(button=>button.disabled=state.ended);
  hintButton.disabled=state.ended||!api.hint(state);
+ restartButton.textContent=state.ended?(state.outcome==='escaped'?'Next ruin':'Try again'):'Restart ruin';
 }
-function reset(){state=api.initial(state?(state.level+1)%api.LEVEL_COUNT:0);render();}
+function reset(){
+ let level=state?state.level:0;
+ if(state&&state.ended&&state.outcome==='escaped')level=(state.level+1)%api.LEVEL_COUNT;
+ state=api.initial(level);render();
+}
 function move(dir){
  if(state.ended)return;
  const before=state;

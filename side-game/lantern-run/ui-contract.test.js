@@ -12,7 +12,9 @@ assert.match(html,/api\.cellKind\(x,y,state\.level\)/,'UI must use the current l
 assert.match(html,/api\.cellLabel\(x,y,state\.level\)/,'UI must use the current level for cell labels');
 assert.doesNotMatch(html,/new Set\(\[['"]1,3/,'UI must not duplicate hazard coordinates');
 assert.match(html,/button\.disabled=state\.ended/,'movement controls must disable after the run ends');
-assert.match(html,/state\.level\+1\)%api\.LEVEL_COUNT/,'restart must cycle through the available ruins');
+assert.match(html,/state\.ended&&state\.outcome==='escaped'/,'only a successful escape advances to the next ruin');
+assert.match(html,/state\.outcome==='escaped'\?'Next ruin':'Try again'/,'the restart control communicates the correct next action');
+assert.match(html,/Restart ruin/,'an active run can be restarted without advancing');
 const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match=>match[1]).filter(source=>source.trim());
 assert.strictEqual(inline.length,1,'expected one inline UI script');
 new vm.Script(inline[0]);
