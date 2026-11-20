@@ -307,22 +307,22 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 
 ### Player-controlled campaign battlefield — 20 Nov 2026
 
-- **Status:** Implemented on `feature/campaign-battlefield-view`; PR #29 opened for review.
+- **Status:** Merged into `main` through PR #29 as `36ff25a58b06ce6c6c38d847e7837b2ef02bb1fd`.
 - **Goal:** Replace automatic hostile encounter resolution with a player-controlled presentation while keeping `js/battle/battle-simulation.js` authoritative.
 - **Files changed:** `js/battle/battle-view.js`, `js/characters/campaign-battle.js`, `js/game.js`, `index.html`, `styles/battle.css`, `sw.js`, `tests/battle-view.test.js`, `tests/campaign-battle.test.js`, `tests/map-resource-ui.test.js`.
 - **Implementation:** Hostile map encounters now open a canvas battlefield. Keyboard and touch controls move the commander; Attack sends player input; Advance/Hold/Regroup issue simulation orders; Retreat resolves through the existing campaign result path. Campaign stepping applies the result exactly once, preserving the existing named-character, aggregate-troop, reserve, loyalty and save contracts. New assets are included in shell cache v17.
 - **PR #2 reconciliation:** Its standalone prototype remains an open draft reference. Its duplicate combat loop was not imported; its useful presentation ideas were adapted to the current simulation contract. The PR branch remains 3 commits ahead and 16 behind main, so it is not safe to merge wholesale.
 - **Checks:** GitHub Actions run 44705828926 passed JavaScript syntax and all root Node test files, including the new fake-canvas/fake-DOM battlefield interaction test and campaign-controller input/order/retreat tests. A first run exposed an outdated v16 cache assertion; the test was updated to v17 and the full suite passed. No real browser, Android-device, browser save/load, or offline-launch test was performed.
 - **Known limitations:** The battlefield is a first integrated renderer, not a terrain/formation editor. In-progress battle state is not persisted mid-fight; encounter start and resolved outcomes are saved. Browser/device runtime validation remains outstanding.
-- **Next action:** Merge only after the passing checks and diff review; then perform a browser smoke test and validate mobile pointer controls before extending battle mechanics.
+- **Next action:** Perform real browser smoke testing and validate mobile pointer controls before extending battle mechanics.
 
 ### Lantern Run run-control correction — 20 Nov 2026
 
-- **Status:** PR #30 opened from `sidegame/lantern-run-retry-flow` into `sidegame/lantern-run`; isolated from Iron Crown main.
+- **Status:** Merged into `sidegame/lantern-run` through PR #30 as `f907181dcc3a21ea73e6c839eb32fcec34eb4c94`; isolated from Iron Crown main.
 - **Change:** An active run now offers `Restart ruin`; a failed run offers `Try again` and retries the same layout; only a successful escape offers `Next ruin`. Completing the third layout wraps to the first. This prevents a failed puzzle from being skipped by pressing restart.
 - **Files changed:** Side-game `index.html`, UI contract test, fake-DOM interaction test and README.
 - **Checks:** Lantern Run workflow runs 44705629585 and 44705587920 passed deterministic state, UI contract and fake-DOM interaction tests. No real browser or Android-device test was performed.
-- **Next action:** Merge PR #30 into the side-game branch after review, then prioritize a real browser smoke test rather than adding more mechanics.
+- **Next action:** Prioritize a real browser smoke test rather than adding more mechanics.
 
 
 ### Active battle checkpoint and resume — 20 Nov 2026
@@ -353,6 +353,15 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Iron Crown checks:** Feature run 44708570322 passed syntax and all 11 root Node tests. Main post-merge run 44708845308 passed syntax and all 11 root Node tests. GitHub Pages deployment run 44708845148 succeeded. No actual browser, Android, browser local-storage, pagehide or offline-launch test was performed.
 - **Save limitations:** Active battle checkpoints are best-effort every five seconds and on page hide/visibility change. A sudden process termination between checkpoints can lose the most recent few seconds. A checkpoint is rejected if its enemy identity or exact active-party participant order no longer matches.
 - **Open work:** PR #2 remains the only open PR, a draft standalone battlefield prototype. It has no review comments and remains 3 commits ahead / 16 behind; preserve it as reference rather than importing its duplicate combat loop. Issue #5 remains open for map/world runtime validation and actionable resource integration. Issue #7 remains open for non-battle loyalty event producers; Chronicle remains deferred.
-- **Lantern Run:** PR #31 merged into `sidegame/lantern-run` as `fde63bb0f3c0771d8311b5a2e861dffba75507fe`. It adds an accessible lantern meter and move counter. Post-merge side-game workflow run 44708669972 passed state, UI-contract and fake-DOM interaction tests. No real browser or Android-device test performed.
+- **Lantern Run:** PR #30 merged retry/progression behavior into `sidegame/lantern-run` as `f907181dcc3a21ea73e6c839eb32fcec34eb4c94`; PR #31 then added the accessible lantern meter and move counter as `fde63bb0f3c0771d8311b5a2e861dffba75507fe`. Post-merge side-game workflow run 44708669972 passed state, UI-contract and fake-DOM interaction tests. No real browser or Android-device test performed.
 - **Next Iron Crown priority:** perform a real browser smoke test of map → recruit → assign party → hostile encounter → move/order/attack/retreat → recovery → save/reload, then verify mobile pointer controls and offline launch. Do not add more combat complexity until this vertical slice is exercised in a real browser.
 - **Next Lantern Run priority:** perform a real browser smoke test of movement, hints, HUD updates, retry and three-ruin progression; then address only issues observed.
+
+
+### Repository reconciliation correction — 20 Nov 2026
+
+- PR #29 (player-controlled campaign battlefield) is merged into `main` as `36ff25a58b06ce6c6c38d847e7837b2ef02bb1fd`.
+- PR #30 (Lantern Run retry/progression correction) is merged into `sidegame/lantern-run` as `f907181dcc3a21ea73e6c839eb32fcec34eb4c94`.
+- PR #31 (Lantern Run progress HUD) is merged into `sidegame/lantern-run` as `fde63bb0f3c0771d8311b5a2e861dffba75507fe`.
+- PR #32 (resumable campaign battles/save v9) and PR #33 (post-merge hand-off) are merged into `main`.
+- The only remaining open PR is #2, a draft standalone battlefield prototype. Preserve it; do not merge its duplicate simulation/presentation loop.
