@@ -109,6 +109,7 @@ function create(options){
   }
   if(unit.characterId){
    ctx.fillStyle='#f2d68e';ctx.beginPath();ctx.arc(x,y-25,2.5,0,Math.PI*2);ctx.fill();
+   if(unit.name){ctx.fillStyle='#f5e6c2';ctx.font='10px Arial';ctx.textAlign='center';ctx.fillText(String(unit.name).slice(0,18),x,Math.max(12,y-37));}
   }
  }
  function draw(snapshot){
