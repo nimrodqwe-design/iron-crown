@@ -21,8 +21,9 @@ class Element{
  setPointerCapture(){}
  focus(){this.focused=true}
 }
+const drawnText=[];
 const context=new Proxy({},{
- get(target,key){if(!(key in target))target[key]=()=>{};return target[key]},
+ get(target,key){if(!(key in target))target[key]=key==='fillText'?(value=>drawnText.push(String(value))):()=>{};return target[key]},
  set(target,key,value){target[key]=value;return true}
 });
 const elements={
@@ -39,7 +40,7 @@ const document=new Element('document');
 let snapshot={
  battleId:'battle-view-test',phase:'active',order:'advance',
  hero:{id:'hero',x:500,y:440,hp:90,maxHp:100,facingX:1,facingY:0},
- friendly:[{id:'friend-1',team:'friendly',x:430,y:420,hp:40,maxHp:50,characterId:'char-1'}],
+ friendly:[{id:'friend-1',team:'friendly',x:430,y:420,hp:40,maxHp:50,characterId:'char-1',name:'Mara Venn'}],
  enemy:[{id:'enemy-1',team:'enemy',x:650,y:180,hp:50,maxHp:50}],
  remaining:{friendly:1,enemy:1}
 };
@@ -71,6 +72,7 @@ assert.equal(elements.heroHealth.textContent,'90/100');
 assert.equal(elements.friendlyCount.textContent,'1');
 assert.equal(elements.enemyCount.textContent,'1');
 assert.equal(elements.canvas.focused,true);
+assert.ok(drawnText.includes('Mara Venn'),'battlefield labels named companions for player recognition');
 
 document.dispatch('keydown',{key:'ArrowUp',target:elements.canvas});
 let frame=frames.shift();frame(16);
