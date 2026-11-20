@@ -83,16 +83,31 @@ button('right').click();
 assert.match(status.textContent,/Run ended/,'trap movement ends the run');
 assert.equal(button('up').disabled,true,'movement controls disable after an ending');
 
+assert.equal(restart.textContent,'Try again','a failed ruin offers a retry rather than a skip');
 restart.click();
-assert.equal(playerAt(0,4),true,'restart returns the player to the start');
-assert.equal(button('up').disabled,false,'restart re-enables movement');
+assert.equal(playerAt(0,4),true,'retry returns the player to the start');
+assert.equal(button('up').disabled,false,'retry re-enables movement');
+assert.equal(status.textContent,'Ruin 1 · Lantern light: 12.','failure keeps the current ruin selected');
+assert.equal(restart.textContent,'Restart ruin');
+
+['up','up','right','right','right','up','up','right'].forEach(direction=>button(direction).click());
+assert.match(status.textContent,/Ruin 1 · You escaped/,'the first layout safe route reaches the exit');
+assert.equal(button('right').disabled,true,'movement remains disabled after escape');
+assert.equal(restart.textContent,'Next ruin','a successful escape unlocks progression');
+
+restart.click();
+assert.equal(playerAt(0,4),true,'next ruin starts at the entrance');
 assert.equal(status.textContent,'Ruin 2 · Lantern light: 12.');
 
 ['up','right','up','right','up','up','right','right'].forEach(direction=>button(direction).click());
 assert.match(status.textContent,/Ruin 2 · You escaped/,'the second layout safe route reaches the exit');
-assert.equal(button('right').disabled,true,'movement remains disabled after escape');
+restart.click();
+assert.equal(status.textContent,'Ruin 3 · Lantern light: 12.');
 
 restart.click();
-assert.equal(playerAt(0,4),true,'restart also works after victory');
-assert.equal(status.textContent,'Ruin 3 · Lantern light: 12.','restart advances to the third ruin');
+assert.equal(status.textContent,'Ruin 3 · Lantern light: 12.','restarting an active run does not skip the current ruin');
+['up','right','right','right','up','up','right','up'].forEach(direction=>button(direction).click());
+assert.match(status.textContent,/Ruin 3 · You escaped/,'the third layout safe route reaches the exit');
+restart.click();
+assert.equal(status.textContent,'Ruin 1 · Lantern light: 12.','the completed three-ruin sequence cycles back to the first');
 console.log('Lantern Run DOM interaction checks passed');
