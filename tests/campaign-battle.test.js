@@ -69,4 +69,31 @@ assert.equal(manualCampaign.getResult().battleId,manualStart.battleId);
 assert.ok(manualState.resolvedBattleIds.includes(manualStart.battleId),'manual retreat applies and persists the battle result');
 assert.equal(manualCampaign.step(.05).phase,'ended','completed battles do not advance again');
 
-console.log('Campaign battle integration checks passed');
+
+const checkpointState={troops:4,health:95,gold:25,defeatedParties:[],resolvedBattleIds:[],activePartyIds:[]};
+const checkpointRoster=context.window.IronCrownCharacters.create({campaignId:'resume-test'});
+const checkpointParty=context.window.IronCrownParty.create({roster:checkpointRoster,getActiveIds:()=>checkpointState.activePartyIds,setActiveIds:ids=>{checkpointState.activePartyIds=ids}});
+const checkpointSimulation=context.window.IronCrownBattleSimulation.create();
+const checkpointCampaign=context.window.IronCrownCampaignBattle.create({simulation:checkpointSimulation,roster:checkpointRoster,party:checkpointParty,getState:()=>checkpointState,save:()=>{}});
+const checkpointStarted=checkpointCampaign.start({id:'ashen-patrol',name:'Ashen Patrol',power:3},{id:'hero',name:'Commander',hp:95,maxHp:100,attack:20,defence:3,speed:170});
+assert.equal(checkpointStarted.ok,true);
+checkpointCampaign.setPlayerInput({moveX:1,moveY:0,facingX:1,facingY:0});
+checkpointCampaign.step(.05);
+const campaignCheckpoint=checkpointCampaign.serialize();
+assert.ok(campaignCheckpoint&&campaignCheckpoint.version===1,'campaign battle checkpoint includes pending encounter metadata');
+const resumedSimulation=context.window.IronCrownBattleSimulation.create();
+const resumedCampaign=context.window.IronCrownCampaignBattle.create({simulation:resumedSimulation,roster:checkpointRoster,party:checkpointParty,getState:()=>checkpointState,save:()=>{}});
+assert.equal(resumedCampaign.restore(campaignCheckpoint),true,'campaign battle resumes with the same active party');
+assert.deepEqual(JSON.parse(JSON.stringify(resumedCampaign.snapshot())),JSON.parse(JSON.stringify(checkpointCampaign.snapshot())));
+assert.equal(resumedCampaign.getPending().enemyId,'ashen-patrol');
+const invalidCheckpoint=JSON.parse(JSON.stringify(campaignCheckpoint));
+invalidCheckpoint.pending.participantIds=['unknown-character'];
+const rejectedSimulation=context.window.IronCrownBattleSimulation.create();
+const rejectedCampaign=context.window.IronCrownCampaignBattle.create({simulation:rejectedSimulation,roster:checkpointRoster,party:checkpointParty,getState:()=>checkpointState,save:()=>{}});
+assert.equal(rejectedCampaign.restore(invalidCheckpoint),false,'checkpoint with mismatched participant IDs is rejected');
+assert.equal(rejectedCampaign.active(),false,'rejected checkpoint does not start a simulation');
+const resumedRetreat=resumedCampaign.retreat();
+assert.equal(resumedRetreat.ok,true);
+assert.equal(resumedCampaign.serialize(),null,'completed battles no longer produce active checkpoints');
+
+console.log('Campaign battle integration and resume checks passed');
