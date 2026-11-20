@@ -82,6 +82,23 @@ function create(options){
   pending=null;
   return {ok:true,duplicate:false,result};
  }
+ function step(delta){
+  if(!pending||!simulation.active())return simulation.snapshot();
+  const snapshot=simulation.step(delta);
+  if(!simulation.active()){
+   const result=simulation.getResult();
+   if(result)applyResult(result);
+  }
+  return snapshot;
+ }
+ function setPlayerInput(input){
+  if(!pending||!simulation.active())return false;
+  return simulation.setPlayerInput({...input,battleId:pending.battleId});
+ }
+ function issueOrder(order){
+  if(!pending||!simulation.active())return false;
+  return simulation.issueOrder({battleId:pending.battleId,order});
+ }
  function autoResolve(options){
   if(!pending||!simulation.active())return {ok:false,reason:'No active campaign battle'};
   options=options||{};
@@ -118,7 +135,7 @@ function create(options){
   });
   return recovered;
  }
- return Object.freeze({start,applyResult,autoResolve,retreat,recoverAtCamp,active:()=>simulation.active(),snapshot:()=>simulation.snapshot(),getPending:()=>pending?{...pending,participantIds:pending.participantIds.slice()}:null});
+ return Object.freeze({start,applyResult,step,setPlayerInput,issueOrder,autoResolve,retreat,recoverAtCamp,active:()=>simulation.active(),snapshot:()=>simulation.snapshot(),getResult:()=>simulation.getResult(),getPending:()=>pending?{...pending,participantIds:pending.participantIds.slice()}:null});
 }
 root.IronCrownCampaignBattle=Object.freeze({create});
 })(window);

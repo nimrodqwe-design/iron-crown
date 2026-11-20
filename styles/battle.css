@@ -1,0 +1,37 @@
+.battle-overlay{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:10px;background:#09120ff2;overflow:auto}
+.battle-overlay[hidden]{display:none}
+.battle-dialog{width:min(1080px,100%);max-height:100%;overflow:auto;padding:clamp(10px,2vw,18px);border:1px solid #a58a55;border-radius:14px;background:#17231f;box-shadow:0 18px 60px #000c;color:#f0e6cd}
+.battle-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:10px}
+.battle-header h2{margin:4px 0;color:#e4ce98;font-size:clamp(20px,3vw,28px)}
+.battle-header p{margin:4px 0 0;color:#c1baa0;font:12px/1.4 Arial,sans-serif}
+.battle-retreat{flex:0 0 auto;border:1px solid #9a6257;border-radius:8px;background:#512d29;color:#f7dfd4;padding:9px 13px}
+.battle-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:8px 0}
+.battle-stats>div{display:flex;justify-content:space-between;align-items:center;gap:7px;padding:8px 10px;border:1px solid #475542;border-radius:8px;background:#202e25;font:11px Arial,sans-serif}
+.battle-stats span{color:#bdb69c}.battle-stats b{color:#e5d1a0}
+.battle-stage{overflow:hidden;border:2px solid #9b8555;border-radius:10px;background:#456b46;box-shadow:0 8px 22px #0007}
+#battleCanvas{display:block;width:100%;height:auto;aspect-ratio:1000/620;touch-action:none;outline-offset:-4px}
+#battleCanvas:focus-visible{outline:3px solid #f1d58d}
+.battle-controls{display:grid;grid-template-columns:minmax(150px,220px) 1fr;align-items:center;gap:14px;padding:12px 0}
+.battle-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;max-width:210px;margin:auto}
+.battle-pad button,.battle-actions button{min-height:42px;border:1px solid #887548;border-radius:8px;background:#2c3c30;color:#f0e6cd;font:600 13px Arial,sans-serif;touch-action:none}
+.battle-pad button{font-size:18px}
+.battle-actions{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end}
+.battle-actions button{padding:9px 14px;touch-action:manipulation}
+.battle-actions .battle-primary,.battle-result .battle-primary{background:#8b6c35;border-color:#d7b96f;color:#fff1c9}
+.battle-message{min-height:2.5em;margin:2px 0 0;color:#d9bd7d;font:12px/1.45 Arial,sans-serif}
+.battle-result{margin-top:10px;padding:14px;border:1px solid #9b8555;border-radius:10px;background:#202e25}
+.battle-result[hidden]{display:none}
+.battle-result h3{margin:0;color:#e5d1a0;font-size:22px}
+.battle-result p{margin:6px 0 12px;color:#d6ceb8;font:13px/1.5 Arial,sans-serif}
+.battle-result button{padding:10px 15px;border-radius:8px}
+.battle-pad button:focus-visible,.battle-actions button:focus-visible,.battle-header button:focus-visible,.battle-result button:focus-visible{outline:3px solid #f1d58d;outline-offset:2px}
+.battle-pad button:disabled,.battle-actions button:disabled,.battle-header button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:620px){
+ .battle-dialog{padding:10px;border-radius:10px}
+ .battle-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .battle-controls{grid-template-columns:1fr;gap:9px}
+ .battle-actions{justify-content:center}
+ .battle-actions button{flex:1;min-width:95px;padding:10px 8px}
+ .battle-pad{width:min(100%,220px)}
+ .battle-header h2{font-size:20px}
+}

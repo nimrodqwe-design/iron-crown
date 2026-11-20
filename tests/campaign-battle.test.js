@@ -47,4 +47,26 @@ assert.equal(recovered.length,1,'camp recovery returns wounded named characters'
 assert.equal(roster.get(mara.id).status,'available');
 assert.equal(roster.get(mara.id).morale,50,'camp recovery restores morale by ten points');
 assert.equal(party.assign(mara.id).ok,true,'recovered characters can rejoin the active party');
+const manualState={troops:5,health:100,gold:0,defeatedParties:[],resolvedBattleIds:[],activePartyIds:[]};
+const manualRoster=context.window.IronCrownCharacters.create({campaignId:'manual-battle-test'});
+const manualParty=context.window.IronCrownParty.create({roster:manualRoster,getActiveIds:()=>manualState.activePartyIds,setActiveIds:ids=>{manualState.activePartyIds=ids}});
+const manualSimulation=context.window.IronCrownBattleSimulation.create();
+const manualCampaign=context.window.IronCrownCampaignBattle.create({simulation:manualSimulation,roster:manualRoster,party:manualParty,getState:()=>manualState,save:()=>{}});
+const manualStart=manualCampaign.start({id:'manual-raiders',name:'Manual Raiders',power:2},{id:'hero',name:'Commander',hp:100,maxHp:100,attack:20,defence:3,speed:170});
+assert.equal(manualStart.ok,true);
+const beforeMove=manualCampaign.snapshot().hero.x;
+assert.equal(manualCampaign.issueOrder('hold'),true,'player can issue a valid battlefield order');
+assert.equal(manualCampaign.issueOrder('charge'),false,'unsupported battlefield orders are rejected');
+assert.equal(manualCampaign.setPlayerInput({moveX:1,moveY:0,facingX:1,facingY:0}),true,'player input is scoped to the active campaign battle');
+const moved=manualCampaign.step(.05);
+assert.ok(moved.hero.x>beforeMove,'campaign controller advances the authoritative simulation');
+assert.equal(moved.order,'hold');
+const manualRetreat=manualCampaign.retreat();
+assert.equal(manualRetreat.ok,true);
+assert.equal(manualRetreat.result.reason,'retreated');
+assert.equal(manualCampaign.active(),false);
+assert.equal(manualCampaign.getResult().battleId,manualStart.battleId);
+assert.ok(manualState.resolvedBattleIds.includes(manualStart.battleId),'manual retreat applies and persists the battle result');
+assert.equal(manualCampaign.step(.05).phase,'ended','completed battles do not advance again');
+
 console.log('Campaign battle integration checks passed');

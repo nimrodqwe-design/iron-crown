@@ -303,3 +303,23 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Lantern Run:** PR #24 merged into `sidegame/lantern-run` as `b504a0ae03b8fc52499903f505a1a8211c5340d4`. Free safe-route hints use BFS, avoid traps, respect remaining light and do not mutate state. Post-merge workflow run 44487636410 passed all three side-game test groups. No real browser/device test performed.
 - **Next Iron Crown priority:** build a player-controlled renderer and encounter choice on the current battle event contract; then test browser/mobile and save/offline flows.
 - **Next Lantern Run priority:** continue deterministic, low-dependency gameplay refinements; a real browser smoke test remains outstanding.
+
+
+### Player-controlled campaign battlefield — 20 Nov 2026
+
+- **Status:** Implemented on `feature/campaign-battlefield-view`; PR #29 opened for review.
+- **Goal:** Replace automatic hostile encounter resolution with a player-controlled presentation while keeping `js/battle/battle-simulation.js` authoritative.
+- **Files changed:** `js/battle/battle-view.js`, `js/characters/campaign-battle.js`, `js/game.js`, `index.html`, `styles/battle.css`, `sw.js`, `tests/battle-view.test.js`, `tests/campaign-battle.test.js`, `tests/map-resource-ui.test.js`.
+- **Implementation:** Hostile map encounters now open a canvas battlefield. Keyboard and touch controls move the commander; Attack sends player input; Advance/Hold/Regroup issue simulation orders; Retreat resolves through the existing campaign result path. Campaign stepping applies the result exactly once, preserving the existing named-character, aggregate-troop, reserve, loyalty and save contracts. New assets are included in shell cache v17.
+- **PR #2 reconciliation:** Its standalone prototype remains an open draft reference. Its duplicate combat loop was not imported; its useful presentation ideas were adapted to the current simulation contract. The PR branch remains 3 commits ahead and 16 behind main, so it is not safe to merge wholesale.
+- **Checks:** GitHub Actions run 44705828926 passed JavaScript syntax and all root Node test files, including the new fake-canvas/fake-DOM battlefield interaction test and campaign-controller input/order/retreat tests. A first run exposed an outdated v16 cache assertion; the test was updated to v17 and the full suite passed. No real browser, Android-device, browser save/load, or offline-launch test was performed.
+- **Known limitations:** The battlefield is a first integrated renderer, not a terrain/formation editor. In-progress battle state is not persisted mid-fight; encounter start and resolved outcomes are saved. Browser/device runtime validation remains outstanding.
+- **Next action:** Merge only after the passing checks and diff review; then perform a browser smoke test and validate mobile pointer controls before extending battle mechanics.
+
+### Lantern Run run-control correction — 20 Nov 2026
+
+- **Status:** PR #30 opened from `sidegame/lantern-run-retry-flow` into `sidegame/lantern-run`; isolated from Iron Crown main.
+- **Change:** An active run now offers `Restart ruin`; a failed run offers `Try again` and retries the same layout; only a successful escape offers `Next ruin`. Completing the third layout wraps to the first. This prevents a failed puzzle from being skipped by pressing restart.
+- **Files changed:** Side-game `index.html`, UI contract test, fake-DOM interaction test and README.
+- **Checks:** Lantern Run workflow runs 44705629585 and 44705587920 passed deterministic state, UI contract and fake-DOM interaction tests. No real browser or Android-device test was performed.
+- **Next action:** Merge PR #30 into the side-game branch after review, then prioritize a real browser smoke test rather than adding more mechanics.
