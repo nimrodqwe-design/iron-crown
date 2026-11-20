@@ -17,7 +17,7 @@ function create(options){
   const characters=party.active().filter(character=>character.status!=='recovering');
   const participantIds=characters.map(character=>character.id);
   const friendly=characters.map((character,index)=>({
-   id:'named-party-'+index,characterId:character.id,type:'named',count:1,
+   id:'named-party-'+index,characterId:character.id,name:character.name,type:'named',count:1,
    hp:Math.round(46+character.morale*.12),
    attack:character.role==='officer'?10:character.role==='companion'?9:7,
    defence:character.role==='officer'?3:2,
