@@ -270,7 +270,7 @@ if(state.activeBattle){
  if(restored){
   const pending=campaignBattle.getPending();
   if(battleView.open({enemyName:pending.enemyName}))notify('Resumed your unfinished battle at '+pending.enemyName+'.');
-  else{state.activeBattle=null;save();notify('The saved battle could not be reopened in this browser. The campaign encounter was reset safely.');}
+  else notify('The saved battle is restored but this browser cannot run its animation loop. The checkpoint remains saved for a supported browser.');
  }else{state.activeBattle=null;save();notify('An unfinished battle checkpoint was invalid or no longer matched your party. The campaign was preserved; the encounter can be started again.');}
 }
 if(typeof window.setInterval==='function')window.setInterval(()=>{if(campaignBattle&&campaignBattle.active())save()},5000);
