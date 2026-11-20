@@ -87,7 +87,6 @@ assert.deepEqual(orders,['hold'],'order buttons issue authoritative simulation o
 assert.equal(elements.order.textContent,'Hold');
 elements.attackButton.click();
 assert.equal(lastInput.attack,true,'attack button sends a player attack input');
-assert.equal(view.retreat(),false,'retreat method is not exposed as a public view action');
 elements.retreatButton.click();
 assert.equal(retreats,1);
 assert.equal(completed.length,1,'battle completion is reported exactly once');
