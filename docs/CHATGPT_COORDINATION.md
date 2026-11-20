@@ -327,7 +327,7 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 
 ### Active battle checkpoint and resume — 20 Nov 2026
 
-- **Status:** Implemented on `feature/resumable-campaign-battles`; latest GitHub Actions run 44708570322 passed.
+- **Status:** Merged into `main` through PR #32 as `6cdbe9ff328173f2e9b3677a4d6d394275a19730`; latest feature-branch GitHub Actions run 44708570322 passed.
 - **Goal:** Preserve an in-progress player-controlled campaign battle across reloads without applying a result twice or changing campaign casualties/rewards.
 - **Implementation:** Battle simulation exposes a version-1 active-state serializer and guarded restore path. The campaign battle adapter serializes the pending enemy/participant mapping with the simulation state and restores only when the enemy is not already defeated and the exact active-party IDs still match. Save schema advances from v8 to v9; v5-v8 migration preserves existing campaign values. The campaign checkpoints on initial battle save, every five seconds while active, page hide and visibility change. Invalid checkpoints are discarded without applying a result. If animation-frame support is absent, the valid checkpoint is retained.
 - **Presentation detail:** Named battle units now carry their recruit names into the simulation snapshot and the battlefield draws those labels above the named units.
@@ -335,7 +335,7 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Tests added:** Simulation snapshot/restore and deterministic continuation; campaign checkpoint restore and participant mismatch rejection; v8→v9 migration; active-battle save/load round trip; named companion label rendering.
 - **Checks:** First Actions run `44707925914` passed syntax but failed in the Node suite because save tests still expected v8. Those expectations were updated and an explicit v8→v9 migration test was added. The latest run is `44708463072` and was in progress at this hand-off; do not claim it passed until rechecked. No browser, Android, browser local-storage, pagehide or offline runtime test has been performed.
 - **Known limitations:** Checkpoints are best-effort every five seconds and on page lifecycle events; abrupt process termination between checkpoints can lose the last few seconds. Mid-battle checkpoints are versioned and rejected if participant order or enemy state no longer matches.
-- **PR:** #32 open against `main`; complete diff inspected, no review comments. Await mergeability/required checks before merging. Preserve PR #2 as an isolated prototype reference; its duplicate combat loop remains unsuitable for merge.
+- **PR:** #32 merged into `main` as `6cdbe9ff328173f2e9b3677a4d6d394275a19730`. Preserve PR #2 as an isolated prototype reference; its duplicate combat loop remains unsuitable for merge.
 
 
 ### Lantern Run HUD — 20 Nov 2026
@@ -345,3 +345,14 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Files:** `side-game/lantern-run/index.html`, UI contract test, fake-DOM interaction test and README.
 - **Checks:** Latest side-game workflow run `44708374153` passed; earlier incremental run `44708359933` failed before the updated interaction/contract tests landed. No real browser or Android-device test performed.
 - **Next action:** Perform real browser validation when an actual browser environment is available; keep the side-game branch isolated from Iron Crown main.
+
+
+### Final daily hand-off — 20 Nov 2026 (post-merge)
+
+- **Iron Crown main:** `6cdbe9ff328173f2e9b3677a4d6d394275a19730`. PR #32 adds versioned active-battle serialization/restore, save v9 migration from v5-v8, five-second and page-lifecycle checkpoints, guarded campaign resume, and named companion labels on the battlefield.
+- **Iron Crown checks:** Feature run 44708570322 passed syntax and all 11 root Node tests. Main post-merge run 44708845308 passed syntax and all 11 root Node tests. GitHub Pages deployment run 44708845148 succeeded. No actual browser, Android, browser local-storage, pagehide or offline-launch test was performed.
+- **Save limitations:** Active battle checkpoints are best-effort every five seconds and on page hide/visibility change. A sudden process termination between checkpoints can lose the most recent few seconds. A checkpoint is rejected if its enemy identity or exact active-party participant order no longer matches.
+- **Open work:** PR #2 remains the only open PR, a draft standalone battlefield prototype. It has no review comments and remains 3 commits ahead / 16 behind; preserve it as reference rather than importing its duplicate combat loop. Issue #5 remains open for map/world runtime validation and actionable resource integration. Issue #7 remains open for non-battle loyalty event producers; Chronicle remains deferred.
+- **Lantern Run:** PR #31 merged into `sidegame/lantern-run` as `fde63bb0f3c0771d8311b5a2e861dffba75507fe`. It adds an accessible lantern meter and move counter. Post-merge side-game workflow run 44708669972 passed state, UI-contract and fake-DOM interaction tests. No real browser or Android-device test performed.
+- **Next Iron Crown priority:** perform a real browser smoke test of map → recruit → assign party → hostile encounter → move/order/attack/retreat → recovery → save/reload, then verify mobile pointer controls and offline launch. Do not add more combat complexity until this vertical slice is exercised in a real browser.
+- **Next Lantern Run priority:** perform a real browser smoke test of movement, hints, HUD updates, retry and three-ruin progression; then address only issues observed.
