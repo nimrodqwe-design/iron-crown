@@ -2,6 +2,9 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const html=fs.readFileSync(__dirname+'/index.html','utf8');
 assert.match(html,/role="grid"/,'board must expose grid semantics');
+assert.match(html,/<progress id="lightMeter" max="12" value="12"/,'remaining lantern light must have a visible progress meter');
+assert.match(html,/aria-valuetext/,'light meter must expose a readable remaining-light value');
+assert.match(html,/moveCount\.textContent='Moves: '\+state\.moves/,'HUD must expose the current move count');
 assert.match(html,/id="hint" aria-describedby="status"/,'hint control must be labelled by the live status region');
 assert.match(html,/api\.hint\(state\)/,'UI must use the state module for route hints');
 assert.match(html,/does not consume lantern light/,'hint feedback must explain that it is free');

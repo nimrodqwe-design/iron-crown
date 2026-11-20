@@ -37,9 +37,10 @@ class Element{
  }
  click(){if(!this.disabled)this.dispatch('click')}
 }
-const grid=new Element('div'),status=new Element('div'),restart=new Element('button'),hint=new Element('button');
+const grid=new Element('div'),status=new Element('div'),restart=new Element('button'),hint=new Element('button'),lightMeter=new Element('progress'),lightValue=new Element('output'),moveCount=new Element('output');
+lightMeter.value=0;lightMeter.max=12;
 const movement=['up','left','down','right'].map(direction=>new Element('button',{move:direction}));
-const elements={grid,status,restart,hint};
+const elements={grid,status,restart,hint,lightMeter,lightValue,moveCount};
 const document={
  body:new Element('body'),
  listeners:{},
@@ -61,10 +62,15 @@ const button=direction=>movement.find(item=>item.dataset.move===direction);
 assert.equal(grid.children.length,25,'initial board renders all 25 cells');
 assert.equal(playerAt(0,4),true,'player starts in the lower-left cell');
 assert.equal(status.textContent,'Ruin 1 · Lantern light: 12.');
+assert.equal(lightMeter.value,12,'HUD meter starts full');
+assert.equal(lightValue.textContent,'12 / 12');
+assert.equal(moveCount.textContent,'Moves: 0');
 assert.equal(hint.disabled,false,'safe hint is available at the start');
 hint.click();
 assert.match(status.textContent,/Hint: move (up|right|down|left)\. This does not consume lantern light\./);
 assert.equal(playerAt(0,4),true,'hint does not move the player');
+assert.equal(lightMeter.value,12,'hint does not change the visible light meter');
+assert.equal(moveCount.textContent,'Moves: 0','hint does not increment the move count');
 assert.equal(cell(4,0).getAttribute('aria-label').startsWith('Exit'),true);
 
 button('left').click();
@@ -75,12 +81,17 @@ const key= document.dispatch('keydown',{key:'ArrowUp'});
 assert.equal(key.defaultPrevented,true,'handled arrow keys prevent page scrolling');
 assert.equal(playerAt(0,3),true,'keyboard movement updates the rendered position');
 assert.equal(status.textContent,'Ruin 1 · Lantern light: 11.');
+assert.equal(lightMeter.value,11,'legal movement updates the light meter');
+assert.equal(lightValue.textContent,'11 / 12');
+assert.equal(moveCount.textContent,'Moves: 1');
 
 document.dispatch('keydown',{key:'ArrowRight',target:button('right')});
 assert.equal(playerAt(0,3),true,'focused buttons must not also receive global arrow-key movement');
 
 button('right').click();
 assert.match(status.textContent,/Run ended/,'trap movement ends the run');
+assert.equal(lightMeter.value,10,'trap entry still updates the remaining-light meter');
+assert.equal(moveCount.textContent,'Moves: 2');
 assert.equal(button('up').disabled,true,'movement controls disable after an ending');
 
 assert.equal(restart.textContent,'Try again','a failed ruin offers a retry rather than a skip');
@@ -88,6 +99,8 @@ restart.click();
 assert.equal(playerAt(0,4),true,'retry returns the player to the start');
 assert.equal(button('up').disabled,false,'retry re-enables movement');
 assert.equal(status.textContent,'Ruin 1 · Lantern light: 12.','failure keeps the current ruin selected');
+assert.equal(lightMeter.value,12,'retry resets the lantern meter');
+assert.equal(moveCount.textContent,'Moves: 0','retry resets the move count');
 assert.equal(restart.textContent,'Restart ruin');
 
 ['up','up','right','right','right','up','up','right'].forEach(direction=>button(direction).click());

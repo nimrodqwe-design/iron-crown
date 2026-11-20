@@ -3,7 +3,7 @@
 A tiny, dependency-free browser game developed as an autonomous side project.
 
 ## Current loop
-Navigate three deterministic 5×5 ruins with distinct hazard layouts. Reach each exit before the 12-move lantern budget is exhausted. Failed runs retry the same layout; only a successful escape advances to the next ruin. A free hint finds a safe next direction without moving the player or consuming lantern light.
+Navigate three deterministic 5×5 ruins with distinct hazard layouts. A visible lantern meter and move counter track the 12-move budget. Reach each exit before the light is exhausted. Failed runs retry the same layout; only a successful escape advances to the next ruin. A free hint finds a safe next direction without moving the player or consuming lantern light.
 
 ## Controls
 Arrow keys or on-screen touch buttons. Restart ruin resets the current layout; Try again appears after a failed run; Next ruin appears only after escape and cycles back to the first layout after the third. Arrow-key movement does not intercept keys while a button or text-entry control has focus.
