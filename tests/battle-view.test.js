@@ -109,6 +109,7 @@ assert.match(html,/id="battleCanvas"/);
 assert.match(html,/data-battle-order="regroup"/);
 assert.match(game,/battleView\.open\(\{enemyName:p\.name,faction:p\.faction\}\)/);
 assert.doesNotMatch(game,/campaignBattle\.autoResolve\(\)/,'hostile map encounters must no longer auto-resolve');
-assert.match(shell,/iron-crown-shell-v17/);
+assert.match(shell,/iron-crown-shell-v18/);
+assert.match(game,/campaignBattle\.restore\(state\.activeBattle\)/,'saved active battles are restored on campaign startup');
 assert.match(shell,/\.\/js\/battle\/battle-view\.js/);
 console.log('Battlefield view interaction checks passed');
