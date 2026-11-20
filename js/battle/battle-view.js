@@ -10,14 +10,14 @@ const titleCase=value=>String(value||'advance').charAt(0).toUpperCase()+String(v
 function create(options){
  options=options||{};
  const controller=options.controller,e=options.elements||{};
- if(!controller||typeof controller.step!=='function'||typeof controller.snapshot!=='function'||typeof controller.setPlayerInput!=='function'||typeof controller.issueOrder!=='function'||typeof controller.retreat!=='function')throw new TypeError('A campaign battle controller is required');
+ if(!controller||typeof controller.step!=='function'||typeof controller.snapshot!=='function'||typeof controller.setPlayerInput!=='function'||typeof controller.issueOrder!=='function'||typeof controller.retreat!=='function'||typeof controller.active!=='function'||typeof controller.getResult!=='function')throw new TypeError('A campaign battle controller is required');
  const required=['root','canvas','title','subtitle','heroHealth','friendlyCount','enemyCount','order','message','result','resultTitle','resultText','continueButton','retreatButton','attackButton'];
  required.forEach(key=>{if(!e[key])throw new TypeError('Missing battlefield element: '+key)});
  const ctx=e.canvas.getContext&&e.canvas.getContext('2d');
  if(!ctx)throw new Error('A 2D battlefield canvas is required');
  const doc=options.document||root.document;
- const requestFrame=options.requestFrame||root.requestAnimationFrame;
- const cancelFrame=options.cancelFrame||root.cancelAnimationFrame;
+ const requestFrame=options.requestFrame||(root.requestAnimationFrame&&root.requestAnimationFrame.bind(root));
+ const cancelFrame=options.cancelFrame||(root.cancelAnimationFrame&&root.cancelAnimationFrame.bind(root));
  const moveButtons=Array.isArray(e.moveButtons)?e.moveButtons:[];
  const orderButtons=Array.isArray(e.orderButtons)?e.orderButtons:[];
  const keys={up:false,down:false,left:false,right:false};
