@@ -99,6 +99,9 @@
   <div class="town-section"><h3>Available recruits</h3><p>Characters not currently assigned to the active party.</p><div id="availablePartyList" class="named-recruit-list"></div></div>
   <p class="town-note" id="companyNote" aria-live="polite">Named active-party characters take part in hostile encounters. Rest at camp for two hours to recover wounded companions before reassigning them.</p>
  </section>
+
+ <div class="toast" id="toast"></div>
+</main>
  <section id="battleOverlay" class="battle-overlay" aria-hidden="true" hidden>
   <div class="battle-dialog" role="dialog" aria-modal="true" aria-labelledby="battleTitle">
    <header class="battle-header">
@@ -131,8 +134,6 @@
    </section>
   </div>
  </section>
- <div class="toast" id="toast"></div>
-</main>
 <footer class="bottom"><div class="travel"><b id="travelTitle">Your party is at Greyhaven</b><small id="travelSub">Select a settlement to plot a route.</small></div><div class="actions"><button class="action" id="pause">Ⅱ Pause</button><button class="action" id="speed">▶▶ 1×</button><button class="action" id="camp">Camp</button><button class="action camp-rest" id="rest">Rest 2h</button><button class="action" id="cancel" disabled>Cancel</button></div></footer>
 </div>
 <script src="./js/data/world.js" defer></script>
