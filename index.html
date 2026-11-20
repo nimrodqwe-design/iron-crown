@@ -13,6 +13,7 @@
 <link rel="apple-touch-icon" href="./icon.svg">
 <title>IRON CROWN — The Marches</title>
 <link rel="stylesheet" href="./styles/main.css">
+<link rel="stylesheet" href="./styles/battle.css">
 
 </head>
 <body>
@@ -98,6 +99,38 @@
   <div class="town-section"><h3>Available recruits</h3><p>Characters not currently assigned to the active party.</p><div id="availablePartyList" class="named-recruit-list"></div></div>
   <p class="town-note" id="companyNote" aria-live="polite">Named active-party characters take part in hostile encounters. Rest at camp for two hours to recover wounded companions before reassigning them.</p>
  </section>
+ <section id="battleOverlay" class="battle-overlay" aria-hidden="true" hidden>
+  <div class="battle-dialog" role="dialog" aria-modal="true" aria-labelledby="battleTitle">
+   <header class="battle-header">
+    <div><div class="eyebrow">Hostile encounter</div><h2 id="battleTitle">Battle at the frontier</h2><p id="battleSubtitle">Lead your companions and hold the line.</p></div>
+    <button type="button" id="battleRetreat" class="battle-retreat">Retreat</button>
+   </header>
+   <div class="battle-stats" aria-label="Battle status">
+    <div><span>Commander</span><b id="battleHeroHealth">100/100</b></div>
+    <div><span>Warband</span><b id="battleFriendlyCount">0</b></div>
+    <div><span>Hostiles</span><b id="battleEnemyCount">0</b></div>
+    <div><span>Order</span><b id="battleOrder">Advance</b></div>
+   </div>
+   <div class="battle-stage"><canvas id="battleCanvas" width="1000" height="620" tabindex="0" role="img" aria-label="Battlefield view. Use WASD or arrow keys to move and Space to attack."></canvas></div>
+   <div class="battle-controls">
+    <div class="battle-pad" role="group" aria-label="Commander movement">
+     <span aria-hidden="true"></span><button type="button" data-battle-move="up" aria-label="Move up">▲</button><span aria-hidden="true"></span>
+     <button type="button" data-battle-move="left" aria-label="Move left">◀</button><button type="button" data-battle-move="down" aria-label="Move down">▼</button><button type="button" data-battle-move="right" aria-label="Move right">▶</button>
+    </div>
+    <div class="battle-actions" role="group" aria-label="Battle commands">
+     <button type="button" id="battleAttack" class="battle-primary">Attack</button>
+     <button type="button" data-battle-order="advance">Advance</button>
+     <button type="button" data-battle-order="hold">Hold</button>
+     <button type="button" data-battle-order="regroup">Regroup</button>
+    </div>
+   </div>
+   <p id="battleMessage" class="battle-message" aria-live="polite">Use WASD or arrow keys to move. Space attacks.</p>
+   <section id="battleResult" class="battle-result" aria-labelledby="battleResultTitle" hidden>
+    <h3 id="battleResultTitle">Victory</h3><p id="battleResultText"></p>
+    <button type="button" id="battleContinue" class="battle-primary">Return to campaign</button>
+   </section>
+  </div>
+ </section>
  <div class="toast" id="toast"></div>
 </main>
 <footer class="bottom"><div class="travel"><b id="travelTitle">Your party is at Greyhaven</b><small id="travelSub">Select a settlement to plot a route.</small></div><div class="actions"><button class="action" id="pause">Ⅱ Pause</button><button class="action" id="speed">▶▶ 1×</button><button class="action" id="camp">Camp</button><button class="action camp-rest" id="rest">Rest 2h</button><button class="action" id="cancel" disabled>Cancel</button></div></footer>
@@ -119,6 +152,7 @@
 <script src="./js/characters/loyalty.js" defer></script>
 <script src="./js/characters/campaign-loyalty-adapter.js" defer></script>
 <script src="./js/characters/campaign-battle.js" defer></script>
+<script src="./js/battle/battle-view.js" defer></script>
 <script src="./js/game.js" defer></script>
 
 </body>
