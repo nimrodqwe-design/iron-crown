@@ -122,8 +122,8 @@ function create(options){
  }
  function render(snapshot){
   if(!snapshot)return;
-  const friendly=Array.isArray(snapshot.remaining)?snapshot.remaining.friendly:alive(snapshot.friendly).length;
-  const enemy=Array.isArray(snapshot.remaining)?snapshot.remaining.enemy:alive(snapshot.enemy).length;
+  const friendly=snapshot.remaining&&Number.isFinite(snapshot.remaining.friendly)?snapshot.remaining.friendly:alive(snapshot.friendly).length;
+  const enemy=snapshot.remaining&&Number.isFinite(snapshot.remaining.enemy)?snapshot.remaining.enemy:alive(snapshot.enemy).length;
   e.heroHealth.textContent=Math.max(0,Math.round(snapshot.hero&&snapshot.hero.hp||0))+'/'+Math.max(1,Math.round(snapshot.hero&&snapshot.hero.maxHp||100));
   e.friendlyCount.textContent=String(friendly);
   e.enemyCount.textContent=String(enemy);
