@@ -10,7 +10,7 @@ const resourceSites=window.IronCrownWorld.resourceSites||[];
 const items=window.IronCrownItems;
 const byId=id=>places.find(p=>p.id===id);
 let state=window.IronCrownState.createInitialState();
-let selected=null,drag=null,playerGroup=null,roamMode=false,campaignRecruitment=null,partyManager=null,campaignBattle=null;
+let selected=null,drag=null,playerGroup=null,roamMode=false,campaignRecruitment=null,partyManager=null,campaignBattle=null,battleView=null;
 const currentPoint=()=>state.freePosition||byId(state.current);
 const svgNS='http://www.w3.org/2000/svg';
 function node(tag,attrs,parent){let n=document.createElementNS(svgNS,tag);Object.keys(attrs||{}).forEach(k=>n.setAttribute(k,attrs[k]));(parent||$('world')).appendChild(n);return n}
@@ -99,22 +99,19 @@ function processEncounters(x,y){
    continue;
   }
   if(state.defeatedParties.includes(p.id))continue;
-  if(!campaignBattle){messages.push('Battle services are unavailable. Your company avoids the encounter.');break;}
+  if(!campaignBattle||!battleView){messages.push('Battle services are unavailable. Your company avoids the encounter.');break;}
   const equipment=equipmentStats();
   const started=campaignBattle.start(p,{
    id:'campaign-hero',name:'Commander',hp:state.health,maxHp:100,
    attack:12+equipment.attack*2,defence:2+equipment.defence,speed:170
   });
   if(!started.ok){messages.push('Could not begin the encounter with '+p.name+': '+started.reason+'.');break;}
-  const resolved=campaignBattle.autoResolve();
-  if(!resolved.ok||!resolved.result){messages.push('The encounter with '+p.name+' could not be resolved safely.');break;}
-  const result=resolved.result;
-  if(result.outcome==='victory'){
-   messages.push('Battle won against '+p.name+'. Remaining troops: '+state.troops+'. Reward: '+(result.rewards&&result.rewards.gold||0)+' gold.');
+  if(!battleView.open({enemyName:p.name,faction:p.faction})){
+   const withdrawn=campaignBattle.retreat();
+   messages.push(withdrawn.ok?'Battlefield could not be opened. Your company withdrew safely.':'Battlefield could not be opened and the encounter needs recovery.');
   }else{
-   messages.push('Battle lost against '+p.name+'. Your company withdrew. Remaining troops: '+state.troops+'.');
+   $('travelSub').textContent='Battle in progress · '+p.name;
   }
-  drawParties();renderCompanyPanel();updateCompanyButton();
   break;
  }
  if(messages.length){updateHud();updateCampControls();messages.forEach(notify);save();}
@@ -267,7 +264,7 @@ $('resourceFilter').addEventListener('change',filterResourceSites);
 $('companyButton').onclick=openCompanyPanel;$('companyClose').onclick=closeCompanyPanel;$('townClose').onclick=closeTown;$('buy-worn-sword').onclick=()=>buyEquipment('worn-sword');$('buy-iron-sword').onclick=()=>buyEquipment('iron-sword');$('buy-padded-armour').onclick=()=>buyEquipment('padded-armour');$('buy-round-shield').onclick=()=>buyEquipment('round-shield');$('buySupplies').onclick=buySupplies;$('sellSupplies').onclick=sellSupplies;$('recruitSoldier').onclick=recruitSoldier;$('tavernRest').onclick=tavernRest;$('audience').onclick=requestAudience;$('explore').onclick=explore;$('roamMode').onclick=()=>{roamMode=!roamMode;$('roamMode').style.borderColor=roamMode?'#e0c37e':'#697253';notify(roamMode?'Roam mode: tap open ground to set a destination.':'Roam mode off.')};$('zoomIn').onclick=()=>zoom(1.18);$('zoomOut').onclick=()=>zoom(.85);$('center').onclick=center;$('travel').onclick=travel;$('camp').onclick=camp;$('rest').onclick=rest;$('visit').onclick=visit;$('close').onclick=()=>$('drawer').classList.remove('open');$('cancel').onclick=cancel;
 $('pause').onclick=()=>{state.paused=!state.paused;$('pause').textContent=state.paused?'▶ Resume':'Ⅱ Pause';if(state.target){state.last=performance.now();if(!state.paused)requestAnimationFrame(tick)}};
 $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?4:1;$('speed').textContent='▶▶ '+state.speed+'×'};
-load();partyManager=window.IronCrownParty.create({roster:state.characterRoster,getActiveIds:()=>state.activePartyIds,setActiveIds:ids=>{state.activePartyIds=ids},maxSize:4});campaignRecruitment=window.IronCrownCampaignRecruitment.create({roster:state.characterRoster,candidates:window.IronCrownRecruitCandidates,getGold:()=>state.gold,setGold:value=>{state.gold=value},getReputation:()=>50});campaignBattle=window.IronCrownCampaignBattle.create({simulation:window.IronCrownBattleSimulation.create(),roster:state.characterRoster,party:partyManager,getState:()=>state,save});drawSettlements();drawResourceSites();filterResourceSites();drawParties();drawPlayer();drawDiscoveries();updateExplorationControls();updateHud();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is in the wilderness':'Your party is at '+byId(state.current).name;applyView();center();window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});window.addEventListener('resize',applyView);
+load();partyManager=window.IronCrownParty.create({roster:state.characterRoster,getActiveIds:()=>state.activePartyIds,setActiveIds:ids=>{state.activePartyIds=ids},maxSize:4});campaignRecruitment=window.IronCrownCampaignRecruitment.create({roster:state.characterRoster,candidates:window.IronCrownRecruitCandidates,getGold:()=>state.gold,setGold:value=>{state.gold=value},getReputation:()=>50});campaignBattle=window.IronCrownCampaignBattle.create({simulation:window.IronCrownBattleSimulation.create(),roster:state.characterRoster,party:partyManager,getState:()=>state,save});battleView=window.IronCrownBattleView.create({controller:campaignBattle,document,returnFocus:$('mapWrap'),elements:{root:$('battleOverlay'),canvas:$('battleCanvas'),title:$('battleTitle'),subtitle:$('battleSubtitle'),heroHealth:$('battleHeroHealth'),friendlyCount:$('battleFriendlyCount'),enemyCount:$('battleEnemyCount'),order:$('battleOrder'),message:$('battleMessage'),result:$('battleResult'),resultTitle:$('battleResultTitle'),resultText:$('battleResultText'),continueButton:$('battleContinue'),retreatButton:$('battleRetreat'),attackButton:$('battleAttack'),moveButtons:Array.from(document.querySelectorAll('[data-battle-move]')),orderButtons:Array.from(document.querySelectorAll('[data-battle-order]'))},onComplete:result=>{drawParties();renderCompanyPanel();updateCompanyButton();updateHud();updateCampControls();$('travelSub').textContent=result.outcome==='victory'?'The road is clear. The hostile party has been defeated.':'Your company has returned from the battlefield.'}});drawSettlements();drawResourceSites();filterResourceSites();drawParties();drawPlayer();drawDiscoveries();updateExplorationControls();updateHud();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is in the wilderness':'Your party is at '+byId(state.current).name;applyView();center();window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});window.addEventListener('resize',applyView);
 if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
  }
 });
