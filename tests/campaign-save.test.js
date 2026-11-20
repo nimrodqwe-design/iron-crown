@@ -85,6 +85,15 @@ assert.deepStrictEqual(JSON.parse(JSON.stringify(v7State.activePartyIds)),['ic:v
 assert.deepStrictEqual(JSON.parse(JSON.stringify(v7State.resolvedBattleIds)),[]);
 assert.strictEqual(JSON.parse(storage.getItem('ironCrownSave')).version,9);
 
+const v8={version:8,state:{current:'greyhaven',gold:44,troops:9,activePartyIds:[],resolvedBattleIds:['battle-old'],characterRoster:{version:2,campaignId:'v8-campaign',nextCharacterSequence:1,nextEventSequence:1,characters:[]}}};
+storage.setItem('ironCrownSave',JSON.stringify(v8));
+const v8State=context.window.IronCrownState.createInitialState();
+const v8System=makeSystem(v8State);
+assert.strictEqual(v8System.load(),true,'v8 saves migrate to v9');
+assert.strictEqual(v8State.gold,44);
+assert.deepStrictEqual(JSON.parse(JSON.stringify(v8State.resolvedBattleIds)),['battle-old'],'v8 battle replay ledger is preserved');
+assert.strictEqual(JSON.parse(storage.getItem('ironCrownSave')).version,9);
+
 const newer={version:10,state:{current:'greyhaven'}};
 storage.setItem('ironCrownSave',JSON.stringify(newer));
 assert.strictEqual(second.load(),false,'newer saves must not be overwritten');
