@@ -24,6 +24,7 @@ const started=campaign.start({id:'red-bandits',name:'Redvale Raiders',power:4},{
 assert.equal(started.ok,true);
 assert.deepEqual(JSON.parse(JSON.stringify(started.participantIds)),[mara.id]);
 assert.equal(campaign.active(),true);
+assert.equal(campaign.snapshot().friendly.find(unit=>unit.characterId===mara.id).name,'Mara','campaign battle passes persistent recruit names to the renderer');
 assert.equal(saves,1,'battle ID sequence is saved when the encounter starts');
 const resolved=campaign.autoResolve();
 assert.equal(resolved.ok,true);
