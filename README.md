@@ -10,7 +10,7 @@ Open `index.html` in a modern browser. No build step, package manager, framework
 - Choose **Travel here** to move your party.
 - Drag to pan the map.
 - Use + / − or the mouse wheel to zoom.
-- Use Pause and speed controls while travelling.
+- Use Pause and speed controls while travelling; pause active battles from the battlefield overlay.
 - Progress is saved in browser local storage.
 
 ## Current prototype
@@ -24,7 +24,7 @@ Open `index.html` in a modern browser. No build step, package manager, framework
 - Settlement activities: market, blacksmith, tavern, generic soldier recruitment and named companions/officers/specialists at selected towns.
 - Save schema v9 with backward migration from v5/v6/v7/v8, a persistent named-character roster, saved active-party assignments (up to four named characters) and an exactly-once battle-result ledger.
 - Twelve informational resource sites with category filtering and an inspection panel.
-- Hostile roaming encounters use the player-controlled battlefield view backed by the authoritative battle simulation; active named party members are carried by stable IDs, generic troop reserves are preserved, and battle casualties, rewards, hero health and participant loyalty are applied once to campaign state. Named-character casualties enter recovery; a two-hour camp rest restores them to the available roster so they can be reassigned. Active battles checkpoint every five seconds and on page hide/visibility change so valid encounters can resume after reload.
+- Hostile roaming encounters use the player-controlled battlefield view backed by the authoritative battle simulation; active named party members are carried by stable IDs, generic troop reserves are preserved, and battle casualties, rewards, hero health and participant loyalty are applied once to campaign state. Named-character casualties enter recovery; a two-hour camp rest restores them to the available roster so they can be reassigned. Active battles checkpoint every five seconds, on page hide/visibility change and immediately when paused so valid encounters can resume after reload. The battlefield can be paused and resumed with its control or the P key.
 
 ## Roadmap
 1. Loyalty events connected to actual campaign actions.
