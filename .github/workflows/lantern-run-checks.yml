@@ -15,10 +15,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Check state module syntax
-        run: node --check side-game/lantern-run/game-state.js
+      - name: Check state and progress module syntax
+        run: |
+          node --check side-game/lantern-run/game-state.js
+          node --check side-game/lantern-run/progress.js
       - name: Run deterministic state checks
         run: node side-game/lantern-run/game-state.test.js
+      - name: Run progress storage checks
+        run: node side-game/lantern-run/progress.test.js
       - name: Run UI contract checks
         run: node side-game/lantern-run/ui-contract.test.js
       - name: Run UI interaction checks
