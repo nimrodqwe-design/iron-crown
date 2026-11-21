@@ -109,6 +109,9 @@ assert.equal(button('up').disabled,false,'retry re-enables movement');
 assert.equal(status.textContent,'Ruin 1 · Lantern light: 12.','failure keeps the current ruin selected');
 assert.equal(lightMeter.value,12,'retry resets the lantern meter');
 assert.equal(moveCount.textContent,'Moves: 0','retry resets the move count');
+assert.equal(hintCount.textContent,'Hints: 0','retry resets the hint penalty');
+hint.click();
+assert.equal(hintCount.textContent,'Hints: 1','a hint used on the successful run is counted');
 assert.equal(restart.textContent,'Restart ruin');
 
 ['up','up','right','right','right','up','up','right'].forEach(direction=>button(direction).click());
