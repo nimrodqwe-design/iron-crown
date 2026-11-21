@@ -4,6 +4,8 @@
 .battle-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:10px}
 .battle-header h2{margin:4px 0;color:#e4ce98;font-size:clamp(20px,3vw,28px)}
 .battle-header p{margin:4px 0 0;color:#c1baa0;font:12px/1.4 Arial,sans-serif}
+.battle-header-actions{display:flex;flex:0 0 auto;align-items:center;gap:7px;flex-wrap:wrap}
+.battle-pause{border:1px solid #887548;border-radius:8px;background:#2c3c30;color:#f0e6cd;padding:9px 13px}
 .battle-retreat{flex:0 0 auto;border:1px solid #9a6257;border-radius:8px;background:#512d29;color:#f7dfd4;padding:9px 13px}
 .battle-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:8px 0}
 .battle-stats>div{display:flex;justify-content:space-between;align-items:center;gap:7px;padding:8px 10px;border:1px solid #475542;border-radius:8px;background:#202e25;font:11px Arial,sans-serif}
