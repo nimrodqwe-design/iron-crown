@@ -16,7 +16,7 @@
   const normaliseLevel=level=>Number.isInteger(level)&&level>=0&&level<LEVELS.length?level:0;
   function initial(level=0){
     const selected=normaliseLevel(level);
-    return {level:selected,x:START.x,y:START.y,light:12,moves:0,ended:false,outcome:null};
+    return {level:selected,x:START.x,y:START.y,light:12,moves:0,hintsUsed:0,ended:false,outcome:null};
   }
   function levelName(level){return LEVELS[normaliseLevel(level)].name}
   function cellKind(x,y,level=0){
@@ -42,6 +42,18 @@
     if(next.light<=0)return {...next,ended:true,outcome:'darkness'};
     return next;
   }
+  function useHint(state){
+    if(!state||typeof state!=='object'||state.ended||!hint(state))return state;
+    const used=Number.isInteger(state.hintsUsed)&&state.hintsUsed>=0?state.hintsUsed:0;
+    return {...state,hintsUsed:Math.min(100,used+1)};
+  }
+  function score(state){
+    if(!state||state.ended!==true||state.outcome!=='escaped')return null;
+    const moves=Number.isInteger(state.moves)?Math.max(0,Math.min(100,state.moves)):0;
+    const hints=Number.isInteger(state.hintsUsed)?Math.max(0,Math.min(100,state.hintsUsed)):0;
+    const light=Number.isFinite(state.light)?Math.max(0,Math.min(12,state.light)):0;
+    return Math.max(0,1000-moves*40-hints*100+Math.round(light*10));
+  }
   function hint(state){
     if(!state||typeof state!=='object'||state.ended)return null;
     if(!Number.isInteger(state.x)||!Number.isInteger(state.y)||!Number.isFinite(state.light)||state.light<=0)return null;
@@ -62,5 +74,5 @@
     }
     return null;
   }
-  return Object.freeze({SIZE,START,GOAL,LEVEL_COUNT:LEVELS.length,initial,move,cellKind,cellLabel,levelName,hint});
+  return Object.freeze({SIZE,START,GOAL,LEVEL_COUNT:LEVELS.length,initial,move,cellKind,cellLabel,levelName,hint,useHint,score});
 });

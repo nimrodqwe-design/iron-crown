@@ -12,7 +12,7 @@ h1{margin:0 0 6px;font-size:1.5rem}p{color:#c8c2ae}
 .cell{aspect-ratio:1;display:grid;place-items:center;border-radius:7px;background:#243127;font-size:1.4rem}
 .player{outline:3px solid #e8c76b}.goal{background:#30452f}.trap{background:#40252a}
 .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:230px;margin:auto}
-.run-stats{display:grid;grid-template-columns:1fr auto;align-items:center;gap:5px 10px;margin:12px 0;padding:10px;border:1px solid #465443;border-radius:8px;background:#202e25}.run-stats label{font-weight:600}.run-stats progress{width:100%;height:14px;accent-color:#e8c76b}.run-stats output{font-variant-numeric:tabular-nums;color:#e8d7a8;text-align:right}.controls button,button{padding:12px;border:1px solid #71805e;border-radius:8px;background:#29382d;color:inherit;font:inherit;touch-action:manipulation}
+.run-stats{display:grid;grid-template-columns:1fr auto;align-items:center;gap:5px 10px;margin:12px 0;padding:10px;border:1px solid #465443;border-radius:8px;background:#202e25}.run-stats label{font-weight:600}.run-stats progress{width:100%;height:14px;accent-color:#e8c76b}.run-stats output{font-variant-numeric:tabular-nums;color:#e8d7a8;text-align:right}.run-records{display:flex;justify-content:space-between;gap:8px;margin:8px 0;color:#e8d7a8;font-size:.9rem;font-variant-numeric:tabular-nums}.controls button,button{padding:12px;border:1px solid #71805e;border-radius:8px;background:#29382d;color:inherit;font:inherit;touch-action:manipulation}
 .controls button:focus-visible,button:focus-visible{outline:3px solid #e8c76b;outline-offset:2px}
 button:disabled{opacity:.5;cursor:not-allowed}
 #status{min-height:2.5em;font-weight:600}
@@ -23,6 +23,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <h1>Lantern Run</h1>
 <p>Find the exit before your lantern burns out. Avoid the ruins marked with ✕. Three layouts. Retry a failed ruin; advance only after escaping.</p>
 <div class="run-stats" aria-label="Ruin status"><label for="lightMeter">Lantern light</label><output id="lightValue">12 / 12</output><progress id="lightMeter" max="12" value="12">12 of 12</progress><output id="moveCount">Moves: 0</output></div>
+<div class="run-records" aria-label="Run records"><output id="scoreValue">Score: —</output><output id="bestScore">Best: —</output><output id="hintCount">Hints: 0</output></div>
 <div id="grid" class="grid" role="grid" aria-label="Ruin board" aria-rowcount="5" aria-colcount="5"></div>
 <div id="status" aria-live="polite" aria-atomic="true"></div>
 <div class="controls" role="group" aria-label="Movement controls">
@@ -31,22 +32,25 @@ button:disabled{opacity:.5;cursor:not-allowed}
 </div>
 <p><button id="hint" aria-describedby="status">Hint · free</button> <button id="restart">Restart ruin</button></p>
 <script src="game-state.js"></script>
+<script src="progress.js"></script>
 <script>
 (()=>{
 'use strict';
-const grid=document.getElementById('grid'),status=document.getElementById('status'),hintButton=document.getElementById('hint'),restartButton=document.getElementById('restart'),lightMeter=document.getElementById('lightMeter'),lightValue=document.getElementById('lightValue'),moveCount=document.getElementById('moveCount');
+const grid=document.getElementById('grid'),status=document.getElementById('status'),hintButton=document.getElementById('hint'),restartButton=document.getElementById('restart'),lightMeter=document.getElementById('lightMeter'),lightValue=document.getElementById('lightValue'),moveCount=document.getElementById('moveCount'),scoreValue=document.getElementById('scoreValue'),bestScore=document.getElementById('bestScore'),hintCount=document.getElementById('hintCount');
 const api=window.LanternRunState;
+let progress=null;
+try{progress=window.LanternRunProgress?window.LanternRunProgress.create(window.localStorage):null}catch(_){progress=null}
 if(!api){
  status.textContent='The game could not start. Reload the page to try again.';
  document.querySelectorAll('button[data-move]').forEach(button=>button.disabled=true);
  const hint=document.getElementById('hint');if(hint)hint.disabled=true;
  return;
 }
-let state;
+let state,recordedForRun=false;
 function message(s){
  const prefix='Ruin '+(s.level+1)+' · ';
  if(!s.ended)return prefix+'Lantern light: '+s.light+'.';
- if(s.outcome==='escaped')return prefix+'You escaped with '+Math.max(0,s.light)+' light remaining.';
+ if(s.outcome==='escaped')return prefix+'You escaped with '+Math.max(0,s.light)+' light remaining. Score: '+api.score(s)+'.';
  if(s.outcome==='trapped')return prefix+'The ruins close around your path. Run ended.';
  return prefix+'Your lantern goes dark. Run ended.';
 }
@@ -67,6 +71,18 @@ function render(){
  lightMeter.setAttribute('aria-valuetext',Math.max(0,state.light)+' of 12 lantern light remaining');
  lightValue.textContent=Math.max(0,state.light)+' / 12';
  moveCount.textContent='Moves: '+state.moves;
+ hintCount.textContent='Hints: '+(Number.isInteger(state.hintsUsed)?state.hintsUsed:0);
+ const score=api.score(state);
+ scoreValue.textContent='Score: '+(score===null?'—':score);
+ const best=progress?progress.best(state.level):null;
+ bestScore.textContent='Best: '+(best===null?'—':best);
+ if(state.ended&&state.outcome==='escaped'&&!recordedForRun){
+  recordedForRun=true;
+  const record=progress?progress.record(state.level,score):{updated:false,persisted:false};
+  const currentBest=progress?progress.best(state.level):null;
+  bestScore.textContent='Best: '+(currentBest===null?'—':currentBest);
+  if(record.updated)status.textContent+=' '+(record.persisted?'New personal best saved: ':'New session best: ')+score+'.';
+ }
  document.querySelectorAll('button[data-move]').forEach(button=>button.disabled=state.ended);
  hintButton.disabled=state.ended||!api.hint(state);
  restartButton.textContent=state.ended?(state.outcome==='escaped'?'Next ruin':'Try again'):'Restart ruin';
@@ -74,7 +90,7 @@ function render(){
 function reset(){
  let level=state?state.level:0;
  if(state&&state.ended&&state.outcome==='escaped')level=(state.level+1)%api.LEVEL_COUNT;
- state=api.initial(level);render();
+ recordedForRun=false;state=api.initial(level);render();
 }
 function move(dir){
  if(state.ended)return;
@@ -92,7 +108,8 @@ document.addEventListener('keydown',event=>{
 });
 hintButton.addEventListener('click',()=>{
  const direction=api.hint(state);
- status.textContent=direction?'Hint: move '+direction+'. This does not consume lantern light.':'No safe route remains within the current lantern light.';
+ if(direction){state=api.useHint(state);render();status.textContent='Hint: move '+direction+'. This does not consume lantern light, but reduces your final score.';}
+ else status.textContent='No safe route remains within the current lantern light.';
 });
 document.getElementById('restart').addEventListener('click',reset);
 reset();

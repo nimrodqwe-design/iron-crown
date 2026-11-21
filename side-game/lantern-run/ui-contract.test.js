@@ -7,6 +7,13 @@ assert.match(html,/aria-valuetext/,'light meter must expose a readable remaining
 assert.match(html,/moveCount\.textContent='Moves: '\+state\.moves/,'HUD must expose the current move count');
 assert.match(html,/id="hint" aria-describedby="status"/,'hint control must be labelled by the live status region');
 assert.match(html,/api\.hint\(state\)/,'UI must use the state module for route hints');
+assert.match(html,/api\.useHint\(state\)/,'hint usage must be tracked by the state module');
+assert.match(html,/api\.score\(state\)/,'the UI must display the state module score');
+assert.match(html,/window\.LanternRunProgress\.create\(window\.localStorage\)/,'personal records use the isolated progress store');
+assert.match(html,/id="scoreValue"/);
+assert.match(html,/id="bestScore"/);
+assert.match(html,/id="hintCount"/);
+assert.match(html,/progress\.record\(state\.level,score\)/,'successful escapes record a per-ruin best score');
 assert.match(html,/does not consume lantern light/,'hint feedback must explain that it is free');
 assert.match(html,/aria-rowcount="5"/);
 assert.match(html,/aria-live="polite"/);

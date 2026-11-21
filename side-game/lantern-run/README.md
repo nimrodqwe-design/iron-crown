@@ -31,3 +31,8 @@ The interaction harness runs the actual inline UI controller against a small fak
 - Keyboard and touch controls.
 - Deterministic board for reproducible regression checks.
 - Kept in its own directory and development branch, separate from Iron Crown campaign changes.
+
+
+## Scoring and personal records
+
+Successful escapes earn a score from remaining light, move count and hints used. Each hint is still free in lantern light, but reduces the final score by 100 points. Best scores are stored independently for each ruin in a small versioned local-storage record. If browser storage is unavailable or corrupt, the game continues and keeps session-only records.
