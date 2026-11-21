@@ -389,3 +389,8 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - **Not tested:** No actual browser, Android device, browser save/load, pagehide/visibility lifecycle, offline service-worker launch, or real local-storage quota/security behavior was exercised. The fake-DOM tests are not browser tests.
 - **Next Iron Crown priority:** Run a real browser smoke test of map → named recruitment → party assignment → hostile encounter → move/order/attack → pause/resume → retreat/result → camp recovery → save/reload. Then implement one non-battle loyalty event producer with campaign-owned event IDs and replay tests; design resource gathering only after the stock/inventory/time contract is explicit.
 - **Next Lantern Run priority:** Real browser test of all three ruins, scoring, per-ruin best records, hint penalty, retry reset and blocked-storage fallback. Avoid adding mechanics until this runtime pass is completed.
+
+
+### Pages retry result — 21 Nov 2026
+
+The fresh main push created by the 21 Nov coordination hand-off succeeded: JavaScript checks run 44886328114 passed, and GitHub Pages deployment run 44886328203 completed successfully. The earlier run 44886158567 failed twice at artifact lookup even though the artifact upload was visible through the Actions API; no workflow or game-code change was required. Treat the earlier failure as transient and retain the standard Pages workflow unless it recurs.
