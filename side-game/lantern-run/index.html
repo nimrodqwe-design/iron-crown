@@ -108,7 +108,7 @@ document.addEventListener('keydown',event=>{
 });
 hintButton.addEventListener('click',()=>{
  const direction=api.hint(state);
- if(direction){state=api.useHint(state);render();status.textContent='Hint: move '+direction+'. It does not consume light, but reduces your final score.';}
+ if(direction){state=api.useHint(state);render();status.textContent='Hint: move '+direction+'. This does not consume lantern light, but reduces your final score.';}
  else status.textContent='No safe route remains within the current lantern light.';
 });
 document.getElementById('restart').addEventListener('click',reset);
