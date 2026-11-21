@@ -30,7 +30,7 @@ const elements={
  root:new Element('section'),canvas:new Element('canvas'),title:new Element('h2'),subtitle:new Element('p'),
  heroHealth:new Element('b'),friendlyCount:new Element('b'),enemyCount:new Element('b'),order:new Element('b'),
  message:new Element('p'),result:new Element('section'),resultTitle:new Element('h3'),resultText:new Element('p'),
- continueButton:new Element('button'),retreatButton:new Element('button'),attackButton:new Element('button')
+ continueButton:new Element('button'),retreatButton:new Element('button'),attackButton:new Element('button'),pauseButton:new Element('button')
 };
 elements.root.hidden=true;elements.canvas.getContext=()=>context;
 const moveButtons=['up','left','down','right'].map(direction=>new Element('button',{'data-battle-move':direction}));
@@ -44,7 +44,7 @@ let snapshot={
  enemy:[{id:'enemy-1',team:'enemy',x:650,y:180,hp:50,maxHp:50}],
  remaining:{friendly:1,enemy:1}
 };
-let lastInput=null,steps=0,orders=[],retreats=0,completed=[],closed=[];
+let lastInput=null,steps=0,orders=[],retreats=0,checkpoints=0,completed=[],closed=[];
 let result=null;
 const controller={
  active:()=>snapshot.phase==='active',
@@ -62,6 +62,7 @@ const view=BattleView.create({
  cancelFrame:id=>cancelled.push(id),
  returnFocus:{focus(){closed.push('focus')}},
  onComplete:value=>completed.push(value),
+ onCheckpoint:()=>{checkpoints++},
  onClose:value=>closed.push(value)
 });
 assert.equal(view.open({enemyName:'Redvale Raiders'}),true);
@@ -89,6 +90,25 @@ assert.deepEqual(orders,['hold'],'order buttons issue authoritative simulation o
 assert.equal(elements.order.textContent,'Hold');
 elements.attackButton.click();
 assert.equal(lastInput.attack,true,'attack button sends a player attack input');
+const stepsAtPause=steps;
+elements.pauseButton.click();
+assert.equal(view.paused(),true,'pause control freezes the battlefield');
+assert.equal(view.active(),true,'a paused battle remains an active encounter');
+assert.equal(elements.pauseButton.textContent,'Resume battle');
+assert.equal(elements.pauseButton.getAttribute('aria-pressed'),'true');
+assert.equal(elements.attackButton.disabled,true,'combat input is disabled while paused');
+assert.equal(elements.retreatButton.disabled,false,'retreat remains available while paused');
+assert.equal(checkpoints,1,'pausing checkpoints the active campaign battle');
+const staleFrame=frames.shift();staleFrame(48);
+assert.equal(steps,stepsAtPause,'a queued animation frame cannot advance a paused battle');
+document.dispatch('keydown',{key:'p',target:elements.canvas});
+assert.equal(view.paused(),false,'P resumes a paused battle');
+assert.equal(elements.pauseButton.textContent,'Pause battle');
+const resumedFrame=frames.shift();resumedFrame(64);
+assert.equal(steps,stepsAtPause+1,'resumed battle advances on its next frame');
+elements.pauseButton.click();
+assert.equal(view.paused(),true);
+assert.equal(checkpoints,2);
 elements.retreatButton.click();
 assert.equal(retreats,1);
 assert.equal(completed.length,1,'battle completion is reported exactly once');
@@ -97,6 +117,7 @@ assert.equal(elements.result.hidden,false);
 assert.equal(elements.resultTitle.textContent,'Retreat');
 assert.match(elements.resultText.textContent,/withdrew/);
 assert.equal(elements.retreatButton.disabled,true);
+assert.equal(elements.pauseButton.disabled,true,'pause control disables after battle completion');
 elements.continueButton.click();
 assert.equal(elements.root.hidden,true,'continue returns to the campaign');
 assert.equal(closed.length,2,'close callback and focus restoration both run');
@@ -106,10 +127,12 @@ const game=fs.readFileSync(path.join(__dirname,'../js/game.js'),'utf8');
 const shell=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
 assert.match(html,/id="battleOverlay"/);
 assert.match(html,/id="battleCanvas"/);
+assert.match(html,/id="battlePause"/);
+assert.match(game,/onCheckpoint:save/,'pausing saves the resumable campaign checkpoint');
 assert.match(html,/data-battle-order="regroup"/);
 assert.match(game,/battleView\.open\(\{enemyName:p\.name,faction:p\.faction\}\)/);
 assert.doesNotMatch(game,/campaignBattle\.autoResolve\(\)/,'hostile map encounters must no longer auto-resolve');
-assert.match(shell,/iron-crown-shell-v18/);
+assert.match(shell,/iron-crown-shell-v19/);
 assert.match(game,/campaignBattle\.restore\(state\.activeBattle\)/,'saved active battles are restored on campaign startup');
 assert.match(shell,/\.\/js\/battle\/battle-view\.js/);
 console.log('Battlefield view interaction checks passed');
