@@ -11,7 +11,7 @@ function create(options){
  options=options||{};
  const controller=options.controller,e=options.elements||{};
  if(!controller||typeof controller.step!=='function'||typeof controller.snapshot!=='function'||typeof controller.setPlayerInput!=='function'||typeof controller.issueOrder!=='function'||typeof controller.retreat!=='function'||typeof controller.active!=='function'||typeof controller.getResult!=='function')throw new TypeError('A campaign battle controller is required');
- const required=['root','canvas','title','subtitle','heroHealth','friendlyCount','enemyCount','order','message','result','resultTitle','resultText','continueButton','retreatButton','attackButton'];
+ const required=['root','canvas','title','subtitle','heroHealth','friendlyCount','enemyCount','order','message','result','resultTitle','resultText','continueButton','retreatButton','attackButton','pauseButton'];
  required.forEach(key=>{if(!e[key])throw new TypeError('Missing battlefield element: '+key)});
  const ctx=e.canvas.getContext&&e.canvas.getContext('2d');
  if(!ctx)throw new Error('A 2D battlefield canvas is required');
@@ -23,7 +23,7 @@ function create(options){
  const keys={up:false,down:false,left:false,right:false};
  const touch={up:false,down:false,left:false,right:false};
  const cleanups=[];
- let running=false,completed=false,frameId=null,lastTime=0,facing={x:1,y:0},lastResult=null;
+ let running=false,paused=false,completed=false,frameId=null,lastTime=0,facing={x:1,y:0},lastResult=null;
  function listen(target,type,handler){
   if(!target||typeof target.addEventListener!=='function')return;
   target.addEventListener(type,handler);
@@ -64,7 +64,7 @@ function create(options){
   return accepted;
  }
  function retreat(){
-  if(!running||completed)return false;
+  if((!running&&!paused)||completed)return false;
   const response=controller.retreat();
   if(!response||!response.ok){e.message.textContent=response&&response.reason||'Retreat is unavailable.';return false}
   finish(response.result);
@@ -142,7 +142,10 @@ function create(options){
  }
  function finish(result){
   if(completed||!result)return;
-  completed=true;running=false;lastResult=result;clearInput();setControlsDisabled(true);
+  completed=true;running=false;paused=false;lastResult=result;clearInput();
+  if(frameId!==null&&typeof cancelFrame==='function')cancelFrame(frameId);
+  frameId=null;setControlsDisabled(true);e.pauseButton.disabled=true;
+  e.pauseButton.textContent='Pause battle';e.pauseButton.setAttribute('aria-pressed','false');
   e.result.hidden=false;
   e.resultTitle.textContent=result.outcome==='victory'?'Victory':result.reason==='retreated'?'Retreat':'Defeat';
   e.resultText.textContent=resultText(result);
@@ -150,6 +153,39 @@ function create(options){
   render(controller.snapshot());
   if(typeof options.onComplete==='function')options.onComplete(result);
  }
+ function updatePauseControl(){
+  e.pauseButton.disabled=completed;
+  e.pauseButton.textContent=paused?'Resume battle':'Pause battle';
+  e.pauseButton.setAttribute('aria-pressed',paused?'true':'false');
+ }
+ function checkpoint(){
+  if(typeof options.onCheckpoint!=='function')return;
+  try{options.onCheckpoint()}catch(_){}
+ }
+ function pauseBattle(){
+  if(!running||completed)return false;
+  running=false;paused=true;
+  if(frameId!==null&&typeof cancelFrame==='function')cancelFrame(frameId);
+  frameId=null;lastTime=0;clearInput();
+  try{controller.setPlayerInput({moveX:0,moveY:0,facingX:facing.x,facingY:facing.y,attack:false})}catch(_){}
+  setControlsDisabled(true);e.retreatButton.disabled=false;updatePauseControl();
+  e.message.textContent='Battle paused. Your progress has been checkpointed.';
+  checkpoint();
+  return true;
+ }
+ function resumeBattle(){
+  if(!paused||completed||!controller.active())return false;
+  paused=false;lastTime=0;clearInput();setControlsDisabled(false);updatePauseControl();
+  e.message.textContent='Battle resumed.';
+  running=true;
+  try{frameId=requestFrame(loop);return true}
+  catch(_){
+   running=false;paused=true;setControlsDisabled(true);e.retreatButton.disabled=false;updatePauseControl();
+   e.message.textContent='The battle could not resume. You can retry or retreat.';
+   return false;
+  }
+ }
+ function togglePause(){return paused?resumeBattle():pauseBattle()}
  function loop(now){
   if(!running)return;
   const delta=lastTime?clamp((now-lastTime)/1000,0,.05):.016;
@@ -164,28 +200,28 @@ function create(options){
    }
    frameId=requestFrame(loop);
   }catch(error){
-   running=false;clearInput();
-   e.message.textContent='Battle paused because the simulation could not continue. Retreat remains available.';
-   setControlsDisabled(false);
-   e.attackButton.disabled=true;
+   running=false;paused=true;clearInput();
+   e.message.textContent='Battle paused because the simulation could not continue. Resume or retreat.';
+   setControlsDisabled(true);e.retreatButton.disabled=false;updatePauseControl();
+   checkpoint();
   }
  }
  function open(meta){
-  if(running||!controller.active||!controller.active()||typeof requestFrame!=='function')return false;
+  if(running||paused||!controller.active||!controller.active()||typeof requestFrame!=='function')return false;
   const snapshot=controller.snapshot();
   if(!snapshot||snapshot.phase!=='active')return false;
-  completed=false;lastResult=null;lastTime=0;frameId=null;clearInput();facing={x:1,y:0};
+  completed=false;paused=false;lastResult=null;lastTime=0;frameId=null;clearInput();facing={x:1,y:0};
   e.root.hidden=false;e.root.setAttribute('aria-hidden','false');
   e.title.textContent='Battle at '+String(meta&&meta.enemyName||'the frontier');
   e.subtitle.textContent='Lead your companions. Hold the line or regroup when the fight turns.';
   e.result.hidden=true;e.message.textContent='Move with WASD or the arrow keys. Space attacks. Use the order buttons to direct your warband.';
-  setControlsDisabled(false);render(snapshot);
+  setControlsDisabled(false);updatePauseControl();render(snapshot);
   if(e.canvas.focus)e.canvas.focus();
   running=true;frameId=requestFrame(loop);
   return true;
  }
  function close(){
-  if(running)return false;
+  if(running||paused)return false;
   if(frameId!==null&&typeof cancelFrame==='function')cancelFrame(frameId);
   frameId=null;e.root.hidden=true;e.root.setAttribute('aria-hidden','true');
   if(typeof options.onClose==='function')options.onClose(lastResult);
@@ -201,14 +237,17 @@ function create(options){
  });
  orderButtons.forEach(button=>listen(button,'click',()=>order(button.getAttribute('data-battle-order'))));
  listen(e.attackButton,'click',attack);
+ listen(e.pauseButton,'click',togglePause);
  listen(e.retreatButton,'click',retreat);
  listen(e.continueButton,'click',close);
  if(doc){
   listen(doc,'keydown',event=>{
-   if(!running||completed)return;
+   if(completed)return;
    const target=event.target,tag=target&&String(target.tagName||'').toUpperCase();
    if(['BUTTON','INPUT','TEXTAREA','SELECT'].includes(tag))return;
    const key=String(event.key||'').toLowerCase();
+   if(key==='p'){if(event.preventDefault)event.preventDefault();togglePause();return}
+   if(!running)return;
    const direction={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'}[key];
    if(direction){if(event.preventDefault)event.preventDefault();keys[direction]=true;return}
    if(key===' '){if(event.preventDefault)event.preventDefault();if(!event.repeat)attack();return}
@@ -223,7 +262,7 @@ function create(options){
   });
  }
  if(root.addEventListener)listen(root,'blur',clearInput);
- return Object.freeze({open,close,active:()=>running,completed:()=>completed,getResult:()=>lastResult,destroy:()=>{if(running)retreat();cleanups.forEach(cleanup=>cleanup());if(!running)close()}});
+ return Object.freeze({open,close,pause:pauseBattle,resume:resumeBattle,active:()=>running||paused,paused:()=>paused,completed:()=>completed,getResult:()=>lastResult,destroy:()=>{if(running||paused)retreat();cleanups.forEach(cleanup=>cleanup());if(!running&&!paused)close()}});
 }
 return Object.freeze({create});
 });
