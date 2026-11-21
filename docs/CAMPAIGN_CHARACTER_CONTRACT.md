@@ -130,6 +130,10 @@ Implemented on PR #23: `battle:started` and `battle:ended` carry the participant
 - Battle result idempotency is enforced by the save-v9 campaign ledger (last 200 resolved battle IDs); trust/morale are copied back into the character roster. A saved active battle is resumed only when its simulation ID, enemy identity and exact active-party participant order still validate; invalid checkpoints are discarded without applying a battle result. The standalone loyalty service's own event list is not separately persisted, so future non-battle event producers must either persist their event history or use the campaign event ledger.
 - Save the event sequence with the action's state update so reload cannot reuse an event ID.
 
+## 5A. Battlefield pause and checkpoint
+
+The integrated battlefield view exposes an explicit pause/resume control and the `P` keyboard shortcut. Pausing stops the animation loop, clears movement input, keeps retreat available, and invokes the campaign save callback so the current version-1 battle checkpoint is written immediately. Resume resets the frame clock to avoid applying a large catch-up delta. Paused state is a presentation state, not a separate campaign save flag; reloading a valid active checkpoint resumes the battle normally. The pause control is disabled after the result is applied.
+
 ## 6. Chronicle boundary
 
 No Chronicle module/API was found in the current main tree. The adapter's `onChronicle` callback is only a proposed integration hook. Do not claim entries are persisted until a Chronicle owner and storage contract exist.

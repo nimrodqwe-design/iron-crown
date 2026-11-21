@@ -365,3 +365,14 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 - PR #31 (Lantern Run progress HUD) is merged into `sidegame/lantern-run` as `fde63bb0f3c0771d8311b5a2e861dffba75507fe`.
 - PR #32 (resumable campaign battles/save v9) and PR #33 (post-merge hand-off) are merged into `main`.
 - The only remaining open PR is #2, a draft standalone battlefield prototype. Preserve it; do not merge its duplicate simulation/presentation loop.
+
+
+### Daily development hand-off — 21 Nov 2026
+
+- **Starting main:** `47b81bfba09817c864443dedb9396d1ce6c59fb3`. Before changes, current main, all branch names, the coordination contract, PR #2, its comments/reviews, Issues #5/#7 and recent Actions runs were inspected.
+- **PR #2 reconciliation:** Closed as superseded by the simulation-driven battlefield now integrated on main. The standalone HTML prototype remains on `feature/playable-battlefield-prototype` with its full history; no source files or branch history were deleted. Its duplicate combat loop is not imported.
+- **Iron Crown PR #35:** `feature/battle-pause-resume` adds an explicit battlefield pause/resume control and `P` shortcut. Pause stops the animation loop, clears movement input, keeps retreat available, and calls the existing campaign save callback to persist the active battle checkpoint immediately. Resume resets the frame clock. The control exposes `aria-pressed` and disables after resolution. Service-worker shell is v19.
+- **Iron Crown validation:** A first run failed because `tests/map-resource-ui.test.js` still expected shell v18; it was updated to v19. Latest Actions runs 44886060224 and 44886071234 passed JavaScript syntax and the complete root Node test suite. No real browser, Android, save/load-in-browser, page-lifecycle or offline-launch test has been performed.
+- **Lantern Run PR #36:** Isolated branch `feature/lantern-run-records`, targeting `sidegame/lantern-run`. Adds scoring (remaining light, moves and hints used), a 100-point hint penalty, per-ruin best records with a versioned local-storage schema, graceful session-only fallback when storage is blocked/corrupt, and state/storage/UI/fake-DOM tests. The side-game Actions run was still running at this hand-off; do not claim it passed until rechecked.
+- **Next Iron Crown priority:** Real browser smoke test of map → recruit → assign party → battle → pause/resume → retreat/result → recovery → save/reload. After that, address the still-open non-battle loyalty-event producer contract (Issue #7) and actionable resource-gathering contract (Issue #5).
+- **Next Lantern Run priority:** Confirm PR #36 CI, then real browser test of score display, local records, hint penalty, all three ruins and blocked-storage fallback. Keep it isolated from main.
