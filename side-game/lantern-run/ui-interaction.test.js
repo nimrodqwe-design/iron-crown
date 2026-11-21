@@ -74,7 +74,7 @@ assert.equal(bestScore.textContent,'Best: —');
 assert.equal(hintCount.textContent,'Hints: 0');
 assert.equal(hint.disabled,false,'safe hint is available at the start');
 hint.click();
-assert.match(status.textContent,/Hint: move (up|right|down|left)\. This does not consume lantern light\./);
+assert.match(status.textContent,/Hint: move (up|right|down|left)\. This does not consume lantern light, but reduces your final score\./);
 assert.equal(playerAt(0,4),true,'hint does not move the player');
 assert.equal(lightMeter.value,12,'hint does not change the visible light meter');
 assert.equal(moveCount.textContent,'Moves: 0','hint does not increment the move count');
