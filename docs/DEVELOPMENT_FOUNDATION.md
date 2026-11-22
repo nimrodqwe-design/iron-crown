@@ -72,9 +72,9 @@ A mod directory is reserved, but external mod execution is **not enabled**. The 
 
 ## Save-data contract
 
-Browser save key: `ironCrownSave`. Current schema version: **8**.
+Browser save key: `ironCrownSave`. Current schema version: **10**.
 
-The saved state includes current settlement/free-roam position, gold, aggregate troops, health, day/time, camp status, supplies, discoveries, noble-house standing, completed audiences, the named-character roster, ordered active-party IDs and a bounded resolved-battle ID ledger. New fields must receive safe defaults when loading older saves. Increment the schema version and add an explicit migration when a change cannot be safely defaulted.
+The saved state includes current settlement/free-roam position, gold, aggregate troops, health, day/time, camp status, supplies, discoveries, noble-house standing, completed audiences, the named-character roster, ordered active-party IDs, a bounded resolved-battle ID ledger and a bounded resolved non-battle campaign-event ID ledger. New fields must receive safe defaults when loading older saves. Increment the schema version and add an explicit migration when a change cannot be safely defaulted.
 
 Rules:
 
@@ -112,7 +112,7 @@ Before each update:
 
 ## Current limitations
 
-Travel still uses straight-line interpolation; terrain speed is a coarse prototype heuristic; party markers are illustrative; hostile encounters now use automatic tactical simulation, but a player-controlled battlefield renderer, recovery actions, resource production and settlement ownership remain unfinished. The engine infrastructure is now in place, but the campaign's gameplay systems will be migrated into separate modules incrementally rather than through a risky full rewrite.
+Travel still uses straight-line interpolation and terrain speed is a coarse prototype heuristic. Hostile encounters now use a player-controlled battlefield renderer backed by the authoritative simulation, with pause/resume and versioned checkpoints; named companions participate through persistent IDs and wounded companions recover at camp. The first non-battle loyalty producer is wilderness discovery for the exact active named party, with a save-persisted replay ledger. Faction diplomacy, territory ownership, actionable resource production/gathering and settlement ownership remain unfinished. The engine infrastructure is in place; gameplay domains will continue to be extracted incrementally rather than through a risky full rewrite.
 
 
 ## Performance pass
@@ -120,7 +120,7 @@ Travel still uses straight-line interpolation; terrain speed is a coarse prototy
 - HUD values are only written to the DOM when their displayed text changes, avoiding redundant updates during travel.
 - Travel animation stops scheduling frames while paused and restarts on resume.
 - Map dragging coalesces pointer movement into at most one SVG view transform per animation frame.
-- The service-worker shell cache is versioned to v16 so updated clients can refresh cached assets.
+- The service-worker shell cache is versioned to v20 so updated clients can refresh cached assets.
 
 These are targeted reductions in unnecessary work, not a measured FPS claim. Browser profiling and real-device testing remain required before publishing performance figures.
 

@@ -22,12 +22,12 @@ Open `index.html` in a modern browser. No build step, package manager, framework
 - Basic HUD and local save data.
 - Responsive touch and mouse controls.
 - Settlement activities: market, blacksmith, tavern, generic soldier recruitment and named companions/officers/specialists at selected towns.
-- Save schema v9 with backward migration from v5/v6/v7/v8, a persistent named-character roster, saved active-party assignments (up to four named characters) and an exactly-once battle-result ledger.
+- Save schema v10 with backward migration from v5/v6/v7/v8/v9, a persistent named-character roster, saved active-party assignments (up to four named characters), and bounded exactly-once battle and non-battle campaign-event ledgers. Discovering a new site now improves trust/morale for named companions in the active party; generic troops remain unaffected.
 - Twelve informational resource sites with category filtering and an inspection panel.
 - Hostile roaming encounters use the player-controlled battlefield view backed by the authoritative battle simulation; active named party members are carried by stable IDs, generic troop reserves are preserved, and battle casualties, rewards, hero health and participant loyalty are applied once to campaign state. Named-character casualties enter recovery; a two-hour camp rest restores them to the available roster so they can be reassigned. Active battles checkpoint every five seconds, on page hide/visibility change and immediately when paused so valid encounters can resume after reload. The battlefield can be paused and resumed with its control or the P key.
 
 ## Roadmap
-1. Loyalty events connected to actual campaign actions.
+1. Add further loyalty-event producers (the first live non-battle discovery event is integrated).
 2. Battle terrain/formation controls, encounter choices and outcome feedback; the first player-controlled battlefield renderer and orders are integrated.
 3. Faction diplomacy, territory ownership and kingdom progression.
 4. Settlements, resource gathering/production and sieges.

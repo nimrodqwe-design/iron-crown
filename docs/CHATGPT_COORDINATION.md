@@ -394,3 +394,17 @@ The current stable implementation is whatever is present on `main`. Do not rely 
 ### Pages retry result — 21 Nov 2026
 
 The fresh main push created by the 21 Nov coordination hand-off succeeded: JavaScript checks run 44886328114 passed, and GitHub Pages deployment run 44886328203 completed successfully. The earlier run 44886158567 failed twice at artifact lookup even though the artifact upload was visible through the Actions API; no workflow or game-code change was required. Treat the earlier failure as transient and retain the standard Pages workflow unless it recurs.
+
+
+### Daily development hand-off — 22 Nov 2026
+
+- Starting main: 2412c7aacb7d177fd44f1378285e707a31b16fe4. Open PR queue was empty; Issues #5 and #7 were read with their comments. Current main save schema is v9, the service-worker shell is v19, and the previous main JavaScript/Pages workflows both passed.
+- Branch: feature/nonbattle-discovery-loyalty.
+- Goal: implement the first real non-battle campaign loyalty producer using campaign-owned event IDs and persistent replay protection.
+- Implementation: new wilderness discoveries now emit troops:discovery only to the exact named IDs in the active party. The roster monotonic createEventId() sequence supplies identity; trust/morale results are written back to the authoritative roster. Save v10 persists the last 200 resolved campaign event IDs. v5-v9 migrations preserve existing campaign state and default the new ledger to empty. Generic troop groups remain aggregate; no Chronicle dependency is added.
+- Files: js/characters/campaign-loyalty-runtime.js, js/core/state.js, js/core/save.js, js/game.js, index.html, sw.js, tests/campaign-loyalty-runtime.test.js, tests/campaign-save.test.js, tests/map-resource-ui.test.js, docs/CAMPAIGN_CHARACTER_CONTRACT.md, docs/DEVELOPMENT_FOUNDATION.md, README.md, and this coordination log.
+- Validation plan: JavaScript syntax plus the complete root Node suite through the PR workflow; specifically event identity, active-party-only recipients, rejected/empty recipients, replay in-session, replay after roster/save restoration, and v9-to-v10 migration.
+- Limitations: no real browser, Android, browser local-storage, pagehide, offline-launch or gameplay runtime test is performed by this change. Only discovery is wired as a non-battle event producer; payment, protection, promises, training and other event types remain future producers.
+- Next Iron Crown priority: verify PR checks and merge only if green. Then perform real-browser vertical-loop testing; after that add further non-battle event producers or define the resource-stock/inventory/time contract for Issue #5.
+- Track B — Lantern Run: found a resilience gap: if reading window.localStorage itself throws, the UI set its progress store to null, so it kept playing but lost the promised session-only best record. The next isolated side-game branch will fall back to an in-memory progress store and test the actual UI controller against a throwing storage getter.
+- Branch reconciliation: no stale feature branch was merged. The loyalty-adapter branch and older battle/world branches remain historical divergent snapshots. The side game remains on its dedicated sidegame/lantern-run branch; no side-game files are added to Iron Crown main.
