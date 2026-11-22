@@ -25,5 +25,7 @@ jobs:
         run: node side-game/lantern-run/progress.test.js
       - name: Run UI contract checks
         run: node side-game/lantern-run/ui-contract.test.js
+      - name: Run UI storage fallback checks
+        run: node side-game/lantern-run/ui-storage-fallback.test.js
       - name: Run UI interaction checks
         run: node side-game/lantern-run/ui-interaction.test.js

@@ -35,4 +35,4 @@ The interaction harness runs the actual inline UI controller against a small fak
 
 ## Scoring and personal records
 
-Successful escapes earn a score from remaining light, move count and hints used. Each hint is still free in lantern light, but reduces the final score by 100 points. Best scores are stored independently for each ruin in a small versioned local-storage record. If browser storage is unavailable or corrupt, the game continues and keeps session-only records.
+Successful escapes earn a score from remaining light, move count and hints used. Each hint is still free in lantern light, but reduces the final score by 100 points. Best scores are stored independently for each ruin in a small versioned local-storage record. If browser storage is unavailable or corrupt, the game continues and keeps session-only records. If accessing the browser's localStorage property itself throws, the UI explicitly creates an in-memory progress store so the current session still has personal-best feedback.
