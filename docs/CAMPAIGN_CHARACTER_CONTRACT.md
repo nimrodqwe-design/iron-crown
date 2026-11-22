@@ -131,7 +131,7 @@ Implemented on PR #23: `battle:started` and `battle:ended` carry the participant
 ## 5. Save migration and replay safety
 
 - The current save version is 10.
-- Version 5 saves migrate to an empty `characterRoster` with a newly persisted campaign token and sequences starting at 1; existing gold, troops, location, inventory, discoveries and encounter histories remain unchanged. Versions 6 through 9 preserve their existing roster, active-party assignments, battle ledger and checkpoint while adding an empty non-battle event ledger.
+- Version 5 saves migrate to an empty `characterRoster` with a newly persisted campaign token and sequences starting at 1; existing gold, troops, location, inventory, discoveries and encounter histories remain unchanged. Versions 6 through 9 preserve whichever roster, active-party, battle-ledger and checkpoint fields they contain; absent fields receive safe defaults, and all receive an empty non-battle event ledger.
 - New saves persist the roster snapshot, campaign token, character sequence, event sequence, active-party IDs, the last 200 resolved battle IDs, the last 200 resolved campaign event IDs and an optional version-1 in-progress battle checkpoint. The checkpoint contains the authoritative simulation state plus the campaign enemy/participant mapping and is refreshed on campaign save, page hide, visibility change and a five-second active-battle checkpoint.
 - On load, validate IDs, roles, motivation, numeric ranges and party references. Invalid character entries should be reported/recovered safely rather than corrupting the whole campaign.
 - Battle result idempotency is enforced by the save-v9 battle ledger; non-battle loyalty event idempotency is enforced by the save-v10 campaign event ledger. Trust/morale are copied back into the character roster. A saved active battle is resumed only when its simulation ID, enemy identity and exact active-party participant order still validate; invalid checkpoints are discarded without applying a battle result.
@@ -158,7 +158,7 @@ Recommended Chronicle entries are major standing-tier changes, not every small t
 | Campaign actions and event producers | `js/game.js`, `js/characters/campaign-loyalty-runtime.js`, `js/engine/event-bus.js` | Lead developer |
 | Script loading / application shell | `index.html`, `sw.js` | Lead developer |
 | Recruitment and loyalty rules | `js/characters/*` | Lead developer |
-| Persistent battle participant mapping | `js/battle/battle-simulation.js` | Lead developer; not yet integrated with campaign roster |
+| Persistent battle participant mapping | `js/battle/battle-simulation.js`, `js/characters/campaign-battle.js` | Lead developer; stable IDs and outcomes are integrated with the campaign roster |
 | Chronicle storage/UI | Not present yet | Deferred until a real storage contract is required |
 
 Issue #7 records the initial identity and ownership decisions. The current 16 Nov user directive consolidates responsibility for the entire repository under this lead; shared-file changes still use focused branches, regression checks and documented compatibility boundaries.
