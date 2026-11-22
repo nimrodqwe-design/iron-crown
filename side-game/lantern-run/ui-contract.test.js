@@ -10,6 +10,7 @@ assert.match(html,/api\.hint\(state\)/,'UI must use the state module for route h
 assert.match(html,/api\.useHint\(state\)/,'hint usage must be tracked by the state module');
 assert.match(html,/api\.score\(state\)/,'the UI must display the state module score');
 assert.match(html,/window\.LanternRunProgress\.create\(window\.localStorage\)/,'personal records use the isolated progress store');
+assert.match(html,/window\.LanternRunProgress\.create\(null\)/,'a throwing localStorage getter falls back to session-only records');
 assert.match(html,/id="scoreValue"/);
 assert.match(html,/id="bestScore"/);
 assert.match(html,/id="hintCount"/);

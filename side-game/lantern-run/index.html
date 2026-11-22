@@ -39,7 +39,12 @@ button:disabled{opacity:.5;cursor:not-allowed}
 const grid=document.getElementById('grid'),status=document.getElementById('status'),hintButton=document.getElementById('hint'),restartButton=document.getElementById('restart'),lightMeter=document.getElementById('lightMeter'),lightValue=document.getElementById('lightValue'),moveCount=document.getElementById('moveCount'),scoreValue=document.getElementById('scoreValue'),bestScore=document.getElementById('bestScore'),hintCount=document.getElementById('hintCount');
 const api=window.LanternRunState;
 let progress=null;
-try{progress=window.LanternRunProgress?window.LanternRunProgress.create(window.localStorage):null}catch(_){progress=null}
+try{
+ if(window.LanternRunProgress){
+  try{progress=window.LanternRunProgress.create(window.localStorage)}
+  catch(_){progress=window.LanternRunProgress.create(null)}
+ }
+}catch(_){progress=null}
 if(!api){
  status.textContent='The game could not start. Reload the page to try again.';
  document.querySelectorAll('button[data-move]').forEach(button=>button.disabled=true);
