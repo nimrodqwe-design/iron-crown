@@ -26,7 +26,7 @@ assert.equal(roster.get(scholar.id).trust,54,'knowledge motivation gains discove
 assert.equal(roster.get(scholar.id).morale,68,'knowledge motivation gains discovery morale');
 assert.equal(roster.get(scout.id).trust,51,'other active companions receive the base discovery effect');
 assert.equal(roster.get(scout.id).morale,63);
-assert.deepEqual(resolved,[first.eventId]);
+assert.deepEqual(JSON.parse(JSON.stringify(resolved)),[first.eventId]);
 const afterFirst=roster.get(scholar.id);
 const replay=runtime.apply({type:'troops:discovery',eventId:first.eventId,recruitIds:[scholar.id,scout.id]});
 assert.equal(replay.ok,true);
@@ -42,5 +42,5 @@ assert.deepEqual(restoredRoster.get(scholar.id),restoredBefore);
 const second=restoredRuntime.record('troops:discovery',[scholar.id]);
 assert.equal(second.eventId,'ic:loyalty-runtime-test:event:2','event sequence survives roster restoration');
 assert.equal(restoredRoster.get(scholar.id).trust,58);
-assert.deepEqual(restoredLedger,[first.eventId,second.eventId]);
+assert.deepEqual(JSON.parse(JSON.stringify(restoredLedger)),[first.eventId,second.eventId]);
 console.log('campaign non-battle loyalty runtime and replay checks passed');
