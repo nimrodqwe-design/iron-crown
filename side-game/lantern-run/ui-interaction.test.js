@@ -8,6 +8,7 @@ const progressApi=require('./progress.js');
 const html=fs.readFileSync(path.join(__dirname,'index.html'),'utf8');
 const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match=>match[1]).filter(source=>source.trim());
 assert.equal(inline.length,1,'expected one inline UI controller');
+assert.match(html,/id="hint"[^>]*>Hint · −100 score<\/button>/,'the score penalty is disclosed before the player requests a hint');
 
 class Element{
  constructor(tag,dataset){
