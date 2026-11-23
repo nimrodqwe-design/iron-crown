@@ -112,7 +112,7 @@ Before each update:
 
 ## Current limitations
 
-Travel still uses straight-line interpolation and terrain speed is a coarse prototype heuristic. Hostile encounters now use a player-controlled battlefield renderer backed by the authoritative simulation, with pause/resume and versioned checkpoints; named companions participate through persistent IDs and wounded companions recover at camp. The first non-battle loyalty producer is wilderness discovery for the exact active named party, with a save-persisted replay ledger. Faction diplomacy, territory ownership, actionable resource production/gathering and settlement ownership remain unfinished. The engine infrastructure is in place; gameplay domains will continue to be extracted incrementally rather than through a risky full rewrite.
+Travel still uses straight-line interpolation and terrain speed is a coarse prototype heuristic. Hostile encounters now use a player-controlled battlefield renderer backed by the authoritative simulation, with pause/resume and versioned checkpoints; named companions participate through persistent IDs and wounded companions recover at camp. Wilderness discovery and camp training now emit loyalty events for the exact active named party, with campaign-owned IDs and a save-persisted replay ledger. Faction diplomacy, territory ownership, actionable resource production/gathering and settlement ownership remain unfinished. The engine infrastructure is in place; gameplay domains will continue to be extracted incrementally rather than through a risky full rewrite.
 
 
 ## Performance pass
@@ -120,7 +120,7 @@ Travel still uses straight-line interpolation and terrain speed is a coarse prot
 - HUD values are only written to the DOM when their displayed text changes, avoiding redundant updates during travel.
 - Travel animation stops scheduling frames while paused and restarts on resume.
 - Map dragging coalesces pointer movement into at most one SVG view transform per animation frame.
-- The service-worker shell cache is versioned to v20 so updated clients can refresh cached assets.
+- The service-worker shell cache is versioned to v21 so updated clients can refresh cached assets.
 
 These are targeted reductions in unnecessary work, not a measured FPS claim. Browser profiling and real-device testing remain required before publishing performance figures.
 

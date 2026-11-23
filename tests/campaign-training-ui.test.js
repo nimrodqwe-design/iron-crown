@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const html=fs.readFileSync('index.html','utf8'),game=fs.readFileSync('js/game.js','utf8'),shell=fs.readFileSync('sw.js','utf8');
+assert.match(html,/id="trainCompanions"/);
+assert.match(html,/Training costs 2 supplies and advances campaign time by one hour/);
+assert.ok(html.indexOf('campaign-training.js')<html.indexOf('js/game.js'));
+assert.match(game,/function updateTrainingControl\(\)/);
+assert.match(game,/function trainCompanions\(\)/);
+assert.match(game,/campaignTraining\.train\(\)/);
+assert.match(game,/campaignTraining=window\.IronCrownCampaignTraining\.create/);
+assert.match(game,/\$\('trainCompanions'\)\.onclick=trainCompanions/);
+assert.match(shell,/iron-crown-shell-v21/);
+assert.match(shell,/\.\/js\/characters\/campaign-training\.js/);
+console.log('campaign camp-training UI integration contract passed');

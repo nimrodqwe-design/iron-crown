@@ -113,6 +113,13 @@ The producer supplies the exact affected character IDs. The adapter must not gue
 - `state.resolvedCampaignEventIds` stores the last 200 campaign event IDs. The roster snapshot persists `nextEventSequence`; save v10 persists the replay ledger. A repeated event ID is ignored before applying any loyalty change.
 - If the active party is empty, no event ID is consumed and no generic troop is assigned an individual identity. No Chronicle dependency is introduced.
 
+### Camp training producer — save v10
+
+- Training is available only while camped, not travelling and not in an active battle, with at least one valid named character in the active party and at least 2 supplies.
+- A successful training action spends 2 supplies, advances campaign time by 60 minutes (including day rollover), and emits one `troops:training` event to the exact active-party IDs.
+- The campaign loyalty runtime generates the event ID from the roster sequence, updates trust/morale in the authoritative roster and records the ID in `state.resolvedCampaignEventIds`. Save v10 already persists both the roster sequence and bounded replay ledger; no save-version change is required.
+- Rejected eligibility or loyalty results do not consume supplies or campaign time. Generic troop groups are never assigned individual identities.
+
 ### Battle participation
 
 The campaign battle adapter explicitly passes persistent IDs for named characters in the active party. The simulation may use temporary field-unit IDs, but the campaign retains the mapping and returns it in the result:
@@ -171,7 +178,7 @@ Issue #7 records the initial identity and ownership decisions. The current 16 No
 - [x] Battle entry/exit preserves named participant IDs and applies the result once (PR #23).
 - [x] Save v5-v9 migration preserves existing campaigns and adds the v10 non-battle event replay ledger.
 - [x] Save/load tests prove character IDs, candidate source identity, trust, morale, roster membership, event-sequence continuity and resolved non-battle event IDs survive reload; replay after roster restoration is covered by the runtime test.
-- [x] The first non-battle producer emits after a successful discovery; payment, protection, promises and training producers remain future work.
+- [x] Non-battle loyalty producers emit after successful wilderness discovery and camp training; payment, protection and promise producers remain future work.
 - [ ] Chronicle storage is implemented and tested before claiming Chronicle persistence.
 - [ ] Browser and Android-sized viewport smoke tests pass.
 
