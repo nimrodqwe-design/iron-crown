@@ -21,7 +21,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 </head>
 <body><main>
 <h1>Lantern Run</h1>
-<p>Find the exit before your lantern burns out. Avoid the ruins marked with ✕. Three layouts. Retry a failed ruin; advance only after escaping.</p>
+<p>Find the exit before your lantern burns out. Avoid the ruins marked with ✕. Three layouts. Retry a failed ruin; advance only after escaping. A safe-route hint costs 100 points but does not consume lantern light.</p>
 <div class="run-stats" aria-label="Ruin status"><label for="lightMeter">Lantern light</label><output id="lightValue">12 / 12</output><progress id="lightMeter" max="12" value="12">12 of 12</progress><output id="moveCount">Moves: 0</output></div>
 <div class="run-records" aria-label="Run records"><output id="scoreValue">Score: —</output><output id="bestScore">Best: —</output><output id="hintCount">Hints: 0</output></div>
 <div id="grid" class="grid" role="grid" aria-label="Ruin board" aria-rowcount="5" aria-colcount="5"></div>
@@ -30,7 +30,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <span aria-hidden="true"></span><button data-move="up" aria-label="Move up">▲</button><span aria-hidden="true"></span>
 <button data-move="left" aria-label="Move left">◀</button><button data-move="down" aria-label="Move down">▼</button><button data-move="right" aria-label="Move right">▶</button>
 </div>
-<p><button id="hint" aria-describedby="status">Hint · free</button> <button id="restart">Restart ruin</button></p>
+<p><button id="hint" aria-describedby="status" aria-label="Show a safe-route hint; costs 100 points">Hint · −100 score</button> <button id="restart">Restart ruin</button></p>
 <script src="game-state.js"></script>
 <script src="progress.js"></script>
 <script>
