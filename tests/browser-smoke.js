@@ -168,7 +168,7 @@ async function run(){
   await recoveryContext.close();
   assert.deepEqual(errors,[],'the complete travel and battle browser session has no uncaught page errors');
   await context.close();
-  console.log('Iron Crown Chromium smoke test passed: save load, settlement recruitment, party assignment, daily pay, camp training, loyalty persistence and reload.');
+  console.log('Iron Crown Chromium smoke test passed: recruitment, party, pay, training, travel, hostile encounter, battle checkpoint/reload, Hold order, retreat, camp recovery and save persistence.');
  }finally{
   if(browser)await browser.close();
   await new Promise(resolve=>server.close(resolve));
