@@ -29,3 +29,10 @@ jobs:
         run: node side-game/lantern-run/ui-storage-fallback.test.js
       - name: Run UI interaction checks
         run: node side-game/lantern-run/ui-interaction.test.js
+      - name: Install Playwright Chromium for real-browser validation
+        working-directory: side-game/lantern-run
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Run real Chromium smoke tests
+        run: node side-game/lantern-run/browser-smoke.test.js
