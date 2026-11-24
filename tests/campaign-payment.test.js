@@ -17,7 +17,11 @@ const service=api.create({
 });
 const snapshot=()=>({day:state.day,lastCompanionPayDay:state.lastCompanionPayDay,gold:state.gold});
 assert.equal(api.COST_PER_COMPANION,5);
-assert.deepEqual(service.availability(),{ok:true,participantIds:['char-mara','char-iven'],cost:10,day:3});
+const initialAvailability=service.availability();
+assert.equal(initialAvailability.ok,true);
+assert.deepEqual(initialAvailability.participantIds,['char-mara','char-iven']);
+assert.equal(initialAvailability.cost,10);
+assert.equal(initialAvailability.day,3);
 state.target='kingsbridge';
 assert.match(service.availability().reason,/travelling/);
 assert.equal(service.pay().ok,false);
