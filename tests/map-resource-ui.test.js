@@ -31,7 +31,7 @@ assert.match(game,/IronCrownParty\.create/);
 assert.match(game,/resourcePanelClose'\)\.focus\(\)/);
 assert.match(css,/\.resource-panel\.open/);
 assert.match(css,/@media\(max-width:620px\).*resource-panel/s);
-assert.match(sw,/iron-crown-shell-v21/);
+assert.match(sw,/iron-crown-shell-v22/);
 assert.match(sw,/\.\/styles\/battle\.css/);
 assert.match(sw,/\.\/js\/battle\/battle-view\.js/);
 assert.match(html,/id="battleOverlay"/);
