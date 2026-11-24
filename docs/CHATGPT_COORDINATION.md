@@ -492,7 +492,7 @@ The fresh main push created by the 21 Nov coordination hand-off succeeded: JavaS
 - **Validation:** PR workflow `45359416889` passed JavaScript syntax, all 17 root Node regression files, Playwright/Chromium installation and the expanded real-Chromium smoke test. The first attempt failed because Playwright clicked the centre of the SVG group bounding box (an unpainted gap); the test now clicks the visible marker circle. The corrected run passed.
 - **Recovery-test boundary:** The browser recovery case seeds a character already in `recovering` status. It validates the real camp-rest recovery action and reassignment, but does not yet produce a casualty through a live battle. The battle path currently tests pause/resume, order and retreat, not a full victory/casualty outcome.
 - **Not tested:** Physical Android device, offline service-worker launch, live battle casualty creation/recovery, or the resource-site inspection panel in a real browser.
-- **PR #51 status:** Open and mergeable; its test workflow passed. Merge after the coordination-document update also passes.
+- **PR #51:** Merged into `main` as `dda893b1eb1c53739e866ad900fd501325512165` after final PR workflow `45359599731` passed. Main post-merge workflow `45359885595` passed JavaScript syntax, all 17 root Node test files and the expanded Chromium smoke test; Pages deployment `45359885603` succeeded.
 - **Next:** After merging this test coverage, extend the browser path to a deterministic live battle outcome/casualty where feasible, then test the resource-site panel. Keep Issue #5's stock/inventory/time contract separate; resource sites remain informational.
 
 #### Track B — Lantern Run
