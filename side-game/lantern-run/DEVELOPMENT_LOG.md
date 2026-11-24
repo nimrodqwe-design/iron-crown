@@ -18,3 +18,12 @@
 - **Scope:** No gameplay rules or scoring changed. No production dependency or package manifest was added.
 - **Validation:** The deterministic state, storage, UI-contract and fake-DOM checks passed, and real Chromium workflow runs `45355410493` (push) and `45355420320` (PR) passed. The browser run exercised keyboard and blocked movement, hints, all three escape routes, a trap-and-retry, score persistence across reload, the 320px layout, and the throwing-localStorage fallback. The first browser run exposed an incorrect test assumption about the second ruin's trap coordinate; the test was corrected to take two right moves. The game rules did not need changing.
 - **Next:** Merge this isolated test-infrastructure PR after the final documentation update's checks pass. Keep further mechanics deferred until browser failures are fixed.
+
+
+## 24 November 2026 — Touch-emulated browser coverage
+
+- **Branch:** `test/lantern-run-touch-smoke`, based on the current isolated `sidegame/lantern-run` branch.
+- **Change:** Extended the real Chromium smoke test with a mobile-emulated context (`isMobile`, `hasTouch`, 320×720 viewport). It verifies that the browser exposes touch input, movement/hint/restart controls respond to actual Playwright taps, the hint penalty remains visible, the narrow layout has no horizontal overflow, and no uncaught page errors occur.
+- **Scope:** Test-only; no game rules, scoring, production runtime dependencies or Iron Crown campaign files changed.
+- **Validation:** The new Playwright path is awaiting its branch/PR CI run. No passing result is claimed before that workflow completes. Browser emulation is not a physical Android-device test.
+- **Next:** Keep mechanics frozen; use the CI result to validate the tap path, then arrange physical-device testing separately when a device is available.

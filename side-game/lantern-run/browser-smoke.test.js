@@ -103,6 +103,27 @@ async function run(){
   assert.equal(await blockedPage.locator('#bestScore').textContent(),'Best: 720');
   assert.deepEqual(blockedErrors,[],'blocked storage does not cause uncaught browser errors');
   await blockedContext.close();
+
+  const touchContext=await browser.newContext({viewport:{width:320,height:720},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+  const touchPage=await touchContext.newPage();
+  const touchErrors=[];
+  touchPage.on('pageerror',error=>touchErrors.push(error.message));
+  await touchPage.goto(url,{waitUntil:'load'});
+  await touchPage.locator('.cell').first().waitFor();
+  assert.ok(await touchPage.evaluate(()=>navigator.maxTouchPoints>0),'the browser context exposes touch input');
+  await touchPage.locator('[data-move="up"]').tap();
+  assert.equal(await touchPage.locator('#moveCount').textContent(),'Moves: 1','a touch tap moves the player');
+  await touchPage.locator('#hint').tap();
+  assert.equal(await touchPage.locator('#hintCount').textContent(),'Hints: 1','the hint control responds to touch');
+  assert.match(await touchPage.locator('#status').textContent(),/reduces your final score/);
+  const touchMetrics=await touchPage.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,mainWidth:document.querySelector('main').getBoundingClientRect().width}));
+  assert.ok(touchMetrics.mainWidth<=touchMetrics.width,'the game panel fits a touch-sized viewport');
+  assert.ok(touchMetrics.scrollWidth<=touchMetrics.width,'touch-sized layout has no horizontal overflow');
+  await touchPage.locator('#restart').tap();
+  assert.equal(await touchPage.locator('#moveCount').textContent(),'Moves: 0','touch restart resets the move counter');
+  assert.equal(await touchPage.locator('#hintCount').textContent(),'Hints: 0','touch restart resets the hint counter');
+  assert.deepEqual(touchErrors,[],'touch-emulated browser session has no uncaught page errors');
+  await touchContext.close();
   await context.close();
   console.log('Lantern Run Chromium smoke tests passed: keyboard, blocked movement, hints, all ruins, trap retry, scoring, persistent records, reload, 320px layout and blocked-storage fallback.');
  }finally{
