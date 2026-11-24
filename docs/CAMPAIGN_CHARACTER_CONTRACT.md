@@ -224,3 +224,12 @@ The merged main branch includes a small settlement-based named-recruitment slice
 - Current encounter resolution is automatic tactical simulation; the campaign does not yet expose the standalone battlefield prototype as a player-controlled renderer. Interactive battle presentation and retreat choice are future work, although the simulation API now supports retreat.
 - Save v5/v6/v7 migration preserves campaign data and adds an empty resolved-battle ledger. Newer-version saves remain untouched.
 
+
+
+## Daily companion payment contract — save v11
+
+- The campaign state owns `lastCompanionPayDay`, initialized to `0` and persisted in save version 11. Versions 5–10 migrate this field to `0` unless a v10 record already contains a validated day value.
+- The payment service reads the active named-party IDs from the existing party manager. It never addresses generic troop groups or roster entries outside the active party.
+- Daily pay costs 5 gold per active named character and may be applied once per campaign day. The service rejects travel, active battle, empty/invalid party membership, insufficient gold, and repeated payment for the current or an earlier day.
+- A successful payment emits `troops:paid` through `IronCrownCampaignLoyaltyRuntime`; only after the loyalty event succeeds does it deduct gold and update `lastCompanionPayDay`.
+- The existing campaign event sequence and bounded replay ledger remain authoritative. No second event ledger, wage timer, or Chronicle dependency is introduced.
