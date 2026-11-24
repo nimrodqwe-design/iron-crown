@@ -36,3 +36,8 @@ The interaction harness runs the actual inline UI controller against a small fak
 ## Scoring and personal records
 
 Successful escapes earn a score from remaining light, move count and hints used. Each hint costs 100 score points but does not consume lantern light. Best scores are stored independently for each ruin in a small versioned local-storage record. If browser storage is unavailable or corrupt, the game continues and keeps session-only records. If accessing the browser's localStorage property itself throws, the UI explicitly creates an in-memory progress store so the current session still has personal-best feedback.
+
+
+## Real-browser validation
+
+The dedicated GitHub Actions workflow runs the deterministic Node checks and then installs Playwright only in the runner (the game itself remains dependency-free). Its Chromium smoke test serves the game locally and exercises keyboard movement, blocked movement, hints, all three ruin routes, trap retry, scoring, browser local-storage persistence across reload, a 320px viewport, and the session-only fallback when the browser's localStorage getter throws. The browser check is evidence from CI, not a claim that a physical Android device has been tested.
