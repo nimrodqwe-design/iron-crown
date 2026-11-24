@@ -16,6 +16,8 @@ assert.match(game,/campaignPayment\.pay\(\)/);
 assert.match(game,/\$\('payCompanions'\)\.onclick=payCompanions/);
 assert.match(game,/campaignPayment=window\.IronCrownCampaignPayment\.create/);
 assert.match(game,/updateTrainingControl\(\);updatePaymentControl\(\)/,'travel/camp controls refresh payment availability');
+assert.match(game,/state\.target=selected\.id;updateCampControls\(\)/,'starting settlement travel disables camp, training and payment controls');
+assert.match(game,/state\.target='__free__';updateCampControls\(\)/,'starting off-road travel disables camp, training and payment controls');
 assert.match(state,/lastCompanionPayDay:0/,'new campaigns begin with no paid day');
 assert.match(state,/saveVersion:11/,'campaign state advertises save version 11');
 assert.match(save,/const SAVE_VERSION=options\.version\|\|11/);
