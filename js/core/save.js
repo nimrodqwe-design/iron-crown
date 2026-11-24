@@ -9,7 +9,7 @@ function create(options){
  const setCharacterRoster=options.setCharacterRoster;
  const createCharacterRoster=options.createCharacterRoster;
  const notify=typeof options.notify==='function'?options.notify:()=>{};
- const SAVE_VERSION=options.version||10;
+ const SAVE_VERSION=options.version||11;
  const PARTY_LIMIT=Number.isInteger(options.partyLimit)?Math.max(1,Math.min(12,options.partyLimit)):4;
  const STORAGE_KEY='ironCrownSave';
  function save(){
@@ -17,7 +17,7 @@ function create(options){
    const state=getState();
    const savedState={
     current:state.current,freePosition:state.freePosition,gold:state.gold,troops:state.troops,
-    health:state.health,day:state.day,minutes:state.minutes,camped:state.camped,supplies:state.supplies,
+    health:state.health,day:state.day,minutes:state.minutes,camped:state.camped,supplies:state.supplies,lastCompanionPayDay:state.lastCompanionPayDay,
     inventory:state.inventory,equipment:state.equipment,discoveries:state.discoveries,
     defeatedParties:state.defeatedParties,metCaravans:state.metCaravans,
     houseStanding:state.houseStanding,audiences:state.audiences,
@@ -51,6 +51,7 @@ function create(options){
    state.freePosition=d.freePosition&&Number.isFinite(d.freePosition.x)&&Number.isFinite(d.freePosition.y)?{x:Math.max(0,Math.min(1600,d.freePosition.x)),y:Math.max(0,Math.min(1000,d.freePosition.y))}:null;
    state.gold=number(d.gold,85,0,999999);state.troops=number(d.troops,12,0,9999);
    state.health=number(d.health,100,0,100);state.day=number(d.day,1,1,999999);
+   state.lastCompanionPayDay=number(d.lastCompanionPayDay,0,0,999999);
    state.minutes=number(d.minutes,480,0,1439);state.camped=!!d.camped;
    state.supplies=number(d.supplies,5,0,999999);
    const validItems=getItemIds();
