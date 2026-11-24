@@ -448,33 +448,35 @@ The fresh main push created by the 21 Nov coordination hand-off succeeded: JavaS
 - **Next Lantern Run priority:** Real browser test of all three ruins, scoring, hints, retry and personal records. No further mechanics until that runtime pass is performed.
 
 
-### 24 Nov 2026 — companion pay, travel controls and real-browser validation
+### 24 Nov 2026 — companion pay, travel controls and browser validation
 
 #### Track A — Iron Crown
 
-- **Main:** `75129c232e24be8c895597a8c03d6313c65cdbca`.
+- **Main:** `84d32665d2eb89b1d772734d1299636c48773a1e`.
 - **PR #43 merged:** Daily companion pay; merge commit `62b972e7122889f5dda4914e623beaac0257f21e`.
 - **PR #45 merged:** Refresh Camp/Rest/Training/Payment controls immediately after settlement or off-road travel begins; merge commit `c369d6257a3877aef32d73194b6419f02b84e4b5`.
-- **PR #46 merged:** Restore those controls after travel arrival and cancellation, with encounter processing before refresh so an active battle still disables them; merge commit `75129c232e24be8c895597a8c03d6313c65cdbca`.
+- **PR #46 merged:** Restore those controls after travel arrival and cancellation, with encounter processing before refresh so an active battle still keeps actions disabled; merge commit `75129c232e24be8c895597a8c03d6313c65cdbca`.
+- **PR #48 merged:** Added a real Chromium smoke test and CI-only Playwright installation; merge commit `84d32665d2eb89b1d772734d1299636c48773a1e`.
 - **Campaign state:** Save v11 persists `lastCompanionPayDay`. Daily wages cost 5 gold per active named companion, once per campaign day, and emit the existing `troops:paid` event. Generic troops remain aggregate. No new loyalty ledger or Chronicle dependency.
-- **Travel UI:** Shared camp actions now refresh on travel start, arrival and cancellation. The payment/training services remain the authoritative guards.
-- **Validation:** PR #43 Node regression workflow `45355321628` passed; main workflow after PR #43 `45355465611` passed. PR #45 workflow `45355703446` and PR #46 workflow `45356217417` passed. Main workflow after PR #46 `45356343084` passed. GitHub Pages deployment for PR #43 commit succeeded on retry (`45355465616`). Deployment for the later main commit hit the same transient Pages artifact-metadata lookup failure; failed deploy job `138315000148` was queued for retry. No application-code deployment error is indicated.
-- **Issue #7:** Updated to record the live producers (discovery, training, daily pay, battle victory/defeat) and remaining event types. Protection, abandonment, promises, unpaid wages, reckless orders, safe retreat and avenged events remain deferred until their corresponding real gameplay actions exist.
+- **Travel controls:** Shared camp actions refresh on travel start, arrival and cancellation. The payment/training services remain authoritative guards.
+- **Real-browser validation:** Chromium workflow `45357066858` passed on the PR branch and main workflow `45357252463` passed after merge. The test loads a v11 save at Kingsbridge, recruits Mara Venn through the settlement UI, assigns her to the active party, pays daily wages, establishes camp, trains her, and verifies loyalty, gold, supplies, campaign time, party membership and the paid-day guard after a real browser reload. No uncaught page errors were reported.
+- **Test-harness correction:** The first browser run re-seeded the original save on every reload because the init script ran on navigation. A sessionStorage one-time guard fixed the harness; the game save/load path then passed.
+- **Deployment:** Main JavaScript + Chromium checks passed. GitHub Pages deployment for main commit `84d3266` succeeded after retry (`45357252446`); the first attempt hit a transient artifact-metadata lookup failure. The successful retry deployed the merged main state.
+- **Issue #7:** Updated to record live producers (discovery, training, daily pay, battle victory/defeat) and remaining event types. Protection, abandonment, promises, unpaid wages, reckless orders, safe retreat and avenged events remain deferred until real gameplay actions exist.
 - **Issue #5:** Still open. Resource-site data remains informational; authoritative resource stock, gathering, inventory quantities and campaign-time contract are not yet integrated.
-- **Not tested:** No real browser, Android device or offline-launch gameplay test of Iron Crown. The next priority is a Playwright Chromium smoke path for map → named recruitment → party → pay/train → save/reload, then expand it to battle/recovery.
+- **Not tested:** No physical Android device or offline-launch test. The first Iron Crown browser smoke does not yet cover travel, hostile encounters, battle orders, retreat, casualties or camp recovery.
 
 #### Track B — Lantern Run
 
 - **Isolated branch:** `sidegame/lantern-run`, current commit `544987bbd64166f85e18c581589d3136ea95849c`.
 - **PR #44 merged into the side-game branch only:** Playwright/Chromium smoke coverage, narrow-viewport box sizing and browser-storage fallback checks.
-- **Real browser validation passed:** Push workflow `45355757587` on the merged side-game branch passed. The PR branch's final push/PR runs `45355575021` and `45355584445` also passed.
+- **Real browser validation passed:** Merged-branch push workflow `45355757587` passed; final PR branch runs `45355575021` and `45355584445` also passed.
 - **Verified in Chromium:** Keyboard movement, blocked movement, hints, all three ruin routes, trap retry, score calculation, browser localStorage persistence across reload, 320px viewport without horizontal overflow, and session-only fallback when the localStorage getter throws.
-- **Limitations:** No physical Android device test. Playwright is installed only in CI; the game runtime remains dependency-free.
-- **Next:** Keep the current mechanics stable and fix only browser/device issues demonstrated by testing before adding new features.
+- **Limitations:** No physical Android device test. Playwright is installed only in CI; game runtime remains dependency-free.
 
 #### Repository reconciliation and next priorities
 
-- PRs #43, #44, #45 and #46 are merged; historical feature branches remain preserved.
+- PRs #43–#48 are merged (PR #44 into the isolated side-game branch); historical feature branches remain preserved.
 - No historical divergent battle, roster, recovery or map branch was force-merged or deleted.
-- **Iron Crown next:** Add a real-browser smoke suite and validate the connected campaign loop; then define the Issue #5 resource-stock/inventory/time contract.
-- **Lantern Run next:** Validate on a real mobile device when available; do not add mechanics ahead of observed defects.
+- **Iron Crown next:** Extend the real-browser suite to travel start/arrival/cancellation, hostile encounter, battle pause/orders/retreat, outcome application and camp recovery. Then define Issue #5's resource-stock/inventory/time contract.
+- **Lantern Run next:** Keep mechanics stable; validate on a physical mobile device when available and fix only observed defects.
