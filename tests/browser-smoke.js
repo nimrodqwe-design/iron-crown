@@ -66,7 +66,9 @@ async function run(){
   assert.equal(await pay.isDisabled(),true,'the party cannot be paid twice on the same campaign day');
   assert.match(await page.locator('#companyNote').textContent(),/Daily wages paid/);
 
+  await page.locator('#companyClose').click();
   await page.locator('#camp').click();
+  await page.locator('#companyButton').click();
   assert.equal(await page.locator('#trainCompanions').isDisabled(),false,'camp training becomes available after establishing camp');
   await page.locator('#trainCompanions').click();
   assert.match(await page.locator('#companyNote').textContent(),/Camp training complete/);
