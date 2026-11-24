@@ -446,3 +446,15 @@ The fresh main push created by the 21 Nov coordination hand-off succeeded: JavaS
 - **Not tested:** No real browser, Android device, actual browser local-storage, page lifecycle or offline-launch gameplay test was performed. The new training unit and UI tests run under Node; Lantern Run UI interaction remains fake-DOM.
 - **Next Iron Crown priority:** Real-browser smoke test of map → recruit → party → camp training/discovery → battle → recovery → save/reload. Then add one further non-battle loyalty producer (payment or protection) only when an actual successful campaign action exists to emit it. Keep Issue #5's resource contract separate until inventory/time ownership is defined.
 - **Next Lantern Run priority:** Real browser test of all three ruins, scoring, hints, retry and personal records. No further mechanics until that runtime pass is performed.
+
+
+### Daily companion pay — 24 Nov 2026
+
+- **Status:** Implemented on `feature/daily-companion-payments`; awaiting PR CI and review.
+- **Goal:** Connect the already-defined `troops:paid` loyalty action to a real campaign action without adding a parallel relationship system or fabricating individual identities for generic soldiers.
+- **Implementation:** The Company panel offers daily pay for the exact active named party. Cost is 5 gold per active named character, once per campaign day. The action is rejected while travelling or in battle, with an empty/invalid active party, insufficient gold, or when the current day has already been paid. The existing campaign loyalty runtime applies the `paid` response before the service deducts gold and records `lastCompanionPayDay`.
+- **Save compatibility:** Save schema advances from v10 to v11. The new field defaults to 0 for v5–v10 migrations; a v10 field is preserved if present. The existing campaign event sequence and last-200 replay ledger remain authoritative. Service-worker shell advances to v22.
+- **Files:** `js/characters/campaign-payment.js`, `js/core/state.js`, `js/core/save.js`, `js/game.js`, `index.html`, `sw.js`, `tests/campaign-payment.test.js`, `tests/campaign-payment-ui.test.js`, `tests/campaign-save.test.js`, and cache-version assertions in battle/map/training UI tests; README and campaign architecture docs.
+- **Checks planned:** Node syntax and complete root regression suite, with eligibility, exact participant IDs, payment cost, once-per-day guard, insufficient-funds and loyalty-failure atomicity, v10→v11 migration, round-trip persistence and newer-save protection.
+- **Known limitations:** Daily pay currently changes trust/morale only through the existing loyalty rules; it does not add combat statistics, wages debt, or automatic companion departure. No browser, Android or offline-launch test is claimed.
+- **Next:** Verify CI and merge only if green. Then perform real-browser validation of the connected map → recruit → party → pay/train → battle → recovery → save/reload loop. Issue #5's resource-stock/inventory/time contract remains separate.
