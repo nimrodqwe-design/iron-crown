@@ -66,6 +66,7 @@ async function run(){
   assert.match(await page.locator('#status').textContent(),/^Ruin 2/);
 
   await page.locator('[data-move="right"]').click();
+  await page.locator('[data-move="right"]').click();
   assert.match(await page.locator('#status').textContent(),/Run ended/,'the second ruin trap ends the run');
   assert.equal(await page.locator('#restart').textContent(),'Try again');
   await page.locator('#restart').click();
