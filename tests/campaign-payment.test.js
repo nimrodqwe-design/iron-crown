@@ -1,0 +1,65 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const context={window:{}};
+vm.createContext(context);
+vm.runInContext(fs.readFileSync('js/characters/campaign-payment.js','utf8'),context);
+const api=context.window.IronCrownCampaignPayment;
+const state={day:3,lastCompanionPayDay:0,gold:40,target:null};
+let active=[{id:'char-mara'},{id:'char-iven'}],battleActive=false,nextResult={ok:true,eventId:'event-1',results:[]};
+const calls=[];
+const service=api.create({
+ getState:()=>state,
+ party:{active:()=>active},
+ loyalty:{record:(type,ids)=>{calls.push({type,ids:ids.slice()});return nextResult}},
+ isBattleActive:()=>battleActive
+});
+const snapshot=()=>({day:state.day,lastCompanionPayDay:state.lastCompanionPayDay,gold:state.gold});
+assert.equal(api.COST_PER_COMPANION,5);
+assert.deepEqual(service.availability(),{ok:true,participantIds:['char-mara','char-iven'],cost:10,day:3});
+state.target='kingsbridge';
+assert.match(service.availability().reason,/travelling/);
+assert.equal(service.pay().ok,false);
+state.target=null;battleActive=true;
+assert.match(service.availability().reason,/during battle/);
+assert.equal(service.pay().ok,false);
+battleActive=false;active=[];
+assert.match(service.availability().reason,/at least one named companion/);
+assert.equal(service.pay().ok,false);
+active=[{id:'char-mara'},{id:'char-mara'}];
+assert.match(service.availability().reason,/invalid character identity/);
+active=[{id:'char-mara'},{id:'char-iven'}];
+state.gold=9;
+assert.match(service.availability().reason,/require 10 gold/);
+assert.equal(service.pay().ok,false);
+assert.equal(calls.length,0,'eligibility failures do not emit loyalty events');
+state.gold=40;nextResult={ok:false,reason:'Unknown participant'};
+const beforeFailure=snapshot();
+assert.equal(service.pay().ok,false);
+assert.deepEqual(snapshot(),beforeFailure,'failed loyalty application does not charge gold or mark the day paid');
+assert.equal(calls.length,1);
+nextResult={ok:true,eventId:'event-1',results:[]};
+const paid=service.pay();
+assert.equal(paid.ok,true);
+assert.deepEqual(paid.participantIds,['char-mara','char-iven']);
+assert.equal(paid.goldSpent,10);
+assert.deepEqual(calls[1],{type:'troops:paid',ids:['char-mara','char-iven']},'only exact active named IDs receive payment');
+assert.equal(state.gold,30);
+assert.equal(state.lastCompanionPayDay,3);
+const afterSuccess=snapshot();
+assert.match(service.availability().reason,/already been paid today/);
+assert.equal(service.pay().ok,false,'the company can only be paid once per campaign day');
+assert.deepEqual(snapshot(),afterSuccess,'repeat payment cannot spend gold twice');
+state.day=4;
+assert.equal(service.availability().ok,true,'a new campaign day permits the next wage payment');
+active=[{id:'char-mara'}];
+nextResult={ok:true,eventId:'event-2',results:[]};
+const second=service.pay();
+assert.equal(second.ok,true);
+assert.equal(second.goldSpent,5);
+assert.equal(state.gold,25);
+assert.equal(state.lastCompanionPayDay,4);
+state.day=3;
+assert.match(service.availability().reason,/already been paid today/,'a save/day rollback cannot reopen a paid day');
+console.log('campaign daily companion payment rules passed');
