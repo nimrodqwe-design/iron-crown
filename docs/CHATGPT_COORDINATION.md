@@ -480,3 +480,31 @@ The fresh main push created by the 21 Nov coordination hand-off succeeded: JavaS
 - No historical divergent battle, roster, recovery or map branch was force-merged or deleted.
 - **Iron Crown next:** Extend the real-browser suite to travel start/arrival/cancellation, hostile encounter, battle pause/orders/retreat, outcome application and camp recovery. Then define Issue #5's resource-stock/inventory/time contract.
 - **Lantern Run next:** Keep mechanics stable; validate on a physical mobile device when available and fix only observed defects.
+
+
+### 24 Nov 2026 — expanded campaign browser smoke and Lantern Run touch emulation
+
+#### Track A — Iron Crown
+
+- **Stable main baseline:** `911bfbcb8fe0497d8504c3427e9aca726d0387f0` (PR #49 merged the 24 Nov browser-validation hand-off).
+- **PR #51:** `test/iron-crown-battle-browser-smoke`, latest test commit `987e9250fdf6ca6f6ed43d1100a6183d6438f8a8`. Test-only; no campaign runtime, save schema, battle simulation or production dependency changed.
+- **Real Chromium coverage added:** settlement travel start/cancel/arrival and camp-control refresh; off-road travel into Redvale Raiders; actual campaign battle opening; pause/checkpoint; reload and restoration of the same encounter; Hold order; retreat; exactly-once resolved-battle ledger; enemy remains undefeated on the map; and two-hour camp recovery/reassignment in a separate context seeded with a valid `recovering` companion.
+- **Validation:** PR workflow `45359416889` passed JavaScript syntax, all 17 root Node regression files, Playwright/Chromium installation and the expanded real-Chromium smoke test. The first attempt failed because Playwright clicked the centre of the SVG group bounding box (an unpainted gap); the test now clicks the visible marker circle. The corrected run passed.
+- **Recovery-test boundary:** The browser recovery case seeds a character already in `recovering` status. It validates the real camp-rest recovery action and reassignment, but does not yet produce a casualty through a live battle. The battle path currently tests pause/resume, order and retreat, not a full victory/casualty outcome.
+- **Not tested:** Physical Android device, offline service-worker launch, live battle casualty creation/recovery, or the resource-site inspection panel in a real browser.
+- **PR #51 status:** Open and mergeable; its test workflow passed. Merge after the coordination-document update also passes.
+- **Next:** After merging this test coverage, extend the browser path to a deterministic live battle outcome/casualty where feasible, then test the resource-site panel. Keep Issue #5's stock/inventory/time contract separate; resource sites remain informational.
+
+#### Track B — Lantern Run
+
+- **PR #50 merged into the isolated `sidegame/lantern-run` branch** as `7146cea812fe5a4b8d14429feb3feaf83e3dbea5`; the source branch `test/lantern-run-touch-smoke` is preserved.
+- **Touch-emulated browser coverage:** Playwright Chromium uses a 320×720 mobile-emulated context with touch input. It verifies `navigator.maxTouchPoints`, tap movement, tap hint, visible 100-point penalty, tap restart, no horizontal overflow and no uncaught page errors.
+- **Validation:** PR/post-merge workflow `45358492276` passed all deterministic/UI checks and real Chromium touch emulation. The follow-up development-log commit `de099ae4f73a50f26563c194d8d44850fa25d1d9` also passed workflow `45358724404`.
+- **Not tested:** Physical Android device. Emulation is not a device test.
+- **Next:** Keep mechanics frozen; arrange physical-device validation when available and fix only observed issues.
+
+#### Repository reconciliation
+
+- PR #49 merged to `main`; PR #50 merged only to `sidegame/lantern-run`; PR #51 is the only currently open PR.
+- Historical battle, recovery, travel and browser-test branches remain preserved. The older travel-control and browser-validation snapshots are not force-merged over current main/side-game contracts.
+- Issues #5 and #7 remain open. Issue #7 now has real Chromium coverage for the campaign subset above; remaining loyalty producers still require real gameplay actions. Issue #5 still owns the future map-side resource presentation work, while authoritative stock/gathering/inventory/time rules remain unimplemented.
