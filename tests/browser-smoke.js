@@ -41,7 +41,7 @@ async function run(){
   const page=await context.newPage(),errors=[];
   page.setDefaultTimeout(10000);
   page.on('pageerror',error=>errors.push(error.message));
-  await page.addInitScript(value=>localStorage.setItem('ironCrownSave',value),JSON.stringify(seed));
+  await page.addInitScript(value=>{if(!sessionStorage.getItem('ironCrownBrowserSeeded')){localStorage.setItem('ironCrownSave',value);sessionStorage.setItem('ironCrownBrowserSeeded','1')}},JSON.stringify(seed));
   await page.goto(url,{waitUntil:'load'});
   await page.locator('.settlement[aria-label="Kingsbridge"]').waitFor();
   assert.equal(await page.locator('#clock').textContent(),'DAY 1 · 08:00','the seeded campaign save loads');
