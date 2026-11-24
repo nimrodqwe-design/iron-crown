@@ -24,3 +24,9 @@ jobs:
             echo "Running $file"
             node "$file"
           done
+      - name: Install Playwright Chromium for real-browser campaign smoke test
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Run real Chromium campaign smoke test
+        run: node tests/browser-smoke.js

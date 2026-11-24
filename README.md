@@ -40,3 +40,8 @@ This remains an early playable prototype. Named recruitment and the listed curre
 ## Daily named-companion pay — 24 Nov 2026
 
 The Company panel can pay daily wages to the exact active named party. The cost is 5 gold per active companion, once per campaign day. Payment emits the existing `troops:paid` loyalty event through the campaign-owned event runtime; it does not create identities for aggregate soldiers. The last paid campaign day is persisted in save v11. Payment is unavailable during travel or battle, when no named companions are active, after the party has already been paid that day, or when gold is insufficient.
+
+
+## Real-browser campaign smoke test
+
+The GitHub Actions JavaScript workflow installs Playwright/Chromium only in the CI runner and runs `tests/browser-smoke.js`. The smoke test loads a version-11 campaign save in real Chromium, recruits Mara at Kingsbridge, assigns her to the active party, pays daily wages, trains at camp, and verifies character loyalty, gold, supplies, campaign time, party membership and the once-per-day payment guard after a browser reload. The game itself remains dependency-free. This is a desktop Chromium CI test, not a physical Android or offline-launch test.
