@@ -97,6 +97,7 @@
   <div class="town-balance"><span>Active party <b id="activePartyCount">0/4</b></span><span>Named roster <b id="rosterCount">0</b></span><span>Generic troops <b id="companyTroops">12</b></span></div>
   <div class="town-section"><h3>Active party</h3><p>Up to four named characters can travel with your active company.</p><div id="activePartyList" class="named-recruit-list"></div></div>
   <div class="town-section"><h3>Available recruits</h3><p>Characters not currently assigned to the active party.</p><div id="availablePartyList" class="named-recruit-list"></div></div>
+  <div class="town-section"><h3>Daily companion pay</h3><p>Pay 5 gold per active named companion once each campaign day. Coin-motivated companions value reliable pay especially highly.</p><button type="button" class="action" id="payCompanions" aria-describedby="companyNote" disabled>Pay active companions · 5 gold each</button></div>
   <div class="town-section"><h3>Camp training</h3><p>Train active named companions while camped. Training costs 2 supplies and advances campaign time by one hour.</p><button type="button" class="action" id="trainCompanions" aria-describedby="companyNote" disabled>Train active companions · 2 supplies</button></div>
   <p class="town-note" id="companyNote" aria-live="polite">Named active-party characters take part in hostile encounters. Train them at camp; rest for two hours to recover wounded companions before reassigning them.</p>
  </section>
@@ -155,6 +156,7 @@
 <script src="./js/characters/campaign-loyalty-adapter.js" defer></script>
 <script src="./js/characters/campaign-loyalty-runtime.js" defer></script>
 <script src="./js/characters/campaign-training.js" defer></script>
+<script src="./js/characters/campaign-payment.js" defer></script>
 <script src="./js/characters/campaign-battle.js" defer></script>
 <script src="./js/battle/battle-view.js" defer></script>
 <script src="./js/game.js" defer></script>

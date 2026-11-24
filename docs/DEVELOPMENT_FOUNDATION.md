@@ -179,3 +179,8 @@ Automated Node tests cover campaign-scoped IDs, event-sequence continuity, legac
 PR #17 adds three persistent named candidates: Mara Venn at Kingsbridge, Iven Rook at Highcourt and Sella Quill at Silverkeep. The settlement panel shows each candidate only at their assigned location. The existing recruitment service determines the price; the campaign adapter writes to the save-v6 character roster and deducts from authoritative campaign gold. Optional `candidateId` metadata prevents duplicate recruitment after reload. Specialist roles are supported. Generic soldier recruitment and aggregate troop counts are unchanged.
 
 The service currently receives a neutral reputation baseline of 50 because the campaign has no authoritative reputation field yet. GitHub Actions run 44051187245 and post-merge main run 44051514383 passed syntax and all nine Node test files. Browser/mobile/save-load/offline runtime testing remains outstanding.
+
+
+## Daily companion pay — 24 Nov 2026
+
+The Company panel now supports one daily wage payment for active named companions. The service charges 5 gold per active named character, rejects travel/battle/empty-party/insufficient-funds/repeat-day cases, and emits the existing `troops:paid` loyalty event. The campaign persists `lastCompanionPayDay` in save v11; v5–v10 migration defaults safely and preserves an existing validated v10 field. Generic soldiers remain aggregate. Automated service, UI-contract and save migration tests cover the new action. Real browser/mobile/offline runtime testing remains outstanding.

@@ -10,6 +10,6 @@ assert.match(game,/function trainCompanions\(\)/);
 assert.match(game,/campaignTraining\.train\(\)/);
 assert.match(game,/campaignTraining=window\.IronCrownCampaignTraining\.create/);
 assert.match(game,/\$\('trainCompanions'\)\.onclick=trainCompanions/);
-assert.match(shell,/iron-crown-shell-v21/);
+assert.match(shell,/iron-crown-shell-v22/);
 assert.match(shell,/\.\/js\/characters\/campaign-training\.js/);
 console.log('campaign camp-training UI integration contract passed');

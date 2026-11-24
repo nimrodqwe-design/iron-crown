@@ -35,3 +35,8 @@ Open `index.html` in a modern browser. No build step, package manager, framework
 5. Browser/mobile/offline regression testing, onboarding and release polish.
 
 This remains an early playable prototype. Named recruitment and the listed current features are implemented; roadmap items are not yet implemented.
+
+
+## Daily named-companion pay — 24 Nov 2026
+
+The Company panel can pay daily wages to the exact active named party. The cost is 5 gold per active companion, once per campaign day. Payment emits the existing `troops:paid` loyalty event through the campaign-owned event runtime; it does not create identities for aggregate soldiers. The last paid campaign day is persisted in save v11. Payment is unavailable during travel or battle, when no named companions are active, after the party has already been paid that day, or when gold is insufficient.
