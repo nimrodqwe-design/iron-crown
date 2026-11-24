@@ -448,13 +448,33 @@ The fresh main push created by the 21 Nov coordination hand-off succeeded: JavaS
 - **Next Lantern Run priority:** Real browser test of all three ruins, scoring, hints, retry and personal records. No further mechanics until that runtime pass is performed.
 
 
-### Daily companion pay — 24 Nov 2026
+### 24 Nov 2026 — companion pay, travel controls and real-browser validation
 
-- **Status:** Implemented on `feature/daily-companion-payments`; awaiting PR CI and review.
-- **Goal:** Connect the already-defined `troops:paid` loyalty action to a real campaign action without adding a parallel relationship system or fabricating individual identities for generic soldiers.
-- **Implementation:** The Company panel offers daily pay for the exact active named party. Cost is 5 gold per active named character, once per campaign day. The action is rejected while travelling or in battle, with an empty/invalid active party, insufficient gold, or when the current day has already been paid. The existing campaign loyalty runtime applies the `paid` response before the service deducts gold and records `lastCompanionPayDay`.
-- **Save compatibility:** Save schema advances from v10 to v11. The new field defaults to 0 for v5–v10 migrations; a v10 field is preserved if present. The existing campaign event sequence and last-200 replay ledger remain authoritative. Service-worker shell advances to v22.
-- **Files:** `js/characters/campaign-payment.js`, `js/core/state.js`, `js/core/save.js`, `js/game.js`, `index.html`, `sw.js`, `tests/campaign-payment.test.js`, `tests/campaign-payment-ui.test.js`, `tests/campaign-save.test.js`, and cache-version assertions in battle/map/training UI tests; README and campaign architecture docs.
-- **Checks planned:** Node syntax and complete root regression suite, with eligibility, exact participant IDs, payment cost, once-per-day guard, insufficient-funds and loyalty-failure atomicity, v10→v11 migration, round-trip persistence and newer-save protection.
-- **Known limitations:** Daily pay currently changes trust/morale only through the existing loyalty rules; it does not add combat statistics, wages debt, or automatic companion departure. No browser, Android or offline-launch test is claimed.
-- **Next:** Verify CI and merge only if green. Then perform real-browser validation of the connected map → recruit → party → pay/train → battle → recovery → save/reload loop. Issue #5's resource-stock/inventory/time contract remains separate.
+#### Track A — Iron Crown
+
+- **Main:** `75129c232e24be8c895597a8c03d6313c65cdbca`.
+- **PR #43 merged:** Daily companion pay; merge commit `62b972e7122889f5dda4914e623beaac0257f21e`.
+- **PR #45 merged:** Refresh Camp/Rest/Training/Payment controls immediately after settlement or off-road travel begins; merge commit `c369d6257a3877aef32d73194b6419f02b84e4b5`.
+- **PR #46 merged:** Restore those controls after travel arrival and cancellation, with encounter processing before refresh so an active battle still disables them; merge commit `75129c232e24be8c895597a8c03d6313c65cdbca`.
+- **Campaign state:** Save v11 persists `lastCompanionPayDay`. Daily wages cost 5 gold per active named companion, once per campaign day, and emit the existing `troops:paid` event. Generic troops remain aggregate. No new loyalty ledger or Chronicle dependency.
+- **Travel UI:** Shared camp actions now refresh on travel start, arrival and cancellation. The payment/training services remain the authoritative guards.
+- **Validation:** PR #43 Node regression workflow `45355321628` passed; main workflow after PR #43 `45355465611` passed. PR #45 workflow `45355703446` and PR #46 workflow `45356217417` passed. Main workflow after PR #46 `45356343084` passed. GitHub Pages deployment for PR #43 commit succeeded on retry (`45355465616`). Deployment for the later main commit hit the same transient Pages artifact-metadata lookup failure; failed deploy job `138315000148` was queued for retry. No application-code deployment error is indicated.
+- **Issue #7:** Updated to record the live producers (discovery, training, daily pay, battle victory/defeat) and remaining event types. Protection, abandonment, promises, unpaid wages, reckless orders, safe retreat and avenged events remain deferred until their corresponding real gameplay actions exist.
+- **Issue #5:** Still open. Resource-site data remains informational; authoritative resource stock, gathering, inventory quantities and campaign-time contract are not yet integrated.
+- **Not tested:** No real browser, Android device or offline-launch gameplay test of Iron Crown. The next priority is a Playwright Chromium smoke path for map → named recruitment → party → pay/train → save/reload, then expand it to battle/recovery.
+
+#### Track B — Lantern Run
+
+- **Isolated branch:** `sidegame/lantern-run`, current commit `544987bbd64166f85e18c581589d3136ea95849c`.
+- **PR #44 merged into the side-game branch only:** Playwright/Chromium smoke coverage, narrow-viewport box sizing and browser-storage fallback checks.
+- **Real browser validation passed:** Push workflow `45355757587` on the merged side-game branch passed. The PR branch's final push/PR runs `45355575021` and `45355584445` also passed.
+- **Verified in Chromium:** Keyboard movement, blocked movement, hints, all three ruin routes, trap retry, score calculation, browser localStorage persistence across reload, 320px viewport without horizontal overflow, and session-only fallback when the localStorage getter throws.
+- **Limitations:** No physical Android device test. Playwright is installed only in CI; the game runtime remains dependency-free.
+- **Next:** Keep the current mechanics stable and fix only browser/device issues demonstrated by testing before adding new features.
+
+#### Repository reconciliation and next priorities
+
+- PRs #43, #44, #45 and #46 are merged; historical feature branches remain preserved.
+- No historical divergent battle, roster, recovery or map branch was force-merged or deleted.
+- **Iron Crown next:** Add a real-browser smoke suite and validate the connected campaign loop; then define the Issue #5 resource-stock/inventory/time contract.
+- **Lantern Run next:** Validate on a real mobile device when available; do not add mechanics ahead of observed defects.
