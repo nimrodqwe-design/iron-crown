@@ -109,7 +109,7 @@ async function run(){
   assert.equal(await page.locator('#camp').isDisabled(),false,'arrival restores camp controls');
   await page.locator('#center').click();
   await page.locator('#roamMode').click();
-  await page.locator('.roaming-party[aria-label="Redvale Raiders"]').click();
+  await page.locator('.roaming-party[aria-label="Redvale Raiders"] circle').click();
   await page.waitForFunction(()=>document.querySelector('#travelSub').textContent.includes('Off-road travel'),null,{timeout:5000});
   assert.equal(await page.locator('#camp').isDisabled(),true,'camp is disabled during off-road travel');
   assert.equal(await page.locator('#payCompanions').isDisabled(),true,'daily payment is disabled during travel');
