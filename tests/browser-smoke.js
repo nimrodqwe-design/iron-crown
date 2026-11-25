@@ -183,7 +183,8 @@ async function run(){
   await resourcePage.locator('#speed').click();await resourcePage.locator('#speed').click();
   await resourcePage.locator('#resourceTravel').click();
   await resourcePage.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('ironCrownSave')||'null');const p=s&&s.state&&s.state.freePosition;return !!p&&Math.abs(p.x-700)<0.01&&Math.abs(p.y-300)<0.01;},null,{timeout:20000});
-  await fishMarker.locator('circle').click();
+  await fishMarker.focus();
+  await resourcePage.keyboard.press('Enter');
   assert.equal(await resourcePage.locator('#resourceGather').isDisabled(),false);
   assert.equal(await resourcePage.locator('#resourcePanelDistance').textContent(),'0 map units');
   const before=await resourcePage.evaluate(()=>JSON.parse(localStorage.getItem('ironCrownSave')).state);
