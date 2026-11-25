@@ -72,9 +72,9 @@ A mod directory is reserved, but external mod execution is **not enabled**. The 
 
 ## Save-data contract
 
-Browser save key: `ironCrownSave`. Current schema version: **10**.
+Browser save key: `ironCrownSave`. Current schema version: **12**.
 
-The saved state includes current settlement/free-roam position, gold, aggregate troops, health, day/time, camp status, supplies, discoveries, noble-house standing, completed audiences, the named-character roster, ordered active-party IDs, a bounded resolved-battle ID ledger and a bounded resolved non-battle campaign-event ID ledger. New fields must receive safe defaults when loading older saves. Increment the schema version and add an explicit migration when a change cannot be safely defaulted.
+The saved state includes current settlement/free-roam position, gold, aggregate troops, health, day/time, camp status, supplies, discoveries, noble-house standing, completed audiences, the named-character roster, ordered active-party IDs, a bounded resolved-battle ID ledger, a bounded resolved non-battle campaign-event ID ledger, finite per-site resource stock and bounded raw-material quantities. New fields must receive safe defaults when loading older saves. Increment the schema version and add an explicit migration when a change cannot be safely defaulted.
 
 Rules:
 
@@ -112,7 +112,7 @@ Before each update:
 
 ## Current limitations
 
-Travel still uses straight-line interpolation and terrain speed is a coarse prototype heuristic. Hostile encounters now use a player-controlled battlefield renderer backed by the authoritative simulation, with pause/resume and versioned checkpoints; named companions participate through persistent IDs and wounded companions recover at camp. Wilderness discovery and camp training now emit loyalty events for the exact active named party, with campaign-owned IDs and a save-persisted replay ledger. Faction diplomacy, territory ownership, actionable resource production/gathering and settlement ownership remain unfinished. The engine infrastructure is in place; gameplay domains will continue to be extracted incrementally rather than through a risky full rewrite.
+Travel still uses straight-line interpolation and terrain speed is a coarse prototype heuristic. Hostile encounters now use a player-controlled battlefield renderer backed by the authoritative simulation, with pause/resume and versioned checkpoints; named companions participate through persistent IDs and wounded companions recover at camp. Wilderness discovery and camp training now emit loyalty events for the exact active named party, with campaign-owned IDs and a save-persisted replay ledger. Faction diplomacy, territory ownership, finite gathering is now available at 11 non-trade resource sites; production, market pricing, stock regeneration and settlement ownership remain unfinished. The engine infrastructure is in place; gameplay domains will continue to be extracted incrementally rather than through a risky full rewrite.
 
 
 ## Performance pass
@@ -120,7 +120,7 @@ Travel still uses straight-line interpolation and terrain speed is a coarse prot
 - HUD values are only written to the DOM when their displayed text changes, avoiding redundant updates during travel.
 - Travel animation stops scheduling frames while paused and restarts on resume.
 - Map dragging coalesces pointer movement into at most one SVG view transform per animation frame.
-- The service-worker shell cache is versioned to v21 so updated clients can refresh cached assets.
+- The service-worker shell cache is versioned to v23 so updated clients can refresh cached assets.
 
 These are targeted reductions in unnecessary work, not a measured FPS claim. Browser profiling and real-device testing remain required before publishing performance figures.
 
@@ -184,3 +184,8 @@ The service currently receives a neutral reputation baseline of 50 because the c
 ## Daily companion pay — 24 Nov 2026
 
 The Company panel now supports one daily wage payment for active named companions. The service charges 5 gold per active named character, rejects travel/battle/empty-party/insufficient-funds/repeat-day cases, and emits the existing `troops:paid` loyalty event. The campaign persists `lastCompanionPayDay` in save v11; v5–v10 migration defaults safely and preserves an existing validated v10 field. Generic soldiers remain aggregate. Automated service, UI-contract and save migration tests cover the new action. Real browser/mobile/offline runtime testing remains outstanding.
+
+
+## Finite resource gathering — 25 Nov 2026
+
+The 12 existing map resource sites now use campaign-owned finite stock. Eleven sites are gatherable; Silverkeep Trade Yard remains a non-gatherable trade location. Stock defaults from the immutable availability label, while raw materials are stored separately from equipment inventory and supplies. A gather action takes up to three units, requires proximity within 45 map units, advances campaign time by one hour, and respects a 99-unit capacity per material. Save v12 persists site stock and raw materials; v11 and older saves receive safe initial values. The shared campaign-time service now handles travel, tavern rest, camp rest, training and gathering rollover. See `docs/CAMPAIGN_RESOURCE_CONTRACT.md` for the full contract and validation scope.

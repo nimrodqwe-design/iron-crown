@@ -1,6 +1,6 @@
 # Campaign Character and Event Integration Contract
 
-**Status:** Roster/save v10, named recruitment (PR #17), active-party membership (PR #20), campaign battle outcomes (PR #23), companion recovery (PR #27), and the player-controlled battlefield are merged. General non-battle loyalty event producers remain incomplete.  
+**Status:** Roster/save v12, named recruitment (PR #17), active-party membership (PR #20), campaign battle outcomes (PR #23), companion recovery (PR #27), and the player-controlled battlefield are merged. General non-battle loyalty event producers remain incomplete.  
 **Related work:** PR #6 (recruitment and loyalty services), Issue #7 (ownership and integration decisions).
 
 ## 1. Verified current baseline
@@ -137,7 +137,7 @@ Implemented on PR #23: `battle:started` and `battle:ended` carry the participant
 
 ## 5. Save migration and replay safety
 
-- The current save version is 10.
+- The current save version is 12. Save v10 introduced the non-battle event replay ledger; v11 added the last companion payment day; v12 adds finite resource-site stock and raw-material quantities (see `docs/CAMPAIGN_RESOURCE_CONTRACT.md`).
 - Version 5 saves migrate to an empty `characterRoster` with a newly persisted campaign token and sequences starting at 1; existing gold, troops, location, inventory, discoveries and encounter histories remain unchanged. Versions 6 through 9 preserve whichever roster, active-party, battle-ledger and checkpoint fields they contain; absent fields receive safe defaults, and all receive an empty non-battle event ledger.
 - New saves persist the roster snapshot, campaign token, character sequence, event sequence, active-party IDs, the last 200 resolved battle IDs, the last 200 resolved campaign event IDs and an optional version-1 in-progress battle checkpoint. The checkpoint contains the authoritative simulation state plus the campaign enemy/participant mapping and is refreshed on campaign save, page hide, visibility change and a five-second active-battle checkpoint.
 - On load, validate IDs, roles, motivation, numeric ranges and party references. Invalid character entries should be reported/recovered safely rather than corrupting the whole campaign.
@@ -233,3 +233,8 @@ The merged main branch includes a small settlement-based named-recruitment slice
 - Daily pay costs 5 gold per active named character and may be applied once per campaign day. The service rejects travel, active battle, empty/invalid party membership, insufficient gold, and repeated payment for the current or an earlier day.
 - A successful payment emits `troops:paid` through `IronCrownCampaignLoyaltyRuntime`; only after the loyalty event succeeds does it deduct gold and update `lastCompanionPayDay`.
 - The existing campaign event sequence and bounded replay ledger remain authoritative. No second event ledger, wage timer, or Chronicle dependency is introduced.
+
+
+## Save v12 resource-state addendum
+
+Save v12 adds `resourceStock` and `rawMaterials` without changing character IDs, active-party IDs, battle checkpoints, resolved battle IDs, campaign event IDs or the payment-day field. The resource module owns sanitisation and migration defaults. See `docs/CAMPAIGN_RESOURCE_CONTRACT.md` for site stock, capacity, proximity and time rules.
