@@ -21,8 +21,8 @@ assert.match(game,/state\.target='__free__';updateCampControls\(\)/,'starting of
 assert.match(game,/processEncounters\(currentPoint\(\)\.x,currentPoint\(\)\.y\);drawDiscoveries\(\);updateExplorationControls\(\);updateCampControls\(\)/,'arrival refreshes camp, training and payment availability');
 assert.match(game,/function cancel\(\)\{[^}]*state\.target=null;[^}]*updateCampControls\(\)/,'cancelling travel refreshes camp, training and payment availability');
 assert.match(state,/lastCompanionPayDay:0/,'new campaigns begin with no paid day');
-assert.match(state,/saveVersion:12/,'campaign state advertises save version 11');
-assert.match(save,/const SAVE_VERSION=options\.version\|\|11/);
+assert.match(state,/saveVersion:12/,'campaign state advertises save version 12');
+assert.match(save,/const SAVE_VERSION=options\.version\|\|12/);
 assert.match(save,/lastCompanionPayDay:state\.lastCompanionPayDay/,'save persists the last paid day');
 assert.match(save,/state\.lastCompanionPayDay=number\(d\.lastCompanionPayDay,0,0,999999\)/,'load validates the paid day');
 assert.match(shell,/iron-crown-shell-v23/);
