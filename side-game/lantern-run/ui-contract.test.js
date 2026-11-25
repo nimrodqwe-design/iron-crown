@@ -2,6 +2,9 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const html=fs.readFileSync(__dirname+'/index.html','utf8');
 assert.match(html,/role="grid"/,'board must expose grid semantics');
+assert.match(html,/id="grid"[^>]*tabindex="0"/,'board itself must be keyboard focusable');
+assert.match(html,/aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"/,'board must advertise arrow-key shortcuts');
+assert.match(html,/\.grid:focus-visible/,'keyboard focus must remain visible');
 assert.match(html,/<progress id="lightMeter" max="12" value="12"/,'remaining lantern light must have a visible progress meter');
 assert.match(html,/aria-valuetext/,'light meter must expose a readable remaining-light value');
 assert.match(html,/moveCount\.textContent='Moves: '\+state\.moves/,'HUD must expose the current move count');
