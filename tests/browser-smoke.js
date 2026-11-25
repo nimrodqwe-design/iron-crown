@@ -176,14 +176,14 @@ async function run(){
   await resourcePage.addInitScript(value=>{if(!sessionStorage.getItem('resourceBrowserSeeded')){localStorage.setItem('ironCrownSave',value);sessionStorage.setItem('resourceBrowserSeeded','1')}},JSON.stringify(resourceSeed));
   await resourcePage.goto(url,{waitUntil:'load'});
   const fishMarker=resourcePage.locator('.resource-site[aria-label="Kingsbridge Fishery resource site"]');
-  await fishMarker.waitFor();await fishMarker.click();
+  await fishMarker.waitFor();await fishMarker.locator('circle').click();
   assert.equal(await resourcePage.locator('#resourcePanelStock').textContent(),'12 / 12');
   assert.equal(await resourcePage.locator('#resourceGather').isDisabled(),true);
   assert.equal(await resourcePage.locator('#resourceTravel').isDisabled(),false);
   await resourcePage.locator('#speed').click();await resourcePage.locator('#speed').click();
   await resourcePage.locator('#resourceTravel').click();
   await resourcePage.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('ironCrownSave')||'null');const p=s&&s.state&&s.state.freePosition;return !!p&&Math.abs(p.x-700)<0.01&&Math.abs(p.y-300)<0.01;},null,{timeout:20000});
-  await fishMarker.click();
+  await fishMarker.locator('circle').click();
   assert.equal(await resourcePage.locator('#resourceGather').isDisabled(),false);
   assert.equal(await resourcePage.locator('#resourcePanelDistance').textContent(),'0 map units');
   const before=await resourcePage.evaluate(()=>JSON.parse(localStorage.getItem('ironCrownSave')).state);

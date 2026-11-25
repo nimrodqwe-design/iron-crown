@@ -41,7 +41,7 @@ function updateResourcePanel(){
  $('resourcePanelDistance').textContent=Number.isFinite(status.distance)?Math.round(status.distance)+' map units':'—';
  $('resourcePanelStatus').textContent=status.reason;
  const gather=$('resourceGather');gather.disabled=!status.canGather;gather.textContent=status.canGather?'Gather '+status.amount+' '+status.label:'Gather materials';
- const travelButton=$('resourceTravel');travelButton.disabled=!status.canTravel;travelButton.textContent=status.withinRange?'Within gathering range':status.canTravel?'Travel to site':'Travel unavailable';
+ const travelButton=$('resourceTravel');travelButton.disabled=!status.canTravel;travelButton.textContent=status.resource&&status.withinRange?'Within gathering range':status.canTravel?'Travel to site':'Travel unavailable';
 }
 function showResourcePanel(site){
  selectedResourceSite=site;

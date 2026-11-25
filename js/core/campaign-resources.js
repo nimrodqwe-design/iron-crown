@@ -49,7 +49,7 @@ function inspect(options){
  const carried=Number.isFinite(carriedValue)?Math.max(0,Math.min(CAPACITY,Math.floor(carriedValue))):0;
  const amount=resource?Math.max(0,Math.min(BATCH_SIZE,stock,CAPACITY-carried)):0;
  const canGather=!!resource&&!blocked&&withinRange&&stock>0&&carried<CAPACITY&&amount>0;
- const canTravel=!!resource&&!blocked&&!withinRange&&stock>0&&carried<CAPACITY;
+ const canTravel=!!resource&&!blocked&&!!validPosition&&!withinRange&&stock>0&&carried<CAPACITY;
  let reason='Ready to gather '+amount+' '+MATERIALS[resource]+'. Takes one hour.';
  if(!resource)reason='This trade yard is not gatherable.';
  else if(blocked)reason='Gathering and travel are unavailable during travel or battle.';
