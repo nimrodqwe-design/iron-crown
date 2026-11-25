@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const context={window:{}};vm.createContext(context);
+vm.runInContext(fs.readFileSync('js/core/campaign-time.js','utf8'),context);
+const time=context.window.IronCrownCampaignTime;
+const state={day:3,minutes:1410};assert.equal(time.canAdvance(state,60),true);
+assert.deepEqual(JSON.parse(JSON.stringify(time.advance(state,60))),{ok:true,daysAdvanced:1,day:4,minutes:30});
+assert.deepEqual(state,{day:4,minutes:30});
+const fractional={day:8,minutes:1439.75};assert.equal(time.advance(fractional,0.5).daysAdvanced,1);assert.ok(Math.abs(fractional.minutes-0.25)<1e-9);
+const multi={day:1,minutes:100};assert.equal(time.advance(multi,3000).daysAdvanced,2);assert.deepEqual(multi,{day:3,minutes:220});
+const invalid={day:0,minutes:20};assert.equal(time.canAdvance(invalid,60),false);assert.equal(time.advance(invalid,60).ok,false);assert.deepEqual(invalid,{day:0,minutes:20});
+assert.equal(time.advance({day:1,minutes:10},-1).ok,false);
+console.log('campaign time service checks passed');

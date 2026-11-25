@@ -8,13 +8,16 @@ function create(options){
  const getCharacterRoster=options.getCharacterRoster;
  const setCharacterRoster=options.setCharacterRoster;
  const createCharacterRoster=options.createCharacterRoster;
+ const resourceApi=options.resourceApi||(typeof window!=='undefined'?window.IronCrownCampaignResources:null);
+ const getResourceSites=typeof options.getResourceSites==='function'?options.getResourceSites:()=>typeof window!=='undefined'&&window.IronCrownWorld?window.IronCrownWorld.resourceSites:[];
  const notify=typeof options.notify==='function'?options.notify:()=>{};
- const SAVE_VERSION=options.version||11;
+ const SAVE_VERSION=options.version||12;
  const PARTY_LIMIT=Number.isInteger(options.partyLimit)?Math.max(1,Math.min(12,options.partyLimit)):4;
  const STORAGE_KEY='ironCrownSave';
  function save(){
   try{
    const state=getState();
+   const resourceSnapshot=resourceApi&&typeof resourceApi.snapshot==='function'?resourceApi.snapshot(state,getResourceSites()):null;
    const savedState={
     current:state.current,freePosition:state.freePosition,gold:state.gold,troops:state.troops,
     health:state.health,day:state.day,minutes:state.minutes,camped:state.camped,supplies:state.supplies,lastCompanionPayDay:state.lastCompanionPayDay,
@@ -24,7 +27,9 @@ function create(options){
     activePartyIds:Array.isArray(state.activePartyIds)?[...new Set(state.activePartyIds.filter(id=>typeof id==='string'))].slice(0,PARTY_LIMIT):[],
     activeBattle:state.activeBattle&&typeof state.activeBattle==='object'&&!Array.isArray(state.activeBattle)?state.activeBattle:null,
     resolvedBattleIds:Array.isArray(state.resolvedBattleIds)?[...new Set(state.resolvedBattleIds.filter(id=>typeof id==='string'&&id.length<=160))].slice(-200):[],
-    resolvedCampaignEventIds:Array.isArray(state.resolvedCampaignEventIds)?[...new Set(state.resolvedCampaignEventIds.filter(id=>typeof id==='string'&&id.length<=160))].slice(-200):[]
+    resolvedCampaignEventIds:Array.isArray(state.resolvedCampaignEventIds)?[...new Set(state.resolvedCampaignEventIds.filter(id=>typeof id==='string'&&id.length<=160))].slice(-200):[],
+    resourceStock:resourceSnapshot?resourceSnapshot.resourceStock:state.resourceStock,
+    rawMaterials:resourceSnapshot?resourceSnapshot.rawMaterials:state.rawMaterials
    };
    if(typeof getCharacterRoster==='function')savedState.characterRoster=getCharacterRoster();
    const payload={version:SAVE_VERSION,savedAt:new Date().toISOString(),state:savedState};
@@ -54,6 +59,11 @@ function create(options){
    state.lastCompanionPayDay=number(d.lastCompanionPayDay,0,0,999999);
    state.minutes=number(d.minutes,480,0,1439);state.camped=!!d.camped;
    state.supplies=number(d.supplies,5,0,999999);
+   if(resourceApi&&typeof resourceApi.restore==='function'){
+    const resourceSnapshot=resourceApi.restore({resourceStock:d.resourceStock,rawMaterials:d.rawMaterials},getResourceSites());
+    state.resourceStock=resourceSnapshot.resourceStock;
+    state.rawMaterials=resourceSnapshot.rawMaterials;
+   }
    const validItems=getItemIds();
    state.inventory=Array.isArray(d.inventory)?[...new Set(d.inventory.filter(id=>validItems.includes(id)))]:['worn-blade','travel-cloak'];
    const slots={weapon:null,armour:null,offhand:null};

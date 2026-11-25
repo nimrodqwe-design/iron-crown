@@ -508,3 +508,26 @@ The fresh main push created by the 21 Nov coordination hand-off succeeded: JavaS
 - PR #49 merged to `main`; PR #50 merged only to `sidegame/lantern-run`; PR #51 is the only currently open PR.
 - Historical battle, recovery, travel and browser-test branches remain preserved. The older travel-control and browser-validation snapshots are not force-merged over current main/side-game contracts.
 - Issues #5 and #7 remain open. Issue #7 now has real Chromium coverage for the campaign subset above; remaining loyalty producers still require real gameplay actions. Issue #5 still owns the future map-side resource presentation work, while authoritative stock/gathering/inventory/time rules remain unimplemented.
+
+
+### 25 Nov 2026 — finite resource gathering vertical slice
+
+#### Track A — Iron Crown
+
+- **Baseline:** `main` at `28014286064b0cff86f8b5df265ddc6103749bd2`; GitHub's open-PR endpoint returned no open pull requests at session start. Issues #5 and #7 remain open.
+- **Branch:** `feature/campaign-resource-gathering-2026-11-25`.
+- **Goal:** Turn the existing 12-site map catalogue into an actionable gathering loop without replacing the map, equipment inventory, supplies or troop accounting.
+- **Implementation:** Added `campaign-time.js` and `campaign-resources.js`. Gathering is limited to 3 units, one campaign hour, 45 map units and 99 carried units per material. The trade yard is non-gatherable. The resource panel offers travel-to-site and gather controls; travel uses existing off-road movement and encounter processing.
+- **Save:** v12 persists per-site stock and raw materials; v11 and older saves initialise stock from immutable availability and empty carried materials. Existing save key and character/battle/payment fields remain intact. Service-worker shell cache v23 precaches both modules.
+- **Files:** new core time/resource modules, state/save/training integration, game UI, shell cache, migration/service/browser tests and `docs/CAMPAIGN_RESOURCE_CONTRACT.md`.
+- **Validation:** Focused time/resource/save tests and real Chromium travel → gather → reload persistence are included in PR checks; results are recorded after CI. No physical Android or offline-launch claim.
+- **Known limits:** No stock regeneration, trade, crafting, production chains, carrying weight or resource-driven quests. `feature/demo-world-resources` remains divergent (31 ahead / 71 behind at inspection) and overlaps shared map files; its panel work is represented on main, so no force-merge. The separate reconciliation branch is also divergent (9 ahead / 65 behind) and preserved.
+- **Next:** Verify the live Chromium gather/save path, then test physical Android/offline behaviour when available.
+
+#### Track B — Lantern Run
+
+- **Baseline:** `sidegame/lantern-run` at `de099ae4f73a50f26563c194d8d44850fa25d1d9`; three deterministic ruins, scoring, personal records, desktop Chromium and touch-emulated Chromium checks are present.
+- **Planned branch:** `sidegame/lantern-run-keyboard-focus-2026-11-25`.
+- **Goal:** Make the board itself keyboard-focusable so arrow-key movement is discoverable and usable without relying on the page body receiving key events.
+- **Change:** Add a focusable grid with explicit arrow-key shortcut metadata and visible focus indication; extend real Chromium tests to focus the board and move from it. No puzzle rules or scoring changes.
+- **Limit:** Physical Android testing remains outstanding; touch emulation is not a physical-device test.
