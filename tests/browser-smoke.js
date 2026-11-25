@@ -193,7 +193,8 @@ async function run(){
   assert.equal(after.version,12);assert.equal(after.state.resourceStock['kingsbridge-fish'],9);assert.equal(after.state.rawMaterials.fish,3);
   assert.ok(Math.abs((after.state.day*1440+after.state.minutes)-(before.day*1440+before.minutes)-60)<0.001);
   await resourcePage.reload({waitUntil:'load'});
-  await resourcePage.locator('.resource-site[aria-label="Kingsbridge Fishery resource site"]').click();
+  await fishMarker.focus();
+  await resourcePage.keyboard.press('Enter');
   assert.equal(await resourcePage.locator('#resourcePanelStock').textContent(),'9 / 12');
   assert.equal(await resourcePage.locator('#resourcePanelOwned').textContent(),'3 / 99');
   assert.deepEqual(resourceErrors,[]);
