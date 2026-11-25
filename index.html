@@ -80,7 +80,12 @@
   <p id="resourcePanelDescription"></p>
   <div class="row"><span>Availability</span><b id="resourcePanelAvailability"></b></div>
   <div class="row"><span>Nearest settlement</span><b id="resourcePanelNear"></b></div>
-  <p class="resource-note">Map information only. Gathering, production and stock remain campaign systems.</p>
+  <div class="row"><span>Site stock</span><b id="resourcePanelStock">—</b></div>
+  <div class="row"><span>Carried material</span><b id="resourcePanelOwned">—</b></div>
+  <div class="row"><span>Distance</span><b id="resourcePanelDistance">—</b></div>
+  <p id="resourcePanelStatus" class="resource-status" aria-live="polite" aria-atomic="true"></p>
+  <div class="resource-actions"><button type="button" class="action primary" id="resourceGather" disabled>Gather materials</button><button type="button" class="action" id="resourceTravel" disabled>Travel to site</button></div>
+  <p class="resource-note">Gather up to 3 units per hour within 45 map units. Carrying capacity: 99 per material. Trade yards are not gatherable.</p>
  </section>
  <section class="town-panel" id="townPanel" aria-labelledby="townTitle" aria-hidden="true">
   <div class="town-head"><div><div class="eyebrow">Settlement activities</div><h2 id="townTitle">Greyhaven</h2><p id="townDescription"></p></div><button class="close" id="townClose" aria-label="Leave settlement">×</button></div>
@@ -145,6 +150,8 @@
 <script src="./js/characters/party.js" defer></script>
 <script src="./js/characters/recruitment.js" defer></script>
 <script src="./js/characters/campaign-recruitment.js" defer></script>
+<script src="./js/core/campaign-time.js" defer></script>
+<script src="./js/core/campaign-resources.js" defer></script>
 <script src="./js/core/state.js" defer></script>
 <script src="./js/core/save.js" defer></script>
 <script src="./js/engine/event-bus.js" defer></script>

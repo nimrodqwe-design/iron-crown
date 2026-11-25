@@ -10,7 +10,7 @@ const resourceSites=window.IronCrownWorld.resourceSites||[];
 const items=window.IronCrownItems;
 const byId=id=>places.find(p=>p.id===id);
 let state=window.IronCrownState.createInitialState();
-let selected=null,drag=null,playerGroup=null,roamMode=false,campaignRecruitment=null,partyManager=null,campaignLoyaltyRuntime=null,campaignTraining=null,campaignPayment=null,campaignBattle=null,battleView=null;
+let selected=null,selectedResourceSite=null,drag=null,playerGroup=null,roamMode=false,campaignRecruitment=null,partyManager=null,campaignLoyaltyRuntime=null,campaignTraining=null,campaignPayment=null,campaignBattle=null,battleView=null;
 const currentPoint=()=>state.freePosition||byId(state.current);
 const svgNS='http://www.w3.org/2000/svg';
 function node(tag,attrs,parent){let n=document.createElementNS(svgNS,tag);Object.keys(attrs||{}).forEach(k=>n.setAttribute(k,attrs[k]));(parent||$('world')).appendChild(n);return n}
@@ -32,7 +32,19 @@ function filterResourceSites(){
  });
  $('resourceCount').textContent=visible+' of '+resourceSites.length+' sites';
 }
+function resourceActionBlocked(){return !!state.target||!!(campaignBattle&&campaignBattle.active())}
+function updateResourcePanel(){
+ if(!selectedResourceSite)return;
+ const status=window.IronCrownCampaignResources.inspect({state,sites:resourceSites,siteId:selectedResourceSite.id,position:currentPoint(),blocked:resourceActionBlocked()});
+ $('resourcePanelStock').textContent=status.resource?status.stock+' / '+status.maxStock:'Not gatherable';
+ $('resourcePanelOwned').textContent=status.resource?status.carried+' / '+status.capacity:'—';
+ $('resourcePanelDistance').textContent=Number.isFinite(status.distance)?Math.round(status.distance)+' map units':'—';
+ $('resourcePanelStatus').textContent=status.reason;
+ const gather=$('resourceGather');gather.disabled=!status.canGather;gather.textContent=status.canGather?'Gather '+status.amount+' '+status.label:'Gather materials';
+ const travelButton=$('resourceTravel');travelButton.disabled=!status.canTravel;travelButton.textContent=status.withinRange?'Within gathering range':status.canTravel?'Travel to site':'Travel unavailable';
+}
 function showResourcePanel(site){
+ selectedResourceSite=site;
  const near=byId(site.near);
  $('resourcePanelName').textContent=site.name;
  $('resourcePanelType').textContent=site.type.charAt(0).toUpperCase()+site.type.slice(1);
@@ -44,13 +56,26 @@ function showResourcePanel(site){
  $('drawer').classList.remove('open');
  $('townPanel').classList.remove('open');
  $('townPanel').setAttribute('aria-hidden','true');
+ updateResourcePanel();
  $('resourcePanelClose').focus();
 }
 function closeResourcePanel(){
- const panel=$('resourcePanel');
- panel.classList.remove('open');
- panel.setAttribute('aria-hidden','true');
- $('mapWrap').focus();
+ const panel=$('resourcePanel');panel.classList.remove('open');panel.setAttribute('aria-hidden','true');
+ selectedResourceSite=null;$('mapWrap').focus();
+}
+function travelToResourceSite(){
+ if(!selectedResourceSite)return;
+ const site=selectedResourceSite;
+ const status=window.IronCrownCampaignResources.inspect({state,sites:resourceSites,siteId:site.id,position:currentPoint(),blocked:resourceActionBlocked()});
+ if(!status.canTravel){notify(status.reason);updateResourcePanel();return;}
+ closeResourcePanel();startFreeRoam(site.x,site.y);
+}
+function gatherResource(){
+ if(!selectedResourceSite)return;
+ const result=window.IronCrownCampaignResources.gather({state,sites:resourceSites,siteId:selectedResourceSite.id,position:currentPoint(),blocked:resourceActionBlocked(),advanceTime:minutes=>window.IronCrownCampaignTime.advance(state,minutes)});
+ if(!result.ok){notify(result.reason);updateResourcePanel();return;}
+ updateHud();const saved=save();updateResourcePanel();
+ notify(saved?'Gathered '+result.amount+' '+result.label+'. '+result.remainingStock+' remain at the site. One hour passed.':'Gathered '+result.amount+' '+result.label+', but the campaign could not be saved on this device.');
 }
 function drawResourceSites(){
  const group=$('resourceSites');
@@ -149,7 +174,7 @@ function explore(){
  notify((state.discoveries.length===3?'The three proofs are united. Your claim to the Iron Crown can now be heard!':'Discovered '+d.name+'! Found '+d.relic+', 3 supplies and '+d.gold+' gold.')+companionNote);
 }
 function terrainFactor(x,y){if(x>980&&y<250)return .55;if((x<330&&y>390&&y<640)||(x>790&&y>760)||(x>1400&&y>520))return .72;return 1}
-function tick(now){if(!state.target||state.paused)return;let dt=Math.min(80,now-state.last||16);let factor=state.target==='__free__'?terrainFactor(state.to.x,state.to.y):1;state.progress=Math.min(1,state.progress+dt/1000/(Math.max(8,Math.hypot(state.to.x-state.from.x,state.to.y-state.from.y)/28)/state.speed/factor));state.minutes+=dt/1000*1.7*state.speed;if(state.minutes>=1440){state.minutes-=1440;state.day++}if(state.progress>=1){if(state.target==='__free__'){state.freePosition={x:state.to.x,y:state.to.y}}else{state.current=state.target;state.freePosition=null}state.target=null;state.from=state.to=null;state.progress=0;processEncounters(currentPoint().x,currentPoint().y);drawDiscoveries();updateExplorationControls();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is exploring the wilderness':'Your party has arrived at '+byId(state.current).name;$('travelSub').textContent='Tap Roam, then choose another point on the map.';$('cancel').disabled=true;save();notify(state.freePosition?'Reached the wilderness.':'Arrived at '+byId(state.current).name);updateHud();drawPlayer();drawRoute();return}state.last=now;drawPlayer();updateHud();requestAnimationFrame(tick)}
+function tick(now){if(!state.target||state.paused)return;let dt=Math.min(80,now-state.last||16);let factor=state.target==='__free__'?terrainFactor(state.to.x,state.to.y):1;state.progress=Math.min(1,state.progress+dt/1000/(Math.max(8,Math.hypot(state.to.x-state.from.x,state.to.y-state.from.y)/28)/state.speed/factor));window.IronCrownCampaignTime.advance(state,dt/1000*1.7*state.speed);if(state.progress>=1){if(state.target==='__free__'){state.freePosition={x:state.to.x,y:state.to.y}}else{state.current=state.target;state.freePosition=null}state.target=null;state.from=state.to=null;state.progress=0;processEncounters(currentPoint().x,currentPoint().y);drawDiscoveries();updateExplorationControls();updateCampControls();$('travelTitle').textContent=state.freePosition?'Your party is exploring the wilderness':'Your party has arrived at '+byId(state.current).name;$('travelSub').textContent='Tap Roam, then choose another point on the map.';$('cancel').disabled=true;save();notify(state.freePosition?'Reached the wilderness.':'Arrived at '+byId(state.current).name);updateHud();drawPlayer();drawRoute();return}state.last=now;drawPlayer();updateHud();requestAnimationFrame(tick)}
 function renderNamedRecruitment(){
  const section=$('namedRecruitSection'),list=$('namedRecruitList');
  if(!section||!list)return;
@@ -258,11 +283,11 @@ function closeTown(){$('townPanel').classList.remove('open');$('townPanel').setA
 function buySupplies(){if(state.gold<10)return;state.gold-=10;state.supplies+=5;updateHud();updateTownPanel();save();$('townNote').textContent='Bought 5 supplies for 10 gold.'}
 function sellSupplies(){if(state.supplies<5)return;state.supplies-=5;state.gold+=5;updateHud();updateTownPanel();save();$('townNote').textContent='Sold 5 supplies for 5 gold.'}
 function recruitSoldier(){if(!selected||selected.id!==state.current||!['town','castle'].includes(selected.kind)||state.gold<10||state.troops>=9999)return;state.gold-=10;state.troops++;updateHud();updateTownPanel();save();$('townNote').textContent='One soldier has joined your company.'}
-function tavernRest(){if(state.gold<5||state.health>=100)return;state.gold-=5;state.health=Math.min(100,state.health+15);state.minutes+=60;if(state.minutes>=1440){state.day+=Math.floor(state.minutes/1440);state.minutes%=1440}updateHud();updateTownPanel();save();$('townNote').textContent='You rested for an hour. Health restored by 15.'}
+function tavernRest(){if(state.gold<5||state.health>=100)return;const elapsed=window.IronCrownCampaignTime.advance(state,60);if(!elapsed.ok){notify(elapsed.reason);return}state.gold-=5;state.health=Math.min(100,state.health+15);updateHud();updateTownPanel();save();$('townNote').textContent='You rested for an hour. Health restored by 15.'}
 function cancel(){if(!state.target)return;state.target=null;state.from=state.to=null;state.progress=0;$('cancel').disabled=true;$('travelTitle').textContent=state.freePosition?'Your party is in the wilderness':'Your party is at '+byId(state.current).name;$('travelSub').textContent='Journey cancelled.';drawPlayer();drawRoute();updateCampControls();save();updateHud();notify('Journey cancelled')}
 function updateCampControls(){$('camp').textContent=state.camped?'Break camp':'Camp';$('camp').disabled=!!state.target;$('rest').classList.toggle('visible',state.camped);$('rest').disabled=!!state.target||!state.camped;updateTrainingControl();updatePaymentControl()}
 function camp(){if(state.target){notify('You cannot make camp while travelling.');return}state.camped=!state.camped;updateCampControls();save();notify(state.camped?'Camp established. Your party can rest here.':'Camp broken. Ready to travel.')}
-function rest(){if(!state.camped||state.target)return;state.minutes+=120;if(state.minutes>=1440){state.day+=Math.floor(state.minutes/1440);state.minutes%=1440}state.health=Math.min(100,state.health+5);const recovered=campaignBattle?campaignBattle.recoverAtCamp():[];updateHud();renderCompanyPanel();save();notify(recovered.length?'Two hours pass. '+recovered.map(character=>character.name).join(', ')+' recovered and can rejoin your active party.':'Two hours pass. Your party has rested.')}
+function rest(){if(!state.camped||state.target)return;const elapsed=window.IronCrownCampaignTime.advance(state,120);if(!elapsed.ok){notify(elapsed.reason);return}state.health=Math.min(100,state.health+5);const recovered=campaignBattle?campaignBattle.recoverAtCamp():[];updateHud();renderCompanyPanel();save();notify(recovered.length?'Two hours pass. '+recovered.map(character=>character.name).join(', ')+' recovered and can rejoin your active party.':'Two hours pass. Your party has rested.')}
 function trainCompanions(){
  if(!campaignTraining)return;
  const result=campaignTraining.train();
@@ -279,8 +304,8 @@ function payCompanions(){
  updateHud();renderCompanyPanel();updateCampControls();save();
  notify('Daily companion wages paid: '+result.goldSpent+' gold.');
 }
-function updateHud(){let p=currentPoint();const values={crownProgress:state.discoveries.length+'/3',gold:state.gold,troops:state.troops,health:state.health,currentName:state.target?'On the move':state.freePosition?'The Wilderness':p.name,currentSub:(state.target?'Travelling party · '+(state.target==='__free__'?'open country':state.to.name):state.freePosition?'Unclaimed countryside':p.faction+' · '+(p.kind==='town'?'Market town':p.kind==='castle'?'Fortress':'Village'))+' · Supplies '+state.supplies,clock:'DAY '+state.day+' · '+String(Math.floor(state.minutes/60)).padStart(2,'0')+':'+String(Math.floor(state.minutes%60)).padStart(2,'0')};Object.keys(values).forEach(id=>{const el=$(id),value=String(values[id]);if(el.textContent!==value)el.textContent=value});updateCompanyButton()}
-const saveSystem=window.IronCrownSave.create({getState:()=>state,getPlace:byId,getDiscoveryIds:()=>discoveries.map(site=>site.id),getItemIds:slot=>Object.keys(items).filter(id=>!slot||items[id].slot===slot),getCharacterRoster:()=>state.characterRoster.snapshot(),setCharacterRoster:snapshot=>{state.characterRoster=window.IronCrownCharacters.restore(snapshot,{onWarning:message=>notify(message)})},createCharacterRoster:()=>window.IronCrownCharacters.create(),notify,version:window.IronCrownState.saveVersion});
+function updateHud(){let p=currentPoint();const values={crownProgress:state.discoveries.length+'/3',gold:state.gold,troops:state.troops,health:state.health,currentName:state.target?'On the move':state.freePosition?'The Wilderness':p.name,currentSub:(state.target?'Travelling party · '+(state.target==='__free__'?'open country':state.to.name):state.freePosition?'Unclaimed countryside':p.faction+' · '+(p.kind==='town'?'Market town':p.kind==='castle'?'Fortress':'Village'))+' · Supplies '+state.supplies,clock:'DAY '+state.day+' · '+String(Math.floor(state.minutes/60)).padStart(2,'0')+':'+String(Math.floor(state.minutes%60)).padStart(2,'0')};Object.keys(values).forEach(id=>{const el=$(id),value=String(values[id]);if(el.textContent!==value)el.textContent=value});updateCompanyButton();if(selectedResourceSite)updateResourcePanel()}
+const saveSystem=window.IronCrownSave.create({getState:()=>state,getPlace:byId,getDiscoveryIds:()=>discoveries.map(site=>site.id),getItemIds:slot=>Object.keys(items).filter(id=>!slot||items[id].slot===slot),resourceApi:window.IronCrownCampaignResources,getResourceSites:()=>resourceSites,getCharacterRoster:()=>state.characterRoster.snapshot(),setCharacterRoster:snapshot=>{state.characterRoster=window.IronCrownCharacters.restore(snapshot,{onWarning:message=>notify(message)})},createCharacterRoster:()=>window.IronCrownCharacters.create(),notify,version:window.IronCrownState.saveVersion});
 function save(){state.activeBattle=campaignBattle&&typeof campaignBattle.serialize==='function'?campaignBattle.serialize():null;return saveSystem.save()}
 function load(){return saveSystem.load()}
 function notify(s){let t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>t.classList.remove('show'),2100)}
@@ -294,7 +319,7 @@ wrap.addEventListener('pointerup',e=>{if(drag&&!drag.moved&&roamMode&&!e.target.
 wrap.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY<0?1.08:.92)},{passive:false});
 $('resourcePanelClose').onclick=closeResourcePanel;
 document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if($('companyPanel').classList.contains('open')){event.preventDefault();closeCompanyPanel();return}if($('resourcePanel').classList.contains('open')){event.preventDefault();closeResourcePanel()}});
-$('resourceFilter').addEventListener('change',filterResourceSites);
+$('resourceFilter').addEventListener('change',filterResourceSites);$('resourcePanelClose').onclick=closeResourcePanel;$('resourceTravel').onclick=travelToResourceSite;$('resourceGather').onclick=gatherResource;
 $('companyButton').onclick=openCompanyPanel;$('companyClose').onclick=closeCompanyPanel;$('townClose').onclick=closeTown;$('buy-worn-sword').onclick=()=>buyEquipment('worn-sword');$('buy-iron-sword').onclick=()=>buyEquipment('iron-sword');$('buy-padded-armour').onclick=()=>buyEquipment('padded-armour');$('buy-round-shield').onclick=()=>buyEquipment('round-shield');$('buySupplies').onclick=buySupplies;$('sellSupplies').onclick=sellSupplies;$('recruitSoldier').onclick=recruitSoldier;$('tavernRest').onclick=tavernRest;$('audience').onclick=requestAudience;$('explore').onclick=explore;$('roamMode').onclick=()=>{roamMode=!roamMode;$('roamMode').style.borderColor=roamMode?'#e0c37e':'#697253';notify(roamMode?'Roam mode: tap open ground to set a destination.':'Roam mode off.')};$('zoomIn').onclick=()=>zoom(1.18);$('zoomOut').onclick=()=>zoom(.85);$('center').onclick=center;$('travel').onclick=travel;$('camp').onclick=camp;$('rest').onclick=rest;$('trainCompanions').onclick=trainCompanions;$('payCompanions').onclick=payCompanions;$('visit').onclick=visit;$('close').onclick=()=>$('drawer').classList.remove('open');$('cancel').onclick=cancel;
 $('pause').onclick=()=>{state.paused=!state.paused;$('pause').textContent=state.paused?'▶ Resume':'Ⅱ Pause';if(state.target){state.last=performance.now();if(!state.paused)requestAnimationFrame(tick)}};
 $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?4:1;$('speed').textContent='▶▶ '+state.speed+'×'};

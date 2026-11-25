@@ -31,3 +31,5 @@
 .named-recruit-section{margin-top:14px;padding-top:12px;border-top:1px solid #3d4b3e}.named-recruit-section h4{margin:0;color:#d9bd7d;font-size:14px}.named-recruit-list{display:grid;gap:8px;margin-top:8px}.named-recruit-card{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px;border:1px solid #3d4b3e;border-radius:8px;background:#202e25}.named-recruit-card strong{display:block;color:#e7ddc1;font:600 12px Arial}.named-recruit-card p{margin:4px 0 0;color:#bdb69c;font:11px/1.4 Arial}.named-recruit-card .action{flex:0 0 auto;max-width:145px;white-space:normal}@media(max-width:620px){.named-recruit-card{align-items:flex-start;flex-direction:column}.named-recruit-card .action{width:100%;max-width:none}}
 
 .company-panel{z-index:7}.company-empty{margin:4px 0;padding:10px;border:1px dashed #596653;border-radius:8px;color:#bdb69c;font:12px/1.45 Arial}
+
+.resource-actions{display:grid;gap:7px;margin-top:10px}.resource-status{min-height:2.5em;margin:10px 0;color:#e0d2a8;font:12px/1.45 Arial}.resource-actions .action{width:100%}
