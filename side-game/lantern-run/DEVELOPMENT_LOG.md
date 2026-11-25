@@ -27,3 +27,13 @@
 - **Scope:** Test-only; no game rules, scoring, production runtime dependencies or Iron Crown campaign files changed.
 - **Validation:** Post-merge side-game workflow `45358492276` passed all six deterministic/UI test stages, Playwright/Chromium installation, and the real-browser smoke script including the new mobile-emulated touch path. The run verified touch input availability, tap movement, tap hint, visible score penalty, 320×720 no-overflow layout, tap restart and no uncaught page errors. This is Chromium device emulation, not a physical Android-device test.
 - **Next:** Keep mechanics frozen; use the CI result to validate the tap path, then arrange physical-device testing separately when a device is available.
+
+
+## 25 November 2026 — keyboard-focusable board
+
+- **Branch:** `sidegame/lantern-run-keyboard-focus-2026-11-25`, targeting `sidegame/lantern-run`.
+- **Problem:** Arrow keys worked when the document body received key events, but the board itself was not keyboard-focusable. Keyboard users had no explicit focus target or visible board focus indicator.
+- **Change:** The grid now has `tabindex="0"`, an explicit accessible label, `aria-keyshortcuts` for all four arrow directions, a live-status description and a visible `:focus-visible` outline. README controls now explain how to focus the board.
+- **Validation added:** UI contract checks assert focusability, shortcut metadata and focus styling. Real Chromium smoke test focuses the board and verifies blocked and successful arrow-key movement while the board owns focus.
+- **Scope:** No puzzle layout, move rules, light budget, hint scoring or personal-record format changed. No runtime dependency added.
+- **Physical-device limit:** This remains browser validation; no physical Android device was available.

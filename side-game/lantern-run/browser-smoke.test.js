@@ -41,6 +41,11 @@ async function run(){
   assert.equal(await page.locator('#lightValue').textContent(),'12 / 12');
   assert.equal(await page.locator('#moveCount').textContent(),'Moves: 0');
 
+  const board=page.locator('#grid');
+  assert.equal(await board.getAttribute('tabindex'),'0','the board can receive keyboard focus');
+  assert.match(await board.getAttribute('aria-keyshortcuts'),/ArrowUp/,'the board advertises its movement shortcuts');
+  await board.focus();
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'grid','keyboard focus can be placed directly on the board');
   await page.keyboard.press('ArrowLeft');
   assert.equal(await page.locator('#moveCount').textContent(),'Moves: 0','blocked keyboard movement does not consume a turn');
   assert.match(await page.locator('#status').textContent(),/blocks that way/);

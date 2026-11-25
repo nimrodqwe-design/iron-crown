@@ -6,10 +6,10 @@ A tiny, dependency-free browser game developed as an autonomous side project.
 Navigate three deterministic 5×5 ruins with distinct hazard layouts. A visible lantern meter and move counter track the 12-move budget. Reach each exit before the light is exhausted. Failed runs retry the same layout; only a successful escape advances to the next ruin. A safe-route hint finds a next direction without moving the player or consuming lantern light; it costs 100 score points.
 
 ## Controls
-Arrow keys or on-screen touch buttons. Restart ruin resets the current layout; Try again appears after a failed run; Next ruin appears only after escape and cycles back to the first layout after the third. Arrow-key movement does not intercept keys while a button or text-entry control has focus.
+Tab to focus the ruin board, then use the arrow keys, or use the on-screen touch buttons. Restart ruin resets the current layout; Try again appears after a failed run; Next ruin appears only after escape and cycles back to the first layout after the third. Arrow-key movement does not intercept keys while a button or text-entry control has focus.
 
 ## Accessibility and architecture
-- The board exposes grid and cell semantics with spoken cell labels.
+- The board exposes grid and cell semantics with spoken cell labels, can receive keyboard focus, advertises arrow-key shortcuts and displays a visible focus outline.
 - The current player position is marked for assistive technology.
 - Movement controls disable after the run ends; restart remains available.
 - The UI reads the current layout's cell types and labels from the same state module that resolves movement, so hazard coordinates are not duplicated. All three routes have state-level regression coverage.
