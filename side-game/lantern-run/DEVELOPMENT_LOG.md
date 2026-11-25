@@ -37,3 +37,11 @@
 - **Validation added:** UI contract checks assert focusability, shortcut metadata and focus styling. Real Chromium smoke test focuses the board and verifies blocked and successful arrow-key movement while the board owns focus.
 - **Scope:** No puzzle layout, move rules, light budget, hint scoring or personal-record format changed. No runtime dependency added.
 - **Physical-device limit:** This remains browser validation; no physical Android device was available.
+
+
+## 25 November 2026 — keyboard-focus improvement merged
+
+- **PR #54** merged into `sidegame/lantern-run` with squash commit `fd30962fd242c1c22ec612f0b56af5d0b3ed0049`.
+- The real Chromium smoke test now focuses the board itself before checking blocked and successful arrow-key movement.
+- UI contract, state, progress, storage-fallback and interaction checks passed. PR/push workflows `45575598204` and `45575611730` passed the updated Chromium suite.
+- No puzzle rules, level layouts, score formula or persistence schema changed. Physical Android-device testing remains outstanding.
