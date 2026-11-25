@@ -75,7 +75,9 @@ async function run(){
   assert.equal(await page.locator('#clock').textContent(),'DAY 1 · 09:00','training advances one campaign hour');
 
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('ironCrownSave')));
-  assert.equal(saved.version,11);
+  assert.equal(saved.version,12);
+  assert.equal(saved.state.resourceStock['greyhaven-grain'],24);
+  assert.equal(saved.state.rawMaterials.grain,0);
   assert.equal(saved.state.lastCompanionPayDay,1);
   assert.equal(saved.state.supplies,3);
   assert.equal(saved.state.minutes,540);
@@ -166,9 +168,39 @@ async function run(){
   assert.equal(recoveryResult.state.characterRoster.characters[0].status,'available','camp recovery persists the available status');
   assert.deepEqual(recoveryErrors,[],'camp recovery browser session has no uncaught page errors');
   await recoveryContext.close();
+
+  const resourceContext=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});
+  const resourcePage=await resourceContext.newPage(),resourceErrors=[];
+  resourcePage.setDefaultTimeout(10000);resourcePage.on('pageerror',error=>resourceErrors.push(error.message));
+  const resourceSeed={version:11,state:{current:'kingsbridge',freePosition:null,gold:85,troops:12,health:100,day:1,minutes:480,camped:false,supplies:5,lastCompanionPayDay:0,inventory:['worn-blade','travel-cloak'],equipment:{weapon:'worn-blade',armour:'travel-cloak',offhand:null},discoveries:[],defeatedParties:[],metCaravans:[],houseStanding:{alder:0,veyne:0,rowan:0},audiences:[],activePartyIds:[],activeBattle:null,resolvedBattleIds:[],resolvedCampaignEventIds:[],characterRoster:{version:2,campaignId:'resource-browser',nextCharacterSequence:1,nextEventSequence:1,characters:[]}}};
+  await resourcePage.addInitScript(value=>{if(!sessionStorage.getItem('resourceBrowserSeeded')){localStorage.setItem('ironCrownSave',value);sessionStorage.setItem('resourceBrowserSeeded','1')}},JSON.stringify(resourceSeed));
+  await resourcePage.goto(url,{waitUntil:'load'});
+  const fishMarker=resourcePage.locator('.resource-site[aria-label="Kingsbridge Fishery resource site"]');
+  await fishMarker.waitFor();await fishMarker.click();
+  assert.equal(await resourcePage.locator('#resourcePanelStock').textContent(),'12 / 12');
+  assert.equal(await resourcePage.locator('#resourceGather').isDisabled(),true);
+  assert.equal(await resourcePage.locator('#resourceTravel').isDisabled(),false);
+  await resourcePage.locator('#speed').click();await resourcePage.locator('#speed').click();
+  await resourcePage.locator('#resourceTravel').click();
+  await resourcePage.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('ironCrownSave')||'null');const p=s&&s.state&&s.state.freePosition;return !!p&&Math.abs(p.x-700)<0.01&&Math.abs(p.y-300)<0.01;},null,{timeout:20000});
+  await fishMarker.click();
+  assert.equal(await resourcePage.locator('#resourceGather').isDisabled(),false);
+  assert.equal(await resourcePage.locator('#resourcePanelDistance').textContent(),'0 map units');
+  const before=await resourcePage.evaluate(()=>JSON.parse(localStorage.getItem('ironCrownSave')).state);
+  await resourcePage.locator('#resourceGather').click();
+  const after=await resourcePage.evaluate(()=>JSON.parse(localStorage.getItem('ironCrownSave')));
+  assert.equal(after.version,12);assert.equal(after.state.resourceStock['kingsbridge-fish'],9);assert.equal(after.state.rawMaterials.fish,3);
+  assert.ok(Math.abs((after.state.day*1440+after.state.minutes)-(before.day*1440+before.minutes)-60)<0.001);
+  await resourcePage.reload({waitUntil:'load'});
+  await resourcePage.locator('.resource-site[aria-label="Kingsbridge Fishery resource site"]').click();
+  assert.equal(await resourcePage.locator('#resourcePanelStock').textContent(),'9 / 12');
+  assert.equal(await resourcePage.locator('#resourcePanelOwned').textContent(),'3 / 99');
+  assert.deepEqual(resourceErrors,[]);
+  await resourceContext.close();
+
   assert.deepEqual(errors,[],'the complete travel and battle browser session has no uncaught page errors');
   await context.close();
-  console.log('Iron Crown Chromium smoke test passed: recruitment, party, pay, training, travel, hostile encounter, battle checkpoint/reload, Hold order, retreat, camp recovery and save persistence.');
+  console.log('Iron Crown Chromium smoke test passed: recruitment, party, pay, training, travel, battle checkpoint/reload, retreat, recovery, resource gathering and persistence.');
  }finally{
   if(browser)await browser.close();
   await new Promise(resolve=>server.close(resolve));

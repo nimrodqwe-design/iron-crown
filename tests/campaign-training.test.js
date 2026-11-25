@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const context={window:{}};
 vm.createContext(context);
+vm.runInContext(fs.readFileSync('js/core/campaign-time.js','utf8'),context);
 vm.runInContext(fs.readFileSync('js/characters/campaign-training.js','utf8'),context);
 const api=context.window.IronCrownCampaignTraining;
 const state={camped:false,target:null,supplies:4,minutes:1410,day:3};
