@@ -1,6 +1,6 @@
 # Campaign Resource and Time Contract
 
-**Status:** Implemented on the 25 Nov 2026 feature branch; pending PR validation.  
+**Status:** Implemented and merged into `main` on 25 Nov 2026; merge commit `a2d4980a0440322bf15a28a59e23fd4e17c7dc97`.  
 **Save schema:** v12.  
 **Owner:** Campaign lead developer. World/map catalogue remains static content; campaign state owns all mutable quantities.
 

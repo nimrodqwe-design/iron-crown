@@ -515,19 +515,27 @@ The fresh main push created by the 21 Nov coordination hand-off succeeded: JavaS
 #### Track A — Iron Crown
 
 - **Baseline:** `main` at `28014286064b0cff86f8b5df265ddc6103749bd2`; GitHub's open-PR endpoint returned no open pull requests at session start. Issues #5 and #7 remain open.
-- **Branch:** `feature/campaign-resource-gathering-2026-11-25`.
+- **PR #53:** merged into `main` on 25 Nov 2026 as `a2d4980a0440322bf15a28a59e23fd4e17c7dc97`. The feature branch `feature/campaign-resource-gathering-2026-11-25` is preserved.
 - **Goal:** Turn the existing 12-site map catalogue into an actionable gathering loop without replacing the map, equipment inventory, supplies or troop accounting.
 - **Implementation:** Added `campaign-time.js` and `campaign-resources.js`. Gathering is limited to 3 units, one campaign hour, 45 map units and 99 carried units per material. The trade yard is non-gatherable. The resource panel offers travel-to-site and gather controls; travel uses existing off-road movement and encounter processing.
 - **Save:** v12 persists per-site stock and raw materials; v11 and older saves initialise stock from immutable availability and empty carried materials. Existing save key and character/battle/payment fields remain intact. Service-worker shell cache v23 precaches both modules.
 - **Files:** new core time/resource modules, state/save/training integration, game UI, shell cache, migration/service/browser tests and `docs/CAMPAIGN_RESOURCE_CONTRACT.md`.
-- **Validation:** Focused time/resource/save tests and real Chromium travel → gather → reload persistence are included in PR checks; results are recorded after CI. No physical Android or offline-launch claim.
+- **Validation:** PR workflows `45575950714` and `45575958702` passed syntax, the complete Node regression suite and the real Chromium campaign smoke test. Post-merge main workflow `45576133203` passed the same suite; GitHub Pages deployment `45576133133` succeeded. Chromium verified travel to Kingsbridge Fishery, marker keyboard activation, gathering, exact one-hour advancement, save/reload and persisted stock/materials. No physical Android or offline-launch claim.
 - **Known limits:** No stock regeneration, trade, crafting, production chains, carrying weight or resource-driven quests. `feature/demo-world-resources` remains divergent (31 ahead / 71 behind at inspection) and overlaps shared map files; its panel work is represented on main, so no force-merge. The separate reconciliation branch is also divergent (9 ahead / 65 behind) and preserved.
-- **Next:** Verify the live Chromium gather/save path, then test physical Android/offline behaviour when available.
+- **Next:** Connect gathered raw materials to one narrowly scoped settlement transaction (storage or sale) only after defining its authoritative stock/economy contract. Physical Android and offline service-worker checks remain release gates.
 
 #### Track B — Lantern Run
 
 - **Baseline:** `sidegame/lantern-run` at `de099ae4f73a50f26563c194d8d44850fa25d1d9`; three deterministic ruins, scoring, personal records, desktop Chromium and touch-emulated Chromium checks are present.
-- **Planned branch:** `sidegame/lantern-run-keyboard-focus-2026-11-25`.
+- **PR #54:** merged into `sidegame/lantern-run` as `fd30962fd242c1c22ec612f0b56af5d0b3ed0049`; development-log follow-up commit `eb3400f4c365d76786571431f531ebcc7a55af0d` records the result.
 - **Goal:** Make the board itself keyboard-focusable so arrow-key movement is discoverable and usable without relying on the page body receiving key events.
-- **Change:** Add a focusable grid with explicit arrow-key shortcut metadata and visible focus indication; extend real Chromium tests to focus the board and move from it. No puzzle rules or scoring changes.
-- **Limit:** Physical Android testing remains outstanding; touch emulation is not a physical-device test.
+- **Change:** The grid is focusable, advertises arrow-key shortcuts, associates the live status region and has a visible focus outline. Real Chromium now focuses the board and verifies blocked and successful arrow-key movement. No puzzle rules or scoring changed.
+- **Validation:** PR/push Chromium workflows `45575598204` and `45575611730` passed; the post-merge branch workflow `45575736964` and documentation workflow `45575852868` also passed. Physical Android testing remains outstanding; touch emulation is not a physical-device test.
+
+
+### Session close — 25 Nov 2026
+
+- Iron Crown main: `a2d4980a0440322bf15a28a59e23fd4e17c7dc97`; PR #53 merged; JavaScript/Node/Chromium workflow `45576133203` passed; Pages deployment `45576133133` passed.
+- Lantern Run isolated branch: `eb3400f4c365d76786571431f531ebcc7a55af0d`; PR #54 merged into `sidegame/lantern-run`; deterministic, storage, UI, interaction and real Chromium keyboard-focus checks passed.
+- Issues #5 and #7 remain open. No open feature pull requests remain. Historical divergent branches were preserved; none was force-merged or deleted.
+- Not tested: physical Android devices, actual offline launch/cache recovery, and a live battle casualty followed by camp recovery. These remain explicit validation work, not assumed successes.
