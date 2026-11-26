@@ -62,7 +62,8 @@ async function run(){
   const routes=[
    ['up','up','right','right','right','up','up','right'],
    ['up','right','up','right','up','up','right','right'],
-   ['up','right','right','right','up','up','right','up']
+   ['up','right','right','right','up','up','right','up'],
+   ['up','right','up','right','up','right','up','right']
   ];
   await clickRoute(page,routes[0]);
   assert.match(await page.locator('#status').textContent(),/New personal best saved: 720/);
@@ -84,10 +85,14 @@ async function run(){
   await clickRoute(page,routes[2]);
   assert.match(await page.locator('#status').textContent(),/New personal best saved: 720/);
   await page.locator('#restart').click();
-  assert.match(await page.locator('#status').textContent(),/^Ruin 1 · Lantern light: 12/,'the third escape cycles back to the first ruin');
+  assert.match(await page.locator('#status').textContent(),/^Ruin 4 · Lantern light: 12/,'the third escape unlocks the fourth ruin');
+  await clickRoute(page,routes[3]);
+  assert.match(await page.locator('#status').textContent(),/New personal best saved: 720/);
+  await page.locator('#restart').click();
+  assert.match(await page.locator('#status').textContent(),/^Ruin 1 · Lantern light: 12/,'the fourth escape cycles back to the first ruin');
 
   const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('lanternRunRecordsV1')));
-  assert.deepEqual(stored.bestScores,[720,720,720],'all three best scores persist in browser storage');
+  assert.deepEqual(stored.bestScores,[720,720,720,720],'all four best scores persist in browser storage');
   await page.reload({waitUntil:'load'});
   assert.equal(await page.locator('#bestScore').textContent(),'Best: 720','personal records survive a real browser reload');
   await page.setViewportSize({width:320,height:720});
