@@ -52,7 +52,7 @@ assert.deepEqual(JSON.parse(JSON.stringify(result.characterOutcomes)),[
  {characterId:mara.id,alive:false,hp:0,maxHp:46}
 ],'the simulation reports the exact named companion casualty');
 assert.equal(roster.get(mara.id).status,'recovering','campaign result marks the casualty as recovering');
-assert.deepEqual(party.active().map(character=>character.id),[],'the casualty is removed from the active party');
+assert.equal(party.active().length,0,'the casualty is removed from the active party');
 assert.deepEqual(state.activePartyIds,[],'the persisted party ID list is updated');
 assert.deepEqual(state.resolvedBattleIds,[started.battleId],'the result is recorded once');
 assert.equal(saves,2,'battle start and result each save once');
