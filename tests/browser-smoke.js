@@ -213,7 +213,7 @@ async function run(){
    scriptURL:navigator.serviceWorker.controller&&navigator.serviceWorker.controller.scriptURL
   }));
   assert.equal(controlled.active,true,'the active service worker controls the online campaign page');
-  assert.match(controlled.scriptURL,/sw\\.js$/,'the expected campaign service worker controls the page');
+  assert.ok(controlled.scriptURL.endsWith('/sw.js'),'the expected campaign service worker controls the page');
   await offlineContext.setOffline(true);
   await offlinePage.reload({waitUntil:'load'});
   await offlinePage.locator('.settlement[aria-label="Kingsbridge"]').waitFor();
