@@ -10,7 +10,8 @@
   const LEVELS=Object.freeze([
     Object.freeze({name:'Broken Nave',traps:new Set(['1,3','3,3','2,1','4,2'])}),
     Object.freeze({name:'Flooded Archive',traps:new Set(['2,4','2,3','1,1','3,1'])}),
-    Object.freeze({name:'Ashen Gallery',traps:new Set(['1,4','2,2','4,2','0,1'])})
+    Object.freeze({name:'Ashen Gallery',traps:new Set(['1,4','2,2','4,2','0,1'])}),
+    Object.freeze({name:'Gilded Observatory',traps:new Set(['2,4','1,4','0,2','2,3','3,3','4,2','0,1','3,2'])})
   ]);
   const key=(x,y)=>x+','+y;
   const normaliseLevel=level=>Number.isInteger(level)&&level>=0&&level<LEVELS.length?level:0;
