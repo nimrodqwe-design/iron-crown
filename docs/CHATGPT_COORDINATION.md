@@ -539,3 +539,39 @@ The fresh main push created by the 21 Nov coordination hand-off succeeded: JavaS
 - Lantern Run isolated branch: `eb3400f4c365d76786571431f531ebcc7a55af0d`; PR #54 merged into `sidegame/lantern-run`; deterministic, storage, UI, interaction and real Chromium keyboard-focus checks passed.
 - Issues #5 and #7 remain open. No open feature pull requests remain. Historical divergent branches were preserved; none was force-merged or deleted.
 - Not tested: physical Android devices, actual offline launch/cache recovery, and a live battle casualty followed by camp recovery. These remain explicit validation work, not assumed successes.
+
+
+### 26 Nov 2026 — offline shell verification and Lantern Run expansion
+
+#### Track A — Iron Crown
+
+- **Baseline:** `main` at `1fadcd099f9dcd2265db358561fd2757075a0d77` after PR #58. Issues #5 and #7 remain open. No ready-for-review feature PR was open at the start of this session.
+- **PR #58:** merged into `main` as `1fadcd099f9dcd2265db358561fd2757075a0d77`. The change is test-only; no runtime service-worker code, save schema or production dependency changed.
+- **Offline validation:** the Playwright smoke test now creates a separate context with service workers enabled, waits for the campaign worker to become active and control the page, disables network access, reloads, and verifies that the cached campaign shell renders the map and campaign clock without uncaught page errors.
+- **Validation:** PR push workflow `45784624565` and PR workflow `45784634249` passed JavaScript syntax, all root Node regression files and the real Chromium smoke suite including offline reload. Main post-merge JavaScript workflow `45784863173` passed. Pages deployment workflow `45784863679` was still running at hand-off; do not treat deployment as complete until its result is confirmed.
+- **Deferred proposal:** PR #56 remains draft and unmerged; its branch is preserved. No runtime changes from that proposal are present on `main`.
+- **Not tested:** physical Android device, offline launch on a physical device, and browser storage/cache behaviour after an actual browser restart.
+- **Next:** define a narrow settlement storehouse/provisioning contract for the existing raw-material inventory before implementing sale, crafting or production. Keep the current finite-stock and save-v12 contract authoritative.
+
+#### Track B — Lantern Run
+
+- **Baseline:** `sidegame/lantern-run` at `d0b9cb7feb8522620326d0cb0a4c1df650f77092`.
+- **PR #57:** squash-merged into the isolated side-game branch as `d0b9cb7feb8522620326d0cb0a4c1df650f77092`.
+- **Gameplay change:** added the fourth deterministic 5×5 ruin, **Gilded Observatory**, with a verified eight-move safe route. Movement, hint behaviour, scoring and retry rules remain unchanged.
+- **Progress compatibility:** the progress store remains schema v1. Existing three-entry best-score arrays are accepted and extended with an empty fourth slot, preserving all previous records.
+- **Validation:** PR workflow `45783761770` and post-merge side-game workflow `45784568127` passed state, progress migration, UI contract, storage fallback, fake-DOM interaction and real Chromium tests. The browser suite completes all four ruins, checks each best score and verifies wraparound to the first.
+- **Not tested:** physical Android device and offline service-worker behaviour.
+- **Next:** keep mechanics stable and prioritise physical-device validation when hardware is available; avoid adding content until any observed usability defects are resolved.
+
+#### Branch and PR reconciliation
+
+- At the start of this run, the open-PR search returned no open proposals. PR #56 was created as a test-only proposal and deliberately left in draft; PR #58 was merged to `main`; PR #57 was merged only to `sidegame/lantern-run`.
+- The historical battle, battle-outcome, resumable-battle, companion-recovery, travel-refresh and older resource-map branches remain divergent from current `main`. Their diffs overlap shared files such as `js/game.js`, campaign state/save modules, battle modules, map data and tests. They are preserved; none was force-merged or deleted.
+- The older resource-gathering branch `feature/campaign-resource-gathering-2026-11-25` remains 7 commits ahead / 2 behind at the inspected comparison point, but its resource implementation is represented on `main`; its remaining differences overlap the integrated contract and are not merged wholesale.
+- No save-version change or runtime dependency was introduced in this session.
+
+#### Session close
+
+- Iron Crown main: `1fadcd099f9dcd2265db358561fd2757075a0d77`; PR #58 merged; JavaScript/Node/Chromium/offline reload checks passed; Pages deployment pending confirmation.
+- Lantern Run isolated branch: `d0b9cb7feb8522620326d0cb0a4c1df650f77092`; PR #57 merged; four-ruin state, progress, UI and real Chromium checks passed.
+- Issues #5 and #7 remain open. PR #56 remains draft. No historical branch was force-merged or deleted.
