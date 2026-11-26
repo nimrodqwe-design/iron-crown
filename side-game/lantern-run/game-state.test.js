@@ -1,10 +1,11 @@
 'use strict';
 const assert=require('node:assert/strict');
 const game=require('./game-state.js');
-assert.equal(game.LEVEL_COUNT,3);
+assert.equal(game.LEVEL_COUNT,4);
 assert.equal(game.levelName(0),'Broken Nave');
 assert.equal(game.levelName(1),'Flooded Archive');
 assert.equal(game.levelName(2),'Ashen Gallery');
+assert.equal(game.levelName(3),'Gilded Observatory');
 let s=game.initial();
 assert.deepStrictEqual({x:s.x,y:s.y,light:s.light,ended:s.ended},{x:0,y:4,light:12,ended:false});
 assert.strictEqual(game.move(s,'left'),s,'blocked movement must preserve the same state object');
@@ -14,12 +15,15 @@ assert.strictEqual(game.cellKind(1,3,0),'trap');
 assert.strictEqual(game.cellLabel(1,3,0),'Ruin hazard');
 assert.strictEqual(game.cellKind(2,4,1),'trap');
 assert.strictEqual(game.cellKind(1,4,2),'trap');
+assert.strictEqual(game.cellKind(2,3,3),'trap');
+assert.strictEqual(game.cellKind(1,3,3),'floor');
 assert.strictEqual(game.cellKind(0,0,2),'floor');
 assert.strictEqual(game.cellKind(-1,0,2),null);
 const routes=[
  ['up','up','right','right','right','up','up','right'],
  ['up','right','up','right','up','up','right','right'],
- ['up','right','right','right','up','up','right','up']
+ ['up','right','right','right','up','up','right','up'],
+ ['up','right','up','right','up','right','up','right']
 ];
 routes.forEach((route,level)=>{
  let run=game.initial(level);

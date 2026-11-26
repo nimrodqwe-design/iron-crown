@@ -141,5 +141,11 @@ assert.match(status.textContent,/Ruin 3 · You escaped/,'the third layout safe r
 assert.equal(scoreValue.textContent,'Score: 720');
 assert.equal(bestScore.textContent,'Best: 720');
 restart.click();
-assert.equal(status.textContent,'Ruin 1 · Lantern light: 12.','the completed three-ruin sequence cycles back to the first');
+assert.equal(status.textContent,'Ruin 4 · Lantern light: 12.','a successful third escape unlocks the fourth ruin');
+['up','right','up','right','up','right','up','right'].forEach(direction=>button(direction).click());
+assert.match(status.textContent,/Ruin 4 · You escaped/,'the fourth layout safe route reaches the exit');
+assert.equal(scoreValue.textContent,'Score: 720');
+assert.equal(bestScore.textContent,'Best: 720','the fourth ruin keeps its own best score');
+restart.click();
+assert.equal(status.textContent,'Ruin 1 · Lantern light: 12.','the completed four-ruin sequence cycles back to the first');
 console.log('Lantern Run DOM interaction checks passed');

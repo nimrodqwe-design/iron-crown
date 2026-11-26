@@ -45,3 +45,13 @@
 - The real Chromium smoke test now focuses the board itself before checking blocked and successful arrow-key movement.
 - UI contract, state, progress, storage-fallback and interaction checks passed. PR/push workflows `45575598204` and `45575611730` passed the updated Chromium suite.
 - No puzzle rules, level layouts, score formula or persistence schema changed. Physical Android-device testing remains outstanding.
+
+
+## 26 November 2026 — fourth deterministic ruin
+
+- **Branch:** `sidegame/lantern-run-fourth-ruin-2026-11-26`, based on `sidegame/lantern-run` at `eb3400f4c365d76786571431f531ebcc7a55af0d`.
+- **Change:** Added Gilded Observatory as a fourth 5×5 ruin with a fixed hazard layout and an eight-move safe route. Existing movement, hint search, scoring and retry rules are unchanged.
+- **Compatibility:** The progress store remains schema v1 and accepts older three-entry score arrays, extending them with an empty fourth slot rather than discarding existing records. Four independent best scores are persisted.
+- **Validation added:** State tests cover the new layout and route; progress tests cover three-to-four record expansion; fake-DOM and Chromium smoke tests complete all four ruins and verify wraparound.
+- **Not yet verified:** Physical Android hardware and offline service-worker behaviour.
+- **Next:** Keep mechanics stable; use the expanded browser suite to catch route, score and persistence regressions before adding further content.
