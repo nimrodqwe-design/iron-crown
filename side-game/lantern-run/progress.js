@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
   'use strict';
   const KEY='lanternRunRecordsV1';
-  const LEVEL_COUNT=3;
+  const LEVEL_COUNT=4;
   const validLevel=level=>Number.isInteger(level)&&level>=0&&level<LEVEL_COUNT;
   function create(storage){
     let backend=storage;
@@ -18,8 +18,11 @@
       const raw=backend&&backend.getItem(KEY);
       if(raw){
         const parsed=JSON.parse(raw);
-        if(parsed&&parsed.version===1&&Array.isArray(parsed.bestScores)&&parsed.bestScores.length===LEVEL_COUNT){
-          scores=parsed.bestScores.map(value=>Number.isInteger(value)&&value>=0&&value<=10000?value:null);
+        if(parsed&&parsed.version===1&&Array.isArray(parsed.bestScores)&&parsed.bestScores.length<=LEVEL_COUNT){
+          scores=scores.map((_,index)=>{
+            const value=parsed.bestScores[index];
+            return Number.isInteger(value)&&value>=0&&value<=10000?value:null;
+          });
           persisted=scores.map(value=>value!==null);
         }
       }
