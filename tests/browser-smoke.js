@@ -200,6 +200,28 @@ async function run(){
   assert.deepEqual(resourceErrors,[]);
   await resourceContext.close();
 
+  const offlineContext=await browser.newContext({viewport:{width:900,height:760},serviceWorkers:'allow'});
+  const offlinePage=await offlineContext.newPage(),offlineErrors=[];
+  offlinePage.setDefaultTimeout(15000);
+  offlinePage.on('pageerror',error=>offlineErrors.push(error.message));
+  await offlinePage.goto(url,{waitUntil:'load'});
+  await offlinePage.evaluate(async()=>{await navigator.serviceWorker.ready;});
+  await offlinePage.reload({waitUntil:'load'});
+  await offlinePage.waitForFunction(()=>!!navigator.serviceWorker.controller,null,{timeout:15000});
+  const controlled=await offlinePage.evaluate(()=>({
+   active:!!navigator.serviceWorker.controller,
+   scriptURL:navigator.serviceWorker.controller&&navigator.serviceWorker.controller.scriptURL
+  }));
+  assert.equal(controlled.active,true,'the active service worker controls the online campaign page');
+  assert.match(controlled.scriptURL,/sw\\.js$/,'the expected campaign service worker controls the page');
+  await offlineContext.setOffline(true);
+  await offlinePage.reload({waitUntil:'load'});
+  await offlinePage.locator('.settlement[aria-label="Kingsbridge"]').waitFor();
+  assert.equal(await offlinePage.locator('#clock').textContent(),'DAY 1 · 08:00','the cached campaign shell opens without network access');
+  assert.equal(await offlinePage.evaluate(()=>!!navigator.serviceWorker.controller),true,'the cached page remains service-worker controlled offline');
+  assert.deepEqual(offlineErrors,[],'offline launch has no uncaught page errors');
+  await offlineContext.close();
+
   assert.deepEqual(errors,[],'the complete travel and battle browser session has no uncaught page errors');
   await context.close();
   console.log('Iron Crown Chromium smoke test passed: recruitment, party, pay, training, travel, battle checkpoint/reload, retreat, recovery, resource gathering and persistence.');
