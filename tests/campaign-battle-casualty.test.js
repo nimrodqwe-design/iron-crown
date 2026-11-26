@@ -53,8 +53,8 @@ assert.deepEqual(JSON.parse(JSON.stringify(result.characterOutcomes)),[
 ],'the simulation reports the exact named companion casualty');
 assert.equal(roster.get(mara.id).status,'recovering','campaign result marks the casualty as recovering');
 assert.equal(party.active().length,0,'the casualty is removed from the active party');
-assert.deepEqual(state.activePartyIds,[],'the persisted party ID list is updated');
-assert.deepEqual(state.resolvedBattleIds,[started.battleId],'the result is recorded once');
+assert.deepEqual(JSON.parse(JSON.stringify(state.activePartyIds)),[],'the persisted party ID list is updated');
+assert.deepEqual(JSON.parse(JSON.stringify(state.resolvedBattleIds)),[started.battleId],'the result is recorded once');
 assert.equal(saves,2,'battle start and result each save once');
 
 const duplicate=campaign.applyResult(result);
@@ -74,12 +74,12 @@ const restoredCampaign=context.window.IronCrownCampaignBattle.create({
  roster:restoredRoster,party:restoredParty,getState:()=>restoredState,save:()=>{}
 });
 assert.equal(restoredRoster.get(mara.id).status,'recovering','the casualty status survives roster snapshot/restore');
-assert.deepEqual(restoredState.resolvedBattleIds,[started.battleId],'the battle replay ledger survives state persistence');
+assert.deepEqual(JSON.parse(JSON.stringify(restoredState.resolvedBattleIds)),[started.battleId],'the battle replay ledger survives state persistence');
 const recovered=restoredCampaign.recoverAtCamp();
 assert.equal(recovered.length,1,'camp recovery restores the casualty once');
 assert.equal(restoredRoster.get(mara.id).status,'available');
 assert.equal(restoredRoster.get(mara.id).morale,10);
 assert.equal(restoredParty.assign(mara.id).ok,true,'the recovered companion can rejoin the active party');
-assert.deepEqual(restoredState.activePartyIds,[mara.id]);
+assert.deepEqual(JSON.parse(JSON.stringify(restoredState.activePartyIds)),[mara.id]);
 
 console.log('Campaign battle casualty → recovery → reassignment checks passed');
