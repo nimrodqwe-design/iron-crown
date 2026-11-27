@@ -39,10 +39,10 @@ class Element{
  }
  click(){if(!this.disabled)this.dispatch('click')}
 }
-const grid=new Element('div'),status=new Element('div'),restart=new Element('button'),hint=new Element('button'),lightMeter=new Element('progress'),lightValue=new Element('output'),moveCount=new Element('output'),scoreValue=new Element('output'),bestScore=new Element('output'),hintCount=new Element('output');
+const grid=new Element('div'),status=new Element('div'),levelName=new Element('h2'),restart=new Element('button'),hint=new Element('button'),lightMeter=new Element('progress'),lightValue=new Element('output'),moveCount=new Element('output'),scoreValue=new Element('output'),bestScore=new Element('output'),hintCount=new Element('output');
 lightMeter.value=0;lightMeter.max=12;
 const movement=['up','left','down','right'].map(direction=>new Element('button',{move:direction}));
-const elements={grid,status,restart,hint,lightMeter,lightValue,moveCount,scoreValue,bestScore,hintCount};
+const elements={grid,status,levelName,restart,hint,lightMeter,lightValue,moveCount,scoreValue,bestScore,hintCount};
 const document={
  body:new Element('body'),
  listeners:{},
@@ -67,6 +67,7 @@ const button=direction=>movement.find(item=>item.dataset.move===direction);
 assert.equal(grid.children.length,25,'initial board renders all 25 cells');
 assert.equal(playerAt(0,4),true,'player starts in the lower-left cell');
 assert.equal(status.textContent,'Ruin 1 · Lantern light: 12.');
+assert.equal(levelName.textContent,'Broken Nave','the first ruin name is visible at the start');
 assert.equal(lightMeter.value,12,'HUD meter starts full');
 assert.equal(lightValue.textContent,'12 / 12');
 assert.equal(moveCount.textContent,'Moves: 0');
@@ -126,6 +127,7 @@ assert.equal(restart.textContent,'Next ruin','a successful escape unlocks progre
 restart.click();
 assert.equal(playerAt(0,4),true,'next ruin starts at the entrance');
 assert.equal(status.textContent,'Ruin 2 · Lantern light: 12.');
+assert.equal(levelName.textContent,'Flooded Archive','successful escape updates the visible ruin name');
 
 ['up','right','up','right','up','up','right','right'].forEach(direction=>button(direction).click());
 assert.match(status.textContent,/Ruin 2 · You escaped/,'the second layout safe route reaches the exit');
@@ -133,6 +135,7 @@ assert.equal(scoreValue.textContent,'Score: 720');
 assert.equal(bestScore.textContent,'Best: 720','each ruin keeps its own best score');
 restart.click();
 assert.equal(status.textContent,'Ruin 3 · Lantern light: 12.');
+assert.equal(levelName.textContent,'Ashen Gallery','the third ruin name is displayed');
 
 restart.click();
 assert.equal(status.textContent,'Ruin 3 · Lantern light: 12.','restarting an active run does not skip the current ruin');
@@ -142,10 +145,12 @@ assert.equal(scoreValue.textContent,'Score: 720');
 assert.equal(bestScore.textContent,'Best: 720');
 restart.click();
 assert.equal(status.textContent,'Ruin 4 · Lantern light: 12.','a successful third escape unlocks the fourth ruin');
+assert.equal(levelName.textContent,'Gilded Observatory','the fourth ruin has its own visible name');
 ['up','right','up','right','up','right','up','right'].forEach(direction=>button(direction).click());
 assert.match(status.textContent,/Ruin 4 · You escaped/,'the fourth layout safe route reaches the exit');
 assert.equal(scoreValue.textContent,'Score: 720');
 assert.equal(bestScore.textContent,'Best: 720','the fourth ruin keeps its own best score');
 restart.click();
 assert.equal(status.textContent,'Ruin 1 · Lantern light: 12.','the completed four-ruin sequence cycles back to the first');
+assert.equal(levelName.textContent,'Broken Nave','cycling back restores the first ruin name');
 console.log('Lantern Run DOM interaction checks passed');
