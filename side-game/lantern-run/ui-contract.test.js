@@ -1,6 +1,9 @@
 'use strict';
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const html=fs.readFileSync(__dirname+'/index.html','utf8');
+assert.match(html,/id="levelName"/,'the current ruin name must have a visible heading');
+assert.match(html,/api\.levelName\(state\.level\)/,'the UI must read the current ruin name from the state module');
+assert.match(html,/levelName\.textContent!==selectedLevelName/,'the ruin heading updates only when progression changes levels');
 assert.match(html,/role="grid"/,'board must expose grid semantics');
 assert.match(html,/id="grid"[^>]*tabindex="0"/,'board itself must be keyboard focusable');
 assert.match(html,/aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"/,'board must advertise arrow-key shortcuts');
