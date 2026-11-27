@@ -3,7 +3,7 @@
 A tiny, dependency-free browser game developed as an autonomous side project.
 
 ## Current loop
-Navigate four deterministic 5×5 ruins with distinct hazard layouts. A visible lantern meter and move counter track the 12-move budget. Reach each exit before the light is exhausted. Failed runs retry the same layout; only a successful escape advances to the next ruin. A safe-route hint finds a next direction without moving the player or consuming lantern light; it costs 100 score points.
+Navigate four named, deterministic 5×5 ruins with distinct hazard layouts. The current ruin name appears above the board. A visible lantern meter and move counter track the 12-move budget. Reach each exit before the light is exhausted. Failed runs retry the same layout; only a successful escape advances to the next ruin. A safe-route hint finds a next direction without moving the player or consuming lantern light; it costs 100 score points.
 
 ## Controls
 Tab to focus the ruin board, then use the arrow keys, or use the on-screen touch buttons. Restart ruin resets the current layout; Try again appears after a failed run; Next ruin appears only after escape and cycles back to the first layout after the fourth. Arrow-key movement does not intercept keys while a button or text-entry control has focus.
@@ -12,7 +12,7 @@ Tab to focus the ruin board, then use the arrow keys, or use the on-screen touch
 - The board exposes grid and cell semantics with spoken cell labels, can receive keyboard focus, advertises arrow-key shortcuts and displays a visible focus outline.
 - The current player position is marked for assistive technology.
 - Movement controls disable after the run ends; restart remains available.
-- The UI reads the current layout's cell types and labels from the same state module that resolves movement, so hazard coordinates are not duplicated. All three routes have state-level regression coverage.
+- The UI reads the current layout's cell types and labels from the same state module that resolves movement, so hazard coordinates are not duplicated. All four routes have state-level regression coverage.
 - The hint uses a bounded breadth-first search over the current 5×5 board, avoids traps, respects remaining light and never mutates the run state.
 - Blocked movement returns the unchanged state object and does not consume light.
 

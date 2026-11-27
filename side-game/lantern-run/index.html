@@ -7,7 +7,7 @@
 <style>
 body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111b16;color:#f3ead5;font:16px system-ui,sans-serif}
 main{box-sizing:border-box;width:min(92vw,430px);padding:20px;border:1px solid #59654e;border-radius:14px;background:#17231d}
-h1{margin:0 0 6px;font-size:1.5rem}p{color:#c8c2ae}
+h1{margin:0 0 6px;font-size:1.5rem}.level-name{margin:0 0 8px;color:#e8d7a8;font-size:1.05rem}p{color:#c8c2ae}
 .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:18px 0}
 .grid:focus-visible{outline:3px solid #e8c76b;outline-offset:4px}
 .cell{aspect-ratio:1;display:grid;place-items:center;border-radius:7px;background:#243127;font-size:1.4rem}
@@ -22,6 +22,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 </head>
 <body><main>
 <h1>Lantern Run</h1>
+<h2 id="levelName" class="level-name">Broken Nave</h2>
 <p>Find the exit before your lantern burns out. Avoid the ruins marked with ✕. Four layouts. Retry a failed ruin; advance only after escaping. A safe-route hint costs 100 points but does not consume lantern light.</p>
 <div class="run-stats" aria-label="Ruin status"><label for="lightMeter">Lantern light</label><output id="lightValue">12 / 12</output><progress id="lightMeter" max="12" value="12">12 of 12</progress><output id="moveCount">Moves: 0</output></div>
 <div class="run-records" aria-label="Run records"><output id="scoreValue">Score: —</output><output id="bestScore">Best: —</output><output id="hintCount">Hints: 0</output></div>
@@ -37,7 +38,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <script>
 (()=>{
 'use strict';
-const grid=document.getElementById('grid'),status=document.getElementById('status'),hintButton=document.getElementById('hint'),restartButton=document.getElementById('restart'),lightMeter=document.getElementById('lightMeter'),lightValue=document.getElementById('lightValue'),moveCount=document.getElementById('moveCount'),scoreValue=document.getElementById('scoreValue'),bestScore=document.getElementById('bestScore'),hintCount=document.getElementById('hintCount');
+const grid=document.getElementById('grid'),status=document.getElementById('status'),levelName=document.getElementById('levelName'),hintButton=document.getElementById('hint'),restartButton=document.getElementById('restart'),lightMeter=document.getElementById('lightMeter'),lightValue=document.getElementById('lightValue'),moveCount=document.getElementById('moveCount'),scoreValue=document.getElementById('scoreValue'),bestScore=document.getElementById('bestScore'),hintCount=document.getElementById('hintCount');
 const api=window.LanternRunState;
 let progress=null;
 try{
@@ -61,6 +62,8 @@ function message(s){
  return prefix+'Your lantern goes dark. Run ended.';
 }
 function render(){
+ const selectedLevelName=api.levelName(state.level);
+ if(levelName&&levelName.textContent!==selectedLevelName)levelName.textContent=selectedLevelName;
  grid.replaceChildren();
  for(let y=0;y<api.SIZE;y++)for(let x=0;x<api.SIZE;x++){
   const cell=document.createElement('div'),kind=api.cellKind(x,y,state.level);

@@ -40,6 +40,7 @@ async function run(){
   assert.equal(await page.locator('.cell').count(),25,'the browser renders the complete 5×5 board');
   assert.equal(await page.locator('#lightValue').textContent(),'12 / 12');
   assert.equal(await page.locator('#moveCount').textContent(),'Moves: 0');
+  assert.equal(await page.locator('#levelName').textContent(),'Broken Nave','the current ruin name is visible');
 
   const board=page.locator('#grid');
   assert.equal(await board.getAttribute('tabindex'),'0','the board can receive keyboard focus');
@@ -70,6 +71,7 @@ async function run(){
   assert.equal(await page.locator('#bestScore').textContent(),'Best: 720');
   await page.locator('#restart').click();
   assert.match(await page.locator('#status').textContent(),/^Ruin 2/);
+  assert.equal(await page.locator('#levelName').textContent(),'Flooded Archive');
 
   await page.locator('[data-move="right"]').click();
   await page.locator('[data-move="right"]').click();
@@ -77,19 +79,23 @@ async function run(){
   assert.equal(await page.locator('#restart').textContent(),'Try again');
   await page.locator('#restart').click();
   assert.match(await page.locator('#status').textContent(),/^Ruin 2 · Lantern light: 12/,'retry keeps the same ruin');
+  assert.equal(await page.locator('#levelName').textContent(),'Flooded Archive','retry keeps the same ruin name');
   await clickRoute(page,routes[1]);
   assert.match(await page.locator('#status').textContent(),/New personal best saved: 720/);
 
   await page.locator('#restart').click();
   assert.match(await page.locator('#status').textContent(),/^Ruin 3/);
+  assert.equal(await page.locator('#levelName').textContent(),'Ashen Gallery');
   await clickRoute(page,routes[2]);
   assert.match(await page.locator('#status').textContent(),/New personal best saved: 720/);
   await page.locator('#restart').click();
   assert.match(await page.locator('#status').textContent(),/^Ruin 4 · Lantern light: 12/,'the third escape unlocks the fourth ruin');
+  assert.equal(await page.locator('#levelName').textContent(),'Gilded Observatory');
   await clickRoute(page,routes[3]);
   assert.match(await page.locator('#status').textContent(),/New personal best saved: 720/);
   await page.locator('#restart').click();
   assert.match(await page.locator('#status').textContent(),/^Ruin 1 · Lantern light: 12/,'the fourth escape cycles back to the first ruin');
+  assert.equal(await page.locator('#levelName').textContent(),'Broken Nave','the first ruin name returns after the final escape');
 
   const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('lanternRunRecordsV1')));
   assert.deepEqual(stored.bestScores,[720,720,720,720],'all four best scores persist in browser storage');
