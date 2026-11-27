@@ -55,3 +55,14 @@
 - **Validation added:** State tests cover the new layout and route; progress tests cover three-to-four record expansion; fake-DOM and Chromium smoke tests complete all four ruins and verify wraparound.
 - **Not yet verified:** Physical Android hardware and offline service-worker behaviour.
 - **Next:** Keep mechanics stable; use the expanded browser suite to catch route, score and persistence regressions before adding further content.
+
+
+## 27 November 2026 — visible ruin identity
+
+- **Branch:** `sidegame/lantern-run-level-names-2026-11-27`, based on the current isolated `sidegame/lantern-run` branch.
+- **Problem:** The fourth ruin was playable, but the interface identified progress only as “Ruin 1–4”; its distinct name and the other ruin identities were not visible during play. The README also retained one stale reference to three routes.
+- **Change:** Added a visible current-ruin heading sourced from `LanternRunState.levelName`. It changes only when progression changes the selected level, so normal movement does not repeatedly update the heading. Updated the README to describe all four named ruins and four-route coverage.
+- **Regression:** UI contract, fake-DOM interaction and real Chromium progression tests assert the correct heading at start, after each successful escape, on retry, and after the fourth-to-first wraparound.
+- **Scope:** No map layouts, movement rules, hint costs, scoring, progress schema or runtime dependencies changed.
+- **Validation:** Pending this branch's CI workflow; no physical Android-device test is claimed.
+- **Next:** Keep the four layouts stable and address only defects demonstrated by the automated browser suite or later physical-device testing.
