@@ -592,12 +592,12 @@ The fresh main push created by the 21 Nov coordination hand-off succeeded: JavaS
 
 - **Baseline:** `sidegame/lantern-run` at `d0b9cb7feb8522620326d0cb0a4c1df650f77092`; four deterministic 5×5 ruins, score records, keyboard/touch controls and desktop/touch-emulated Chromium coverage.
 - **PR #60:** merged into `sidegame/lantern-run` as `87847e7914a1b86afb54db1f6215c542e01b46d3`. The UI now displays the selected ruin's name from `LanternRunState.levelName`, updating only when progression changes levels. UI-contract, fake-DOM and Chromium assertions cover all four names, retry stability and fourth-to-first wraparound. README's stale “three routes” reference is corrected.
-- **Feature branch head:** `4893100a424bf8f738e54bd002bc3f417d2fb8e3`. PR workflow `45969900226` passed all syntax, deterministic state, progress, UI contract, storage fallback, fake-DOM interaction and real Chromium smoke steps. Post-merge branch workflow `45970058666` was still running when this hand-off was updated; verify it before claiming post-merge completion.
+- **Feature branch head:** `4893100a424bf8f738e54bd002bc3f417d2fb8e3`. PR workflow `45969900226` passed all syntax, deterministic state, progress, UI contract, storage fallback, fake-DOM interaction and real Chromium smoke steps. Post-merge branch workflow `45970058666` passed the full Lantern Run syntax, deterministic state, progress, UI, storage fallback, fake-DOM interaction and real Chromium smoke suite on side-game commit `87847e7914a1b86afb54db1f6215c542e01b46d3`.
 - **Scope:** no puzzle layouts, movement rules, hint costs, scoring, progress schema or runtime dependencies changed. Physical Android and offline service-worker behaviour remain unverified.
 
 #### Repository reconciliation and session close
 
-- PR #56 and PR #60 are merged. PR #61 is the current documentation-only pull request into main. Issues #5 and #7 remain open; their comments now record the 27 Nov status.
+- PR #56 and PR #60 are merged. PR #61 is the current documentation-only pull request into main. Issues #5 and #7 remain open; their bodies and comments now record the current save-v12/resource baseline and live-casualty test boundary.
 - PR #56's old draft state is superseded by the merged test. The reconciliation merge commit on its feature branch is `9ac36dbe6cb5491ca00c300f1f2825b7973e2f26`; the squash merge on main is `90beca0cdd1d2885f6d0a2b509813f4bc3dcbe1e`.
 - Historical battle, recovery, travel and resource branches remain preserved. No force-merge or destructive branch deletion was performed.
 - Current release limits: no physical Android-device validation; no browser-restart offline cache test; live battle casualty recovery is not yet covered in Chromium. Do not describe these as completed.
