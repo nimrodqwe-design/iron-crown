@@ -172,7 +172,7 @@ async function run(){
   const casualtyContext=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});
   const casualtyPage=await casualtyContext.newPage(),casualtyErrors=[];
   casualtyPage.setDefaultTimeout(10000);casualtyPage.on('pageerror',error=>casualtyErrors.push(error.message));
-  await casualtyPage.goto(url+'tests/campaign-battle-casualty-browser.html',{waitUntil:'load'});
+  await casualtyPage.goto(url+'.github/test-fixtures/campaign-battle-casualty.html',{waitUntil:'load'});
   await casualtyPage.locator('#status').waitFor();
   const casualty=await casualtyPage.evaluate(()=>window.casualtyHarness);
   assert.ok(casualty&&casualty.result,'the Chromium fixture executes the actual campaign battle modules');
