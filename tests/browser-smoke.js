@@ -172,51 +172,10 @@ async function run(){
   const casualtyContext=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});
   const casualtyPage=await casualtyContext.newPage(),casualtyErrors=[];
   casualtyPage.setDefaultTimeout(10000);casualtyPage.on('pageerror',error=>casualtyErrors.push(error.message));
-  await casualtyPage.goto(url,{waitUntil:'load'});
-  const casualty=await casualtyPage.evaluate(()=>{
-   const state=window.IronCrownState.createInitialState();
-   state.current='kingsbridge';state.troops=0;state.health=100;state.camped=false;
-   const roster=window.IronCrownCharacters.create({campaignId:'browser-live-casualty'});
-   const mara=roster.add({name:'Mara Venn',role:'companion',motivation:'glory',trust:50,morale:0});
-   state.characterRoster=roster;
-   const party=window.IronCrownParty.create({roster,getActiveIds:()=>state.activePartyIds,setActiveIds:ids=>{state.activePartyIds=ids},maxSize:4});
-   const assigned=party.assign(mara.id);
-   if(!assigned.ok)throw new Error('Could not assign the seeded companion: '+assigned.reason);
-   const saveSystem=window.IronCrownSave.create({
-    getState:()=>state,
-    getPlace:id=>window.IronCrownWorld.places.find(place=>place.id===id)||null,
-    getDiscoveryIds:()=>window.IronCrownWorld.discoveries.map(item=>item.id),
-    getItemIds:slot=>Object.keys(window.IronCrownItems).filter(id=>!slot||window.IronCrownItems[id].slot===slot),
-    getCharacterRoster:()=>roster.snapshot(),
-    setCharacterRoster:snapshot=>{state.characterRoster=window.IronCrownCharacters.restore(snapshot)},
-    createCharacterRoster:()=>window.IronCrownCharacters.create(),
-    resourceApi:window.IronCrownCampaignResources,
-    getResourceSites:()=>window.IronCrownWorld.resourceSites,
-    notify:()=>{},
-    version:window.IronCrownState.saveVersion
-   });
-   let saves=0,campaign;
-   campaign=window.IronCrownCampaignBattle.create({
-    simulation:window.IronCrownBattleSimulation.create(),roster,party,getState:()=>state,
-    save:()=>{
-     state.activeBattle=campaign.active()?campaign.serialize():null;
-     if(!saveSystem.save())throw new Error('The browser could not persist the campaign battle checkpoint/result');
-     saves++;
-    }
-   });
-   const started=campaign.start({id:'red-bandits',name:'Redvale Raiders',power:8},{id:'campaign-hero',name:'Commander',hp:100,maxHp:100,attack:1,defence:0,speed:400});
-   if(!started.ok)throw new Error('The deterministic browser battle did not start: '+started.reason);
-   campaign.setPlayerInput({moveX:1,moveY:1,facingX:1,facingY:1});
-   let steps=0;
-   while(campaign.active()&&steps<1000){campaign.step(.05);steps++;}
-   if(campaign.active())throw new Error('The browser battle did not reach a terminal result');
-   const result=campaign.getResult();
-   const duplicate=campaign.applyResult(result);
-   return {
-    characterId:mara.id,steps,result,duplicate,saves,
-    save:JSON.parse(localStorage.getItem('ironCrownSave')||'null')
-   };
-  });
+  await casualtyPage.goto(url+'tests/campaign-battle-casualty-browser.html',{waitUntil:'load'});
+  await casualtyPage.locator('#status').waitFor();
+  const casualty=await casualtyPage.evaluate(()=>window.casualtyHarness);
+  assert.ok(casualty&&casualty.result,'the Chromium fixture executes the actual campaign battle modules');
   assert.ok(casualty.steps<1000,'the real-browser battle simulation reaches a terminal result');
   assert.equal(casualty.result.outcome,'defeat');
   assert.equal(casualty.result.reason,'warband-routed');
@@ -229,7 +188,12 @@ async function run(){
   assert.equal(casualty.save.state.resolvedBattleIds.length,1,'the battle result is persisted exactly once');
   assert.equal(casualty.save.state.activeBattle,null,'the completed battle checkpoint is cleared');
   await casualtyPage.reload({waitUntil:'load'});
-  assert.equal(await casualtyPage.locator('#clock').textContent(),'DAY 1 · 08:00','the casualty save reloads into the real campaign UI');
+  const reloaded=await casualtyPage.evaluate(()=>window.casualtyHarness);
+  assert.equal(reloaded.reloaded,true,'the casualty fixture confirms the browser reload occurred');
+  assert.equal(reloaded.save.state.characterRoster.characters[0].status,'recovering','the casualty status survives real browser reload');
+  assert.deepEqual(reloaded.save.state.activePartyIds,[],'the active-party removal survives real browser reload');
+  await casualtyPage.goto(url,{waitUntil:'load'});
+  assert.equal(await casualtyPage.locator('#clock').textContent(),'DAY 1 · 08:00','the persisted casualty save loads into the real campaign UI');
   await casualtyPage.locator('#camp').click();
   await casualtyPage.locator('#rest').click();
   assert.equal(await casualtyPage.locator('#clock').textContent(),'DAY 1 · 10:00','two-hour camp recovery advances campaign time');
