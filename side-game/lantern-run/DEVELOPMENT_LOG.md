@@ -66,3 +66,14 @@
 - **Scope:** No map layouts, movement rules, hint costs, scoring, progress schema or runtime dependencies changed.
 - **Validation:** Pending this branch's CI workflow; no physical Android-device test is claimed.
 - **Next:** Keep the four layouts stable and address only defects demonstrated by the automated browser suite or later physical-device testing.
+
+
+## 28 November 2026 — direct adjacent-tile movement
+
+- **Branch:** `sidegame/lantern-run-tap-to-move-2026-11-28`, based on the isolated `sidegame/lantern-run` branch.
+- **Problem:** Mobile players could move only through the directional buttons. The board itself was not a direct touch target even though its 5×5 cells are the primary play surface.
+- **Change:** Each rendered cell now exposes stable coordinates and accepts a tap only when it is orthogonally adjacent to the player. A valid tap delegates to the existing `move` function and deterministic state module. A non-adjacent tap announces the rule without spending a move or lantern light. Cell hit targets use manipulation touch handling.
+- **Regression:** Fake-DOM interaction tests cover rejected non-adjacent taps, one-cell movement, light consumption and restart. Real Chromium touch emulation taps both an invalid distant cell and a valid adjacent cell, then verifies the existing directional-button path still works.
+- **Scope:** No level layouts, hazards, movement rules, hint cost, scoring, progress schema or runtime dependencies changed.
+- **Validation:** Pending PR #63 CI completion. This is touch-emulated Chromium, not a physical Android-device test.
+- **Next:** Keep all four layouts stable and use physical-device testing when hardware is available; fix only observed usability defects.
