@@ -127,6 +127,14 @@ async function run(){
   await touchPage.goto(url,{waitUntil:'load'});
   await touchPage.locator('.cell').first().waitFor();
   assert.ok(await touchPage.evaluate(()=>navigator.maxTouchPoints>0),'the browser context exposes touch input');
+  await touchPage.locator('.cell[data-x="4"][data-y="4"]').tap();
+  assert.equal(await touchPage.locator('#moveCount').textContent(),'Moves: 0','tapping a non-adjacent tile does not consume a move');
+  assert.match(await touchPage.locator('#status').textContent(),/Tap an adjacent tile/);
+  await touchPage.locator('.cell[data-x="0"][data-y="3"]').tap();
+  assert.equal(await touchPage.locator('#moveCount').textContent(),'Moves: 1','tapping an adjacent tile moves the player');
+  assert.equal(await touchPage.locator('#lightValue').textContent(),'11 / 12');
+  await touchPage.locator('#restart').tap();
+  assert.equal(await touchPage.locator('#moveCount').textContent(),'Moves: 0','restart resets a tap-driven move');
   await touchPage.locator('[data-move="up"]').tap();
   assert.equal(await touchPage.locator('#moveCount').textContent(),'Moves: 1','a touch tap moves the player');
   await touchPage.locator('#hint').tap();
