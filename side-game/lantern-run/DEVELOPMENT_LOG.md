@@ -75,5 +75,6 @@
 - **Change:** Each rendered cell now exposes stable coordinates and accepts a tap only when it is orthogonally adjacent to the player. A valid tap delegates to the existing `move` function and deterministic state module. A non-adjacent tap announces the rule without spending a move or lantern light. Cell hit targets use manipulation touch handling.
 - **Regression:** Fake-DOM interaction tests cover rejected non-adjacent taps, one-cell movement, light consumption and restart. Real Chromium touch emulation taps both an invalid distant cell and a valid adjacent cell, then verifies the existing directional-button path still works.
 - **Scope:** No level layouts, hazards, movement rules, hint cost, scoring, progress schema or runtime dependencies changed.
-- **Validation:** Pending PR #63 CI completion. This is touch-emulated Chromium, not a physical Android-device test.
+- **Validation:** PR #63's final PR-head workflow `46124831434` passed JavaScript syntax, deterministic state, progress, UI contract, storage fallback, fake-DOM interaction and real Chromium touch-emulation tests. Push workflow `46124828859` passed the same suite on the final feature head. Post-merge validation is tracked separately on `sidegame/lantern-run`. This is touch-emulated Chromium, not a physical Android-device test.
+- **Merge:** PR #63 merged into `sidegame/lantern-run` as `39872aa0956438c47ee8302d800dbd3e960fe602`.
 - **Next:** Keep all four layouts stable and use physical-device testing when hardware is available; fix only observed usability defects.
