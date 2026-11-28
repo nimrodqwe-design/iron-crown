@@ -601,3 +601,31 @@ The fresh main push created by the 21 Nov coordination hand-off succeeded: JavaS
 - PR #56's old draft state is superseded by the merged test. The reconciliation merge commit on its feature branch is `9ac36dbe6cb5491ca00c300f1f2825b7973e2f26`; the squash merge on main is `90beca0cdd1d2885f6d0a2b509813f4bc3dcbe1e`.
 - Historical battle, recovery, travel and resource branches remain preserved. No force-merge or destructive branch deletion was performed.
 - Current release limits: no physical Android-device validation; no browser-restart offline cache test; live battle casualty recovery is not yet covered in Chromium. Do not describe these as completed.
+
+
+### 28 Nov 2026 — Chromium casualty/recovery and Lantern Run tap-to-move
+
+#### Track A — Iron Crown
+
+- **Baseline:** `main` at `4c4af5fcb204fa3a06d53a1f0905968e0d8ffa0b`; save schema v12. No open PRs at session start. Issues #5 and #7 remain open.
+- **PR #62:** `feature/campaign-live-casualty-browser-2026-11-28` adds a dedicated browser fixture and extends `tests/browser-smoke.js`. Chromium loads the actual battle simulation, campaign battle adapter, roster and party modules; it runs the deterministic defeat with one named companion and no aggregate foot troops; checks the exact casualty, recovering status, active-party removal, resolved-result ledger, cleared checkpoint and exactly-once save/replay; reloads the fixture to verify localStorage persistence; then opens the real campaign UI, rests for two hours and reassigns the recovered companion.
+- **Test boundary:** the casualty fixture invokes the actual campaign battle controller directly in Chromium rather than opening that specific casualty battle through the map encounter UI. The separate campaign browser path continues to cover map encounter opening, checkpoint/reload, Hold, retreat and exactly-once retreat handling. This is real Chromium module + localStorage + campaign-UI integration, not physical-device testing.
+- **Documentation correction:** README's stale save-v10 / informational-resource wording is corrected to the verified save-v12 finite-stock/gathering baseline. The browser test section now distinguishes the direct-controller casualty fixture from the map-encounter UI path.
+- **Initial test failure and correction:** the first attempt wrote the fixture's campaign state into localStorage from the running game page, whose `pagehide` handler then saved that page's separate in-memory state during reload. The test now uses an isolated fixture page with no game pagehide listener, reloads it to verify the saved result, and only then navigates to the campaign UI for recovery/reassignment. No production workaround was added.
+- **Validation:** PR #62 syntax, Node and Chromium workflows are pending. Do not mark the browser casualty acceptance criterion complete until the final PR-head workflow passes.
+- **Next:** merge only after the final PR-head checks pass. Then return to Issue #5's reviewed storehouse/provisioning contract; do not add a second inventory or premature market/crafting system.
+
+#### Track B — Lantern Run
+
+- **Baseline:** isolated `sidegame/lantern-run` at `87847e7914a1b86afb54db1f6215c542e01b46d3`, four named deterministic ruins.
+- **PR #63:** `sidegame/lantern-run-tap-to-move-2026-11-28` adds direct tap-to-move for orthogonally adjacent tiles. Non-adjacent taps announce the rule without consuming a move or lantern light; valid taps delegate to the existing state-module movement path. Cell coordinates are exposed for stable tests, and touch manipulation is enabled.
+- **Regression:** fake-DOM tests cover rejected non-adjacent taps, valid one-cell movement, light consumption and restart. The real Chromium touch-emulation test taps both an invalid distant tile and a valid adjacent tile, then confirms the existing directional-button path still works.
+- **Scope:** no level layouts, hazards, score rules, hint cost, progress schema or runtime dependencies changed. Physical Android testing remains outstanding.
+- **Validation:** PR #63's first complete workflow passed before the final UI-contract and hand-off documentation additions; the final PR-head workflow is pending.
+
+#### Branch reconciliation and hand-off
+
+- The historical `feature/campaign-casualty-recovery-verification-2026-11-26` branch remains 4 commits ahead / 2 behind and contains only the already-merged Node casualty regression file; preserve it rather than merging a duplicate.
+- `feature/campaign-resource-gathering-2026-11-25` remains 7 ahead / 6 behind and overlaps current resource/time/save/UI/tests. `feature/demo-world-resources` remains 31 ahead / 77 behind; `feature/demo-world-resource-reconciliation` remains 9 ahead / 71 behind. These map branches overlap shared world/game/UI/service-worker files and remain preserved, not force-merged.
+- The old Lantern Run fourth-ruin and level-name proposal branches remain divergent because their changes were squash-merged into the isolated base; their remaining diffs are documentation/test snapshots, not a reason to merge stale branches wholesale.
+- No destructive branch cleanup or force-push was performed.
